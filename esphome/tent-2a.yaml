@@ -1,0 +1,509 @@
+esphome:
+  name: tent-2a
+  platform: ESP32
+  board: esp32dev
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+  password: "51cf065bd6ab24446472c1298dae720c"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Tent-2A Fallback Hotspot"
+    password: "vU08CdOzFfyF"
+
+captive_portal:
+
+i2c:
+  sda: 22
+  scl: 21
+  scan: True
+
+esp32_ble_tracker:
+  
+sensor:
+
+  - platform: bme680
+    temperature:
+      name: "Tent Temperature"
+      id: wired_temp
+      oversampling: 4x
+      filters:
+      - filter_out: 201.8
+      - max:
+          window_size: 7
+          send_every: 4
+          send_first_at: 2
+    pressure:
+      name: "Tent Pressure"
+    humidity:
+      name: "Tent Humidity"
+      filters:
+      - filter_out: 100
+      - max:
+          window_size: 7
+          send_every: 4
+          send_first_at: 2
+    gas_resistance:
+      name: "Tent Gas Resistance"
+    address: 0x76
+    update_interval: 60s
+
+  - platform: tsl2561
+    name: "Tent Ambient Light Sensor"
+    address: 0x39
+    integration_time: 14ms
+    update_interval: 60s
+
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:1E:C5:0F"
+    temperature:
+      name: "BT Temperature"
+      id: bt_temp
+    humidity:
+      name: "BT Humidity"
+    battery_level:
+      name: "BT Battery-Level"
+    battery_voltage:
+      name: "BT Battery-Voltage"
+      
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:6D:DE:EC"
+    temperature:
+      name: "BT 2 Temperature"
+    humidity:
+      name: "BT 2 Humidity"
+    battery_level:
+      name: "BT 2 Battery-Level"
+    battery_voltage:
+      name: "BT 2 Battery-Voltage"
+      
+  - platform: template
+    name: "Current Time"
+    id: tent_2a_time_now
+    unit_of_measurement: "O'Clock"
+    accuracy_decimals: 2
+
+binary_sensor:
+  - platform: gpio
+    id: led_touch
+    name: Tent Light Button
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - delay: 1s
+        - switch.toggle: light_override
+  
+  - platform: gpio
+    id: exit_toggle_touch
+    pin:
+      number: GPIO27
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+    - lambda: |-
+        if (id(exit_fan).speed == 1){
+            auto call = id(exit_fan).turn_on();
+            call.set_speed(2);
+            call.perform();
+        }
+        if (id(exit_fan).speed == 2){
+            auto call = id(exit_fan).turn_on();
+            call.set_speed(1);
+            call.perform();
+        }
+        if (id(exit_fan).speed == 0){
+            auto call = id(exit_fan).turn_off();
+            call.set_speed(0);
+            call.perform();
+        }
+      
+  - platform: gpio
+    id: exit_off_touch
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - delay: 200ms
+        - fan.toggle: exit_fan
+
+switch:     
+  - platform: template
+    name: "Light Override"
+    id: light_override
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: light_override
+          state: ON
+      - if:
+          condition:
+            light.is_on: tent_led
+          then:
+               - lambda: |-
+                    auto call = id(tent_led).turn_off();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is ON, Turn Off");
+          else:    
+                - lambda: |-
+                    auto call = id(tent_led).turn_on();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is OFF, Turn On");
+    turn_off_action:
+      - switch.template.publish:
+          id: light_override
+          state: OFF
+      - lambda: |-
+              static float hour = 0;
+              static float min = 0;
+              static float time = 0; 
+              static int day = 0;
+              static float on_time = 0;
+              static float off_time = 0;
+              
+              hour = id(sntp_time).now().hour;
+              min = id(sntp_time).now().minute;
+              day = id(sntp_time).now().day_of_week;
+              time = hour + (min / 100);
+              on_time = id(on_time_2a).state;
+              off_time = id(off_time_2a).state;
+              
+              id(tent_2a_time_now).publish_state(time);                                             
+              
+              
+              if (id(auto_timer).state){
+                
+              if (on_time <= off_time){
+                 if ((time >= on_time) && (time <= off_time)){
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn On");
+                      auto call = id(tent_led).turn_on();
+                      call.perform();
+                 } else {
+                      auto call = id(tent_led).turn_off();
+                      call.perform();
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn Off");
+                 }
+              } else {
+                if ((time >= on_time) && (time <= 24.00)){
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, Before Midingt, Turn On");
+                    auto call = id(tent_led).turn_on();
+                    call.perform();
+                } else if ((time <= off_time) && (time >= 00.00)){
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, After Midnight, Turn On");
+                    auto call = id(tent_led).turn_on();
+                    call.perform();
+                } else {
+                   auto call = id(tent_led).turn_off();
+                   call.perform();
+                   ESP_LOGD("main", "ON time not after OFF time, else statement, Turn Off");
+                }
+              }
+              }
+                
+  - platform: template
+    name: "Tent 2a Timer Auto"
+    id: auto_timer
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: auto_timer
+          state: ON
+    turn_off_action:
+      - switch.template.publish:
+          id: auto_timer
+          state: OFF
+  
+  - platform: gpio
+    pin: GPIO18
+    inverted: False
+    internal: true
+    id: fan_relay1
+    on_turn_on:
+    - logger.log: "Switch Turned On Fan Relay Power "
+    on_turn_off:
+    - logger.log: "Switch Turned Off Fan Relay Power"
+    
+  - platform: gpio
+    pin: GPIO19
+    inverted: False
+    internal: true
+    id: fan_relay2
+    on_turn_on:
+    - logger.log: "Switch Turned Speed High!"
+    on_turn_off:
+    - logger.log: "Switch Turned Spped Low!"
+    
+    
+output:
+
+  - platform: gpio
+    pin: GPIO23
+    inverted: True
+    id: light_output
+    
+  - platform: ledc
+    pin: GPIO16
+    id: fan_output_inside_a
+    frequency: 16000hz
+    min_power: 0.13
+    max_power: 1
+    
+  - platform: ledc
+    pin: GPIO17
+    id: fan_output_inside_b
+    frequency: 16000hz
+    min_power: 0.13
+    max_power: 1
+  
+  - platform: ledc
+    pin: GPIO02
+    id: fan_output_inside_c
+    frequency: 16000hz
+  
+  - platform: template
+    id: fanoutput
+    type: float
+    write_action:
+      - lambda: |-
+          ESP_LOGD("main", "Fan Exit New Output: %f", state);
+          if (state == 0) { 
+            id(fan_relay1).turn_off();
+          } else if (state == 0.5) {
+              if (id(fan_relay1).state){
+                id(fan_relay2).turn_off();
+              } else {
+                id(fan_relay1).turn_on();
+                id(fan_relay2).turn_off();
+            }
+          } else {
+            if (id(fan_relay1).state){
+              id(fan_relay2).turn_on();
+            } else {
+              id(fan_relay1).turn_on();
+              id(fan_relay2).turn_on();
+            }
+           
+          }
+
+fan:
+
+  - platform: speed
+    output: fan_output_inside_a
+    name: "Tent 2A Fan A"
+    id: fan_a
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_a
+            speed: !lambda |-  
+              return id(fan_a_speed);
+    on_speed_set:
+        - lambda: |-  
+            id(fan_a_speed) = id(fan_a).speed;
+            ESP_LOGD("main", "Fan A Speed Set: %i", id(fan_a_speed));
+            
+  - platform: speed
+    output: fan_output_inside_b
+    name: "Tent 2A Fan B"
+    id: fan_b
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_b
+            speed: !lambda |-  
+              return id(fan_b_speed);
+    on_speed_set:
+        - lambda: |-  
+            id(fan_b_speed) = id(fan_b).speed;
+            ESP_LOGD("main", "Fan B Speed Set: %i", id(fan_b_speed));
+    
+  - platform: speed
+    output: fan_output_inside_c
+    name: "Tent 2A Fan C"
+    id: fan_c
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_c
+            speed: !lambda |-  
+              return id(fan_c_speed);
+    on_speed_set:
+        - lambda: |-  
+            id(fan_c_speed) = id(fan_c).speed;
+            ESP_LOGD("main", "Fan C Speed Set: %i", id(fan_c_speed));
+      
+  - platform: speed
+    output: fanoutput
+    restore_mode: RESTORE_DEFAULT_ON
+    id: exit_fan
+    speed_count: 2
+    name: "Tent Extraction Fan"
+    on_turn_on:
+      - lambda: |-
+          auto call = id(exit_fan).turn_on();
+          call.set_speed(id(fan_exit_speed));
+          call.perform();
+    on_speed_set:
+      - lambda: |- 
+            id(fan_exit_speed) = id(exit_fan).speed;
+            ESP_LOGD("main", "On Speed Set %i", id(fan_exit_speed));
+            ESP_LOGD("main", "On Speed Test %i", id(exit_fan).speed);
+        
+light:
+
+  - platform: binary
+    name: "Tent 2a LED"
+    output: light_output
+    restore_mode: RESTORE_AND_OFF
+    id: tent_led
+
+number:      
+      
+  - platform: template
+    name: Turn On Time
+    id: on_time_2a
+    optimistic: true
+    min_value: 0
+    max_value: 24
+    step: 0.01
+    restore_value: true
+    mode: box
+    
+  - platform: template
+    name: Turn Off Time
+    id: off_time_2a
+    optimistic: true
+    min_value: 0
+    max_value: 24
+    step: 0.01
+    restore_value: true
+    mode: box
+    
+time:          
+  - platform: sntp
+    id: sntp_time
+    on_time:
+      - seconds: 0
+        minutes: '0-59'
+        then:
+          - lambda: |-
+              static float hour = 0;
+              static float min = 0;
+              static float time = 0; 
+              static int day = 0;
+              static float on_time = 0;
+              static float off_time = 0;
+              
+              hour = id(sntp_time).now().hour;
+              min = id(sntp_time).now().minute;
+              day = id(sntp_time).now().day_of_week;
+              time = hour + (min / 100);
+              on_time = id(on_time_2a).state;
+              off_time = id(off_time_2a).state;
+              
+              id(tent_2a_time_now).publish_state(time);                                             
+              
+              
+              if (id(auto_timer).state){
+                
+              if (on_time <= off_time){
+                 if ((time >= on_time) && (time <= off_time)){
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn On");
+                      auto call = id(tent_led).turn_on();
+                      call.perform();
+                   }  
+                 } else {
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                      auto call = id(tent_led).turn_off();
+                      call.perform();
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn Off");
+                   }
+                 }
+              } else {
+                if ((time >= on_time) && (time <= 24.00)){
+                  if (id(light_override).state){
+                  ESP_LOGD("main", "Light Override Is ON");
+                  } else {
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, Before Midingt, Turn On");
+                    auto call = id(tent_led).turn_on();
+                    call.perform();
+                  }  
+                } else if ((time <= off_time) && (time >= 00.00)){
+                  if (id(light_override).state){
+                  ESP_LOGD("main", "Light Override Is ON");
+                  } else {
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, After Midnight, Turn On");
+                    auto call = id(tent_led).turn_on();
+                    call.perform();
+                  }
+                } else {
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                   auto call = id(tent_led).turn_off();
+                   call.perform();
+                   ESP_LOGD("main", "ON time not after OFF time, else statement, Turn Off");
+              }
+              }
+              }
+              }
+              
+              if (time == on_time){
+                if (id(light_override).state){
+                    id(light_override).turn_off();
+                    ESP_LOGD("main", "Light Overide Is On, Turn Off");
+                    
+              }}
+              if (time == off_time){
+                if (id(light_override).state){
+                    id(light_override).turn_off();
+                    ESP_LOGD("main", "Light Overide Is On, Turn Off");
+                      
+              }}
+              
+          
+globals:
+
+  - id: valid_int
+    type: int
+    restore_value: yes
+    
+  - id: fan_exit_speed
+    type: int
+    restore_value: yes
+    initial_value: '2'
+    
+  - id: fan_a_speed
+    type: int
+    restore_value: yes
+    initial_value: '45'
+    
+  - id: fan_b_speed
+    type: int
+    restore_value: yes
+    initial_value: '45'
+    
+  - id: fan_c_speed
+    type: int
+    restore_value: yes
+    initial_value: '45'

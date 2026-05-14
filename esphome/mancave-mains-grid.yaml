@@ -1,0 +1,134 @@
+esphome:
+  name: "mancave-mains-grid"
+  platform: ESP8266
+  board: esp01_1m
+  board_flash_mode: dout
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  use_address: mancave-mains-grid.local
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Mains Grid"
+    password: "hillview199@"
+  
+captive_portal:
+
+# Enable logging
+logger:
+  baud_rate: 0
+  
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: mancave_mains_grid_button
+    on_press:
+      - switch.toggle: fakebutton
+  - platform: template
+    name: "Mancave Mains Grid Running"
+    filters:
+      - delayed_off: 5s
+    lambda: |-
+      if (isnan(id(power).state)) {
+        return {};
+      } else if (id(power).state > 0.004) {
+        // Running
+        return true;
+      } else {
+        // Not running
+        return false;
+      }
+switch:
+  - platform: template
+    name: "Mancave Mains Grid"
+    optimistic: true
+    id: fakebutton
+    turn_on_action:
+    - switch.turn_on: relay
+    - light.turn_on: led
+    turn_off_action:
+    - switch.turn_off: relay
+    - light.turn_off: led
+  - platform: gpio
+    id: relay
+    pin: GPIO12
+    restore_mode: ALWAYS_ON
+
+output:
+  - platform: esp8266_pwm
+    id: pow_blue_led
+    pin:
+      number: GPIO13
+      inverted: True
+
+light:
+  - platform: monochromatic
+    output: pow_blue_led
+    id: led
+
+sensor:
+  - platform: cse7766
+    current:
+      name: "Mancave Mains Grid Current"
+    voltage:
+      name: "Mancave Mains Grid Voltage"
+    power:
+      name: "Mancave Mains Grid Power"
+      id: power
+      unit_of_measurement: 'kW'
+      filters:
+      - multiply: 0.001
+      on_value_range:
+        - above: 0.004
+          then:
+            - light.turn_on: led
+        - below: 0.003
+          then:
+            - light.turn_off: led
+            
+  - platform: template
+    name: "Mancave Mains Grid Watts"
+    id: watts  
+    update_interval: 2s
+    lambda: |-
+      id(watt_float) = (id(power).state * 1000);
+      return id(watt_float);
+    
+  - platform: total_daily_energy
+    name: "Mancave Mains Grid Daily kWh"
+    id: daily_kw
+    power_id: power
+
+globals:
+
+  - id: watt_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(daily_kw).publish_state(0);
+          

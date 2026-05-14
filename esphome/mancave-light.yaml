@@ -1,0 +1,112 @@
+esphome:
+  name: "mancave-light"
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #
+
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Light Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            light.is_on: mancave
+          then:
+            - component.update: mancave_watts
+            
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: mancave_button
+    on_press:
+      - light.toggle: mancave
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: mancave_switch
+    on_press:
+    - light.toggle: mancave   
+    on_release:
+    - light.toggle: mancave
+    
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay
+    
+light:
+  - platform: binary
+    name: Mancave
+    id: mancave
+    output: relay
+  
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes
+    
+sensor:
+  
+  - platform: template
+    name: "Mancave Watts"
+    id: mancave_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(mancave).current_values.is_on()){
+        id(light_power) += 0.166666667;
+        return id(light_power);
+      } else {
+        return {};
+      }
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(mancave_watts).publish_state(0);
+          id(light_power) = 0;
+
+
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'   

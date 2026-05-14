@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<aircast>
+<common>
+<enabled>1</enabled>
+<stop_receiver>0</stop_receiver>
+<media_volume>1.0000</media_volume>
+<latency></latency>
+<codec>flac</codec>
+<artwork></artwork>
+<drift>0</drift>
+<metadata>1</metadata>
+<flush>1</flush>
+</common>
+<main_log>info</main_log>
+<cast_log>info</cast_log>
+<util_log>warn</util_log>
+<log_limit>-1</log_limit>
+<max_players>32</max_players>
+<ports>0:0</ports>
+<binding>?</binding>
+<device>
+<udn>79eeeb059cab0682b2054b48ed761836</udn>
+<name>Den+</name>
+<mac>cc:cc:7d:37:58:53</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>FA040639-5D30-4478-A481-27D3D19A4F2B</udn>
+<name>Shed All Sound+</name>
+<mac>cc:cc:04:dc:5a:e5</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>583fe01b2b7899c4145b93ce7a648bb1</udn>
+<name>Shed TV 4K+</name>
+<mac>cc:cc:5e:6f:cb:69</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>32cabf335b207cac556c696889c268ff</udn>
+<name>Chromecast Ultra+</name>
+<mac>cc:cc:58:55:d5:0e</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>de933f05dbd50871cb0aa541b2ef61e8</udn>
+<name>Living room+</name>
+<mac>cc:cc:3b:c7:07:c6</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>626005E3-9A86-4313-BD7B-197774AAA3C3</udn>
+<name>Hfp Multiroom+</name>
+<mac>cc:cc:e5:71:59:6e</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>62612BAB-EC66-4343-BF01-B49A232F6FD1</udn>
+<name>shed surround+</name>
+<mac>cc:cc:e8:bc:53:09</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>1770d715cc3896f1b452f6c68a8db45c</udn>
+<name>Family Room TV+</name>
+<mac>cc:cc:01:50:9a:d1</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>515d9e20de180152d22da2ffa266ceb4</udn>
+<name>Gym TV+</name>
+<mac>cc:cc:66:59:ba:46</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>a4efd74b424295fcfe579a2e4d18ba3f</udn>
+<name>Gym speaker+</name>
+<mac>cc:cc:fe:ba:95:c2</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>55B10EF6-EE26-4D27-853B-9D417D0191AE</udn>
+<name>Gym Multi+</name>
+<mac>cc:cc:4a:23:1f:70</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>0063a11198e59833efcda934726931ab</udn>
+<name>mini nest+</name>
+<mac>cc:cc:47:3f:87:5b</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>b63c1a48ba035de1d27efbe74c521799</udn>
+<name>Dinning room tv+</name>
+<mac>cc:cc:94:e0:a5:26</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>6b884ae1100c372a3567689e3a6726a0</udn>
+<name>Shed speaker+</name>
+<mac>cc:cc:33:f3:aa:f8</mac>
+<enabled>1</enabled>
+</device>
+<device>
+<udn>b75633cb727261d466c3a974ad8366f4</udn>
+<name>Shed TV+</name>
+<mac>cc:cc:bd:14:36:ac</mac>
+<enabled>1</enabled>
+</device>
+</aircast>

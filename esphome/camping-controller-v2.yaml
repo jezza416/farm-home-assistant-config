@@ -1,0 +1,1090 @@
+substitutions:
+  wifi_ssid: "hfpshed"
+  wifi_password: "hillview199@"
+  ap_password: "hillview199@"
+
+esphome:
+  name: camping-controller-v2
+  friendly_name: camping-controller-v2
+  on_boot:
+    priority: -10
+    then:
+      - lambda: |-
+          id(gullwing_encoder).set_value(id(gullwing_position_count));
+          id(ram_2_encoder).set_value(id(ram_2_position_count));
+          id(gullwing_position_trusted) = false;
+          id(ram_2_position_trusted) = false;
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# IO_0
+# IO_2
+# IO_4
+# IO_5
+# IO12
+# IO13
+# IO14
+# IO15
+# IO16 - Hall 2 b
+# IO17 - LPWM 2
+# IO18
+# IO19 - Relay Ram Power Supply
+# IO21 - SDA - TCA & MCP
+# IO22 - SCL - TCA & MCP
+# IO23 - LPWM 1
+# IO25 - RPWM 1
+# IO26
+# IO27 - RPWM 2
+# IO32 - RF Receiver
+# IO33
+# IO34 - Hall 2 a
+# IO35 - Hall 1 a
+# IO36 (SVP)
+# IO39 - Hall 1 b
+# SVN
+# TXD
+# RXD
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: "OeN1BWi/IxKr/MMaWSDZJRP9eyL3bwLN62tTNKL+I0U="
+
+ota:
+  - platform: esphome
+    password: "cbc1126562b9f795c5de00687656fbde"
+
+wifi:
+  networks:
+    - ssid: ${wifi_ssid}
+      password: ${wifi_password}
+    - ssid: "Dinespaerata"
+      password: "dineswesley"
+  ap:
+    ssid: "Camping Control Fallback"
+    password: ${ap_password}
+
+captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+  local: true
+
+i2c:
+  - id: i2c_main
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+    frequency: 100kHz
+
+tca9548a:
+  - id: tca0
+    address: 0x70
+    i2c_id: i2c_main
+    channels:
+      - bus_id: tca_ch0
+        channel: 0
+      - bus_id: tca_ch2
+        channel: 2
+
+mcp23017:
+  - id: mcp_hub
+    i2c_id: i2c_main
+    address: 0x20
+
+remote_receiver:
+  pin: GPIO32
+  dump:
+    - rc_switch
+  tolerance: 50%
+  filter: 250us
+  idle: 4ms
+  buffer_size: 4kb
+
+# remote_transmitter:
+#   pin: GPIO4
+#   carrier_duty_percent: 100%
+
+globals:
+  - id: gullwing_full_stroke_pulses
+    type: float
+    restore_value: yes
+    initial_value: '18620'
+
+  - id: ram_2_full_stroke_pulses
+    type: float
+    restore_value: yes
+    initial_value: '18620'
+
+  - id: gullwing_position_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: ram_2_position_count
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: gullwing_position_trusted
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: ram_2_position_trusted
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: gullwing_last_fast_publish
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_last_slow_publish
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: ram_2_last_fast_publish
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: ram_2_last_slow_publish
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_last_position
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_last_motion_ms
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_motion_start_ms
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_stall_timeout_ms
+    type: int
+    restore_value: yes
+    initial_value: '700'
+
+  - id: gullwing_stall_arm_ms
+    type: int
+    restore_value: yes
+    initial_value: '500'
+
+  - id: gullwing_active
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: ram_2_last_position
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: ram_2_last_motion_ms
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: ram_2_motion_start_ms
+    type: unsigned long
+    restore_value: no
+    initial_value: '0'
+
+  - id: ram_2_stall_timeout_ms
+    type: int
+    restore_value: yes
+    initial_value: '700'
+
+  - id: ram_2_stall_arm_ms
+    type: int
+    restore_value: yes
+    initial_value: '500'
+
+  - id: ram_2_active
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  
+  - id: gullwing_current_safety_active
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: gullwing_open_overcurrent_threshold
+    type: float
+    restore_value: yes
+    initial_value: '2.20'
+
+  - id: gullwing_close_overcurrent_threshold
+    type: float
+    restore_value: yes
+    initial_value: '0.84'
+
+output:
+  - platform: ledc
+    id: hbridge1_rpwm
+    pin: GPIO25
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge1_lpwm
+    pin: GPIO23
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge2_rpwm
+    pin: GPIO27
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge2_lpwm
+    pin: GPIO17
+    frequency: 1000 Hz
+
+switch:
+  - platform: restart
+    name: "Camping Controller Restart"
+    id: camping_controller_restart
+
+  - platform: gpio
+    id: relay_gullwing_supply
+    name: "Ram Power Supply"
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO19
+      mode:
+        output: true
+      inverted: true
+
+  - platform: gpio
+    id: relay_charging_supply
+    name: "Charging Ports Power Supply"
+    restore_mode: ALWAYS_ON
+    pin:
+      mcp23xxx: mcp_hub
+      number: 9
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    id: relay_essential_supply
+    name: "Essential Ports Power Supply"
+    restore_mode: ALWAYS_ON
+    pin:
+      mcp23xxx: mcp_hub
+      number: 10
+      mode:
+        output: true
+      inverted: false
+
+  - platform: template
+    name: "Gullwing Open"
+    id: gullwing_forward
+    optimistic: true
+    device_class: switch
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - switch.turn_off: gullwing_reverse
+      - delay: 200ms
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_reverse
+              - switch.is_off: ram_2_forward
+              - switch.is_off: ram_2_reverse
+          then:
+            - switch.turn_on: relay_gullwing_supply
+      - delay: 300ms
+      - switch.template.publish:
+          id: gullwing_forward
+          state: ON
+      - output.set_level:
+          id: hbridge1_rpwm
+          level: 1.0
+      - output.set_level:
+          id: hbridge1_lpwm
+          level: 0%
+      - lambda: |-
+          id(gullwing_motion_start_ms) = millis();
+          id(gullwing_last_motion_ms) = millis();
+          id(gullwing_last_position) = id(gullwing_position_count);
+          id(gullwing_active) = true;
+    turn_off_action:
+      - output.set_level:
+          id: hbridge1_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge1_lpwm
+          level: 0%
+      - lambda: |-
+          id(gullwing_active) = false;
+      - delay: 100ms
+      - switch.template.publish:
+          id: gullwing_forward
+          state: OFF
+      - script.execute: gullwing_post_stop_current_updates
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_reverse
+              - switch.is_off: ram_2_forward
+              - switch.is_off: ram_2_reverse
+          then:
+            - switch.turn_off: relay_gullwing_supply
+
+  - platform: template
+    name: "Gullwing Close"
+    id: gullwing_reverse
+    optimistic: true
+    device_class: switch
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - switch.turn_off: gullwing_forward
+      - delay: 200ms
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_forward
+              - switch.is_off: ram_2_forward
+              - switch.is_off: ram_2_reverse
+          then:
+            - switch.turn_on: relay_gullwing_supply
+      - delay: 300ms
+      - switch.template.publish:
+          id: gullwing_reverse
+          state: ON
+      - output.set_level:
+          id: hbridge1_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge1_lpwm
+          level: 1.0
+      - lambda: |-
+          id(gullwing_motion_start_ms) = millis();
+          id(gullwing_last_motion_ms) = millis();
+          id(gullwing_last_position) = id(gullwing_position_count);
+          id(gullwing_active) = true;
+    turn_off_action:
+      - output.set_level:
+          id: hbridge1_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge1_lpwm
+          level: 0%
+      - lambda: |-
+          id(gullwing_active) = false;
+      - delay: 100ms
+      - switch.template.publish:
+          id: gullwing_reverse
+          state: OFF
+      - script.execute: gullwing_post_stop_current_updates
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_forward
+              - switch.is_off: ram_2_forward
+              - switch.is_off: ram_2_reverse
+          then:
+            - switch.turn_off: relay_gullwing_supply
+
+  - platform: template
+    name: "Ram 2 Open"
+    id: ram_2_forward
+    optimistic: true
+    device_class: switch
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - switch.turn_off: ram_2_reverse
+      - delay: 200ms
+      - switch.turn_on: relay_gullwing_supply
+      - delay: 300ms
+      - switch.template.publish:
+          id: ram_2_forward
+          state: ON
+      - output.set_level:
+          id: hbridge2_rpwm
+          level: 1.0
+      - output.set_level:
+          id: hbridge2_lpwm
+          level: 0%
+      - lambda: |-
+          id(ram_2_motion_start_ms) = millis();
+          id(ram_2_last_motion_ms) = millis();
+          id(ram_2_last_position) = id(ram_2_position_count);
+          id(ram_2_active) = true;
+    turn_off_action:
+      - output.set_level:
+          id: hbridge2_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge2_lpwm
+          level: 0%
+      - lambda: |-
+          id(ram_2_active) = false;
+      - delay: 100ms
+      - switch.template.publish:
+          id: ram_2_forward
+          state: OFF
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_forward
+              - switch.is_off: gullwing_reverse
+              - switch.is_off: ram_2_reverse
+          then:
+            - switch.turn_off: relay_gullwing_supply
+
+  - platform: template
+    name: "Ram 2 Close"
+    id: ram_2_reverse
+    optimistic: true
+    device_class: switch
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - switch.turn_off: ram_2_forward
+      - delay: 200ms
+      - switch.turn_on: relay_gullwing_supply
+      - delay: 300ms
+      - switch.template.publish:
+          id: ram_2_reverse
+          state: ON
+      - output.set_level:
+          id: hbridge2_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge2_lpwm
+          level: 1.0
+      - lambda: |-
+          id(ram_2_motion_start_ms) = millis();
+          id(ram_2_last_motion_ms) = millis();
+          id(ram_2_last_position) = id(ram_2_position_count);
+          id(ram_2_active) = true;
+    turn_off_action:
+      - output.set_level:
+          id: hbridge2_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge2_lpwm
+          level: 0%
+      - lambda: |-
+          id(ram_2_active) = false;
+      - delay: 100ms
+      - switch.template.publish:
+          id: ram_2_reverse
+          state: OFF
+      - if:
+          condition:
+            and:
+              - switch.is_off: gullwing_forward
+              - switch.is_off: gullwing_reverse
+              - switch.is_off: ram_2_forward
+          then:
+            - switch.turn_off: relay_gullwing_supply
+
+binary_sensor:
+  - platform: template
+    name: "Gullwing Position Trusted"
+    lambda: |-
+      return id(gullwing_position_trusted);
+
+  - platform: template
+    name: "Ram 2 Position Trusted"
+    lambda: |-
+      return id(ram_2_position_trusted);
+
+  # - platform: gpio
+  #   name: "Gullwing Closed Limit"
+  #   id: gullwing_closed_limit
+  #   pin:
+  #     number: GPIO33
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "Gullwing Preferred Open Limit"
+  #   id: gullwing_preferred_open_limit
+  #   pin:
+  #     number: GPIO26
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "Gullwing Full Open Limit"
+  #   id: gullwing_full_open_limit
+  #   pin:
+  #     number: GPIO18
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "Ram 2 Closed Limit"
+  #   id: ram_2_closed_limit
+  #   pin:
+  #     mcp23xxx: mcp_hub
+  #     number: 0
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "Ram 2 Preferred Open Limit"
+  #   id: ram_2_preferred_open_limit
+  #   pin:
+  #     mcp23xxx: mcp_hub
+  #     number: 1
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "Ram 2 Full Open Limit"
+  #   id: ram_2_full_open_limit
+  #   pin:
+  #     mcp23xxx: mcp_hub
+  #     number: 2
+  #     mode:
+  #       input: true
+  #       pullup: true
+  #     inverted: true
+
+  - platform: remote_receiver
+    name: "RF CH1 Up"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101010110"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH1 UP received -> Gullwing Open"
+      - switch.turn_off: gullwing_reverse
+      - switch.turn_on: gullwing_forward
+
+  - platform: remote_receiver
+    name: "RF CH1 Down"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101010010"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH1 DOWN received -> Gullwing Close"
+      - switch.turn_off: gullwing_forward
+      - switch.turn_on: gullwing_reverse
+
+  - platform: remote_receiver
+    name: "RF CH1 Stop"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101111100"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH1 STOP received -> Gullwing Stop"
+      - switch.turn_off: gullwing_forward
+      - switch.turn_off: gullwing_reverse
+
+  - platform: remote_receiver
+    name: "RF CH2 Up"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101011100"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH2 UP received -> Ram 2 Open"
+      - switch.turn_off: ram_2_reverse
+      - switch.turn_on: ram_2_forward
+
+  - platform: remote_receiver
+    name: "RF CH2 Down"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101011110"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH2 DOWN received -> Ram 2 Close"
+      - switch.turn_off: ram_2_forward
+      - switch.turn_on: ram_2_reverse
+
+  - platform: remote_receiver
+    name: "RF CH2 Stop"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101011010"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH2 STOP received -> Ram 2 Stop"
+      - switch.turn_off: ram_2_forward
+      - switch.turn_off: ram_2_reverse
+
+  - platform: remote_receiver
+    name: "RF CH3 Up"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101111010"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH3 UP received -> Toggle charging ports"
+      - switch.toggle: relay_charging_supply
+
+  - platform: remote_receiver
+    name: "RF CH3 Down"
+    internal: true
+    rc_switch_raw:
+      code: "00111101011100101110110"
+      protocol: 1
+    on_press:
+      - logger.log: "RF CH3 DOWN received -> Toggle essential ports"
+      - switch.toggle: relay_essential_supply
+
+sensor:
+  - platform: ina260
+    id: ina260_1_sensor
+    i2c_id: tca_ch2
+    address: 0x40
+    current:
+      name: "Gullwing Current"
+      id: ina260_1_current
+      accuracy_decimals: 2
+    power:
+      name: "Gullwing Power"
+      id: ina260_1_power
+      accuracy_decimals: 1
+    bus_voltage:
+      name: "Gullwing Bus Voltage"
+      id: ina260_1_voltage
+      accuracy_decimals: 2
+    update_interval: never
+
+  - platform: ina260
+    id: ina260_2_sensor
+    i2c_id: tca_ch0
+    address: 0x40
+    current:
+      name: "Ram 2 Current"
+      id: ina260_2_current
+      accuracy_decimals: 2
+    power:
+      name: "Ram 2 Power"
+      id: ina260_2_power
+      accuracy_decimals: 1
+    bus_voltage:
+      name: "Ram 2 Bus Voltage"
+      id: ina260_2_voltage
+      accuracy_decimals: 2
+    update_interval: never
+
+  - platform: rotary_encoder
+    id: gullwing_encoder
+    name: "Gullwing Position Count"
+    pin_a:
+      number: GPIO35
+      mode:
+        input: true
+    pin_b:
+      number: GPIO39
+      mode:
+        input: true
+    resolution: 1
+    restore_mode: ALWAYS_ZERO
+    on_value:
+      then:
+        - lambda: |-
+            id(gullwing_position_count) = (int)x;
+
+  - platform: rotary_encoder
+    id: ram_2_encoder
+    name: "Ram 2 Position Count"
+    pin_a:
+      number: GPIO34
+      mode:
+        input: true
+    pin_b:
+      number: GPIO16
+      mode:
+        input: true
+    resolution: 1
+    restore_mode: ALWAYS_ZERO
+    on_value:
+      then:
+        - lambda: |-
+            id(ram_2_position_count) = (int)x;
+
+  - platform: template
+    name: "Gullwing Stroke mm"
+    id: gullwing_stroke_mm
+    unit_of_measurement: "mm"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      const float full_counts = id(gullwing_full_stroke_pulses);
+      const float stroke_mm = 500.0f;
+      float current_counts = id(gullwing_position_count);
+
+      if (current_counts < 0.0f) current_counts = 0.0f;
+      if (current_counts > full_counts) current_counts = full_counts;
+      if (full_counts <= 0.0f) return 0.0f;
+
+      return (current_counts / full_counts) * stroke_mm;
+
+  - platform: template
+    name: "Gullwing Stroke Percent"
+    id: gullwing_stroke_percent
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      const float full_counts = id(gullwing_full_stroke_pulses);
+      float current_counts = id(gullwing_position_count);
+
+      if (current_counts < 0.0f) current_counts = 0.0f;
+      if (current_counts > full_counts) current_counts = full_counts;
+      if (full_counts <= 0.0f) return 0.0f;
+
+      return (current_counts / full_counts) * 100.0f;
+
+  - platform: template
+    name: "Ram 2 Stroke mm"
+    id: ram_2_stroke_mm
+    unit_of_measurement: "mm"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      const float full_counts = id(ram_2_full_stroke_pulses);
+      const float stroke_mm = 500.0f;
+      float current_counts = id(ram_2_position_count);
+
+      if (current_counts < 0.0f) current_counts = 0.0f;
+      if (current_counts > full_counts) current_counts = full_counts;
+      if (full_counts <= 0.0f) return 0.0f;
+
+      return (current_counts / full_counts) * stroke_mm;
+
+  - platform: template
+    name: "Ram 2 Stroke Percent"
+    id: ram_2_stroke_percent
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      const float full_counts = id(ram_2_full_stroke_pulses);
+      float current_counts = id(ram_2_position_count);
+
+      if (current_counts < 0.0f) current_counts = 0.0f;
+      if (current_counts > full_counts) current_counts = full_counts;
+      if (full_counts <= 0.0f) return 0.0f;
+
+      return (current_counts / full_counts) * 100.0f;
+
+button:
+  - platform: template
+    name: "Set Gullwing Closed Position"
+    on_press:
+      - switch.turn_off: gullwing_forward
+      - switch.turn_off: gullwing_reverse
+      - lambda: |-
+          id(gullwing_position_count) = 0;
+          id(gullwing_position_trusted) = true;
+      - sensor.rotary_encoder.set_value:
+          id: gullwing_encoder
+          value: 0
+
+  - platform: template
+    name: "Set Gullwing Open Position"
+    on_press:
+      - switch.turn_off: gullwing_forward
+      - switch.turn_off: gullwing_reverse
+      - lambda: |-
+          id(gullwing_position_count) = (int) id(gullwing_full_stroke_pulses);
+          id(gullwing_position_trusted) = true;
+      - sensor.rotary_encoder.set_value:
+          id: gullwing_encoder
+          value: !lambda 'return (int) id(gullwing_full_stroke_pulses);'
+
+  - platform: template
+    name: "Set Ram 2 Closed Position"
+    on_press:
+      - switch.turn_off: ram_2_forward
+      - switch.turn_off: ram_2_reverse
+      - lambda: |-
+          id(ram_2_position_count) = 0;
+          id(ram_2_position_trusted) = true;
+      - sensor.rotary_encoder.set_value:
+          id: ram_2_encoder
+          value: 0
+
+  - platform: template
+    name: "Set Ram 2 Open Position"
+    on_press:
+      - switch.turn_off: ram_2_forward
+      - switch.turn_off: ram_2_reverse
+      - lambda: |-
+          id(ram_2_position_count) = (int) id(ram_2_full_stroke_pulses);
+          id(ram_2_position_trusted) = true;
+      - sensor.rotary_encoder.set_value:
+          id: ram_2_encoder
+          value: !lambda 'return (int) id(ram_2_full_stroke_pulses);'
+
+script:
+  - id: gullwing_open_overcurrent_recover
+    mode: restart
+    then:
+      - lambda: |-
+          id(gullwing_current_safety_active) = true;
+      - switch.turn_off: gullwing_forward
+      - delay: 150ms
+      - switch.turn_on: gullwing_reverse
+      - delay: 5s
+      - switch.turn_off: gullwing_reverse
+      - lambda: |-
+          id(gullwing_current_safety_active) = false;
+
+  - id: gullwing_close_overcurrent_recover
+    mode: restart
+    then:
+      - lambda: |-
+          id(gullwing_current_safety_active) = true;
+      - switch.turn_off: gullwing_reverse
+      - delay: 150ms
+      - switch.turn_on: gullwing_forward
+      - delay: 5s
+      - switch.turn_off: gullwing_forward
+      - lambda: |-
+          id(gullwing_current_safety_active) = false;
+
+  - id: gullwing_post_stop_current_updates
+    mode: restart
+    then:
+      - repeat:
+          count: 20
+          then:
+            - component.update: ina260_1_sensor
+            - delay: 250ms
+
+interval:
+  - interval: 100ms
+    then:
+      - lambda: |-
+          const int movement_threshold = 1;
+          const unsigned long now = millis();
+          const int pos = id(gullwing_position_count);
+
+          const bool opening = id(gullwing_forward).state;
+          const bool closing = id(gullwing_reverse).state;
+          const bool moving = id(gullwing_active);
+
+          if (!moving) {
+            id(gullwing_last_position) = pos;
+            return;
+          }
+
+          if (id(gullwing_current_safety_active)) {
+            id(gullwing_last_position) = pos;
+            return;
+          }
+
+          const bool current_armed =
+            (now - id(gullwing_motion_start_ms)) >= 800;
+
+          if (current_armed) {
+            const float current_a = id(ina260_1_current).state;
+            const bool close_safety_zone_active = pos > 800;
+
+            if (opening && !isnan(current_a) &&
+                current_a > id(gullwing_open_overcurrent_threshold)) {
+              id(gullwing_open_overcurrent_recover).execute();
+              return;
+            }
+
+            if (closing && close_safety_zone_active && !isnan(current_a) &&
+                current_a > id(gullwing_close_overcurrent_threshold)) {
+              id(gullwing_close_overcurrent_recover).execute();
+              return;
+            }
+          }
+
+          if (abs(pos - id(gullwing_last_position)) > movement_threshold) {
+            id(gullwing_last_motion_ms) = now;
+          }
+
+          id(gullwing_last_position) = pos;
+
+          const bool armed =
+            (now - id(gullwing_motion_start_ms)) >= (unsigned long) id(gullwing_stall_arm_ms);
+
+          const bool stalled =
+            (now - id(gullwing_last_motion_ms)) >= (unsigned long) id(gullwing_stall_timeout_ms);
+
+          if (!armed || !stalled) {
+            return;
+          }
+
+          if (opening) {
+            const int learned_open_position = (int) id(gullwing_full_stroke_pulses);
+
+            ESP_LOGD("gullwing_endstop",
+                     "Gullwing opening stalled at %d, stopping and setting open position to %d",
+                     pos, learned_open_position);
+
+            id(gullwing_forward).turn_off();
+            id(gullwing_position_count) = learned_open_position;
+            id(gullwing_encoder).set_value(learned_open_position);
+            id(gullwing_position_trusted) = true;
+            return;
+          }
+
+          if (closing) {
+            ESP_LOGD("gullwing_endstop",
+                     "Gullwing closing stalled at %d, stopping and zeroing",
+                     pos);
+
+            id(gullwing_reverse).turn_off();
+            id(gullwing_position_count) = 0;
+            id(gullwing_encoder).set_value(0);
+            id(gullwing_position_trusted) = true;
+            return;
+          }
+
+  - interval: 100ms
+    then:
+      - lambda: |-
+          const int movement_threshold = 1;
+          const unsigned long now = millis();
+          const int pos = id(ram_2_position_count);
+
+          const bool opening = id(ram_2_forward).state;
+          const bool closing = id(ram_2_reverse).state;
+          const bool moving = id(ram_2_active);
+
+          if (!moving) {
+            id(ram_2_last_position) = pos;
+            return;
+          }
+
+          if (abs(pos - id(ram_2_last_position)) > movement_threshold) {
+            id(ram_2_last_motion_ms) = now;
+          }
+
+          id(ram_2_last_position) = pos;
+
+          const bool armed =
+            (now - id(ram_2_motion_start_ms)) >= (unsigned long) id(ram_2_stall_arm_ms);
+
+          const bool stalled =
+            (now - id(ram_2_last_motion_ms)) >= (unsigned long) id(ram_2_stall_timeout_ms);
+
+          if (!armed || !stalled) {
+            return;
+          }
+
+          if (opening) {
+            const int learned_open_position = (int) id(ram_2_full_stroke_pulses);
+
+            ESP_LOGD("ram2_endstop",
+                     "Ram 2 opening stalled at %d, stopping and setting open position to %d",
+                     pos, learned_open_position);
+
+            id(ram_2_forward).turn_off();
+            id(ram_2_position_count) = learned_open_position;
+            id(ram_2_encoder).set_value(learned_open_position);
+            id(ram_2_position_trusted) = true;
+            return;
+          }
+
+          if (closing) {
+            ESP_LOGD("ram2_endstop",
+                     "Ram 2 closing stalled at %d, stopping and zeroing",
+                     pos);
+
+            id(ram_2_reverse).turn_off();
+            id(ram_2_position_count) = 0;
+            id(ram_2_encoder).set_value(0);
+            id(ram_2_position_trusted) = true;
+            return;
+          }
+
+  - interval: 250ms
+    then:
+      - lambda: |-
+          const float stroke_mm = 500.0f;
+          unsigned long now = millis();
+
+          bool gullwing_moving = id(gullwing_forward).state || id(gullwing_reverse).state;
+          bool ram2_moving = id(ram_2_forward).state || id(ram_2_reverse).state;
+
+          float gullwing_counts = id(gullwing_position_count);
+          float gullwing_full = id(gullwing_full_stroke_pulses);
+          if (gullwing_counts < 0.0f) gullwing_counts = 0.0f;
+          if (gullwing_full > 0.0f && gullwing_counts > gullwing_full) gullwing_counts = gullwing_full;
+          float gullwing_mm = (gullwing_full > 0.0f) ? ((gullwing_counts / gullwing_full) * stroke_mm) : 0.0f;
+          float gullwing_pct = (gullwing_full > 0.0f) ? ((gullwing_counts / gullwing_full) * 100.0f) : 0.0f;
+
+          float ram2_counts = id(ram_2_position_count);
+          float ram2_full = id(ram_2_full_stroke_pulses);
+          if (ram2_counts < 0.0f) ram2_counts = 0.0f;
+          if (ram2_full > 0.0f && ram2_counts > ram2_full) ram2_counts = ram2_full;
+          float ram2_mm = (ram2_full > 0.0f) ? ((ram2_counts / ram2_full) * stroke_mm) : 0.0f;
+          float ram2_pct = (ram2_full > 0.0f) ? ((ram2_counts / ram2_full) * 100.0f) : 0.0f;
+
+          if (gullwing_moving) {
+            if (now - id(gullwing_last_fast_publish) >= 500) {
+              id(gullwing_stroke_mm).publish_state(gullwing_mm);
+              id(gullwing_stroke_percent).publish_state(gullwing_pct);
+              id(gullwing_last_fast_publish) = now;
+            }
+          } else {
+            if (now - id(gullwing_last_slow_publish) >= 600000) {
+              id(gullwing_stroke_mm).publish_state(gullwing_mm);
+              id(gullwing_stroke_percent).publish_state(gullwing_pct);
+              id(gullwing_last_slow_publish) = now;
+            }
+          }
+
+          if (ram2_moving) {
+            if (now - id(ram_2_last_fast_publish) >= 500) {
+              id(ram_2_stroke_mm).publish_state(ram2_mm);
+              id(ram_2_stroke_percent).publish_state(ram2_pct);
+              id(ram_2_last_fast_publish) = now;
+            }
+          } else {
+            if (now - id(ram_2_last_slow_publish) >= 600000) {
+              id(ram_2_stroke_mm).publish_state(ram2_mm);
+              id(ram_2_stroke_percent).publish_state(ram2_pct);
+              id(ram_2_last_slow_publish) = now;
+            }
+          }
+      - if:
+          condition:
+            lambda: |-
+              return id(gullwing_forward).state || id(gullwing_reverse).state;
+          then:
+            - component.update: ina260_1_sensor
+
+      - if:
+          condition:
+            lambda: |-
+              return id(ram_2_forward).state || id(ram_2_reverse).state;
+          then:
+            - component.update: ina260_2_sensor

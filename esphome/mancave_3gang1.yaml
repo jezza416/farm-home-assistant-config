@@ -1,0 +1,179 @@
+esphome:
+  name: mancave-3gang1
+  friendly_name: Mancave 3gang1
+  min_version: 2026.4.0
+
+esp8266:
+  board: esp01_1m
+  board_flash_mode: dout
+  restore_from_flash: true
+  early_pin_init: false
+  framework:
+    version: recommended
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #use_address: mancave_3gang1.local
+  #use_address: 192.168.1.211
+  #manual_ip:
+  #    static_ip: 192.168.1.211
+  #    gateway: 192.168.1.254
+  #    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave 3Gang1 Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  reboot_timeout: 30min
+  max_connections: 2
+  max_send_queue: 8
+
+ota:
+  - platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            switch.is_on: relay3
+          then:
+            - component.update: kill_bugs_watts 
+      - if:
+          condition:
+            light.is_on: mancave_bar
+          then:
+            - component.update: mancave_bar_watts
+           
+            
+  
+
+switch:
+  - platform: gpio
+    name: kill_bugs_fake
+    pin: GPIO4
+    id: relay3
+  
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: True
+    name: kill_bugs_touch
+    on_press:
+     - switch.toggle: relay3
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: mancave_light_touch1
+    on_press:
+        - light.toggle: mancave_bar
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: mancave_light_touch
+    on_press:
+        - light.toggle: mancave_fake
+
+output:
+  - platform: gpio
+    pin: GPIO5
+    id: relay2
+    
+  - platform: gpio
+    pin: GPIO12
+    id: relay1
+    
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+
+light:
+  - platform: binary
+    name: Mancave Bar
+    id: mancave_bar
+    output: relay2
+
+  - platform: binary
+    name: Mancave Fake
+    id: mancave_fake
+    output: relay1
+    
+  - platform: monochromatic
+    id: mancave_3gang1_led
+    output: blue_led
+
+sensor:
+  
+  - platform: template
+    name: "Mancave Bar Watts"
+    id: mancave_bar_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(mancave_bar).current_values.is_on()){
+        id(light_power) += 0.055555556;
+        return id(light_power);
+      } else {
+        return {};
+      }
+  
+  - platform: template
+    name: "Kill Bugs Watts"
+    id: kill_bugs_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(relay3).state){
+        id(bugs_power) += 0.055555556;
+        return id(bugs_power);
+      } else {
+        return {};
+      }
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(light_power) = (0);
+          id(bugs_power) = (0);
+          id(mancave_bar_watts).publish_state(0);
+          id(kill_bugs_watts).publish_state(0);
+          
+
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: bugs_power
+    type: float
+    restore_value: no
+    initial_value: '0'

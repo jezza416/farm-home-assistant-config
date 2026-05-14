@@ -1,0 +1,212 @@
+binary_sensor:
+    - name: "Issue Template Test"
+      unique_id: issue_template_test
+      state: >
+        {{ true }}
+      attributes:
+        area: "Test"
+        severity: "Info"
+        issue: "Template include is working"
+        cause: "Test sensor is on"
+        fix: "Remove this test once confirmed"
+    #################################################
+    # Standard Template
+    #################################################
+
+    #- name: "Issue Fence Should Be Running"
+    #  unique_id: issue_fence_should_be_running
+    #  state: >
+    #    {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+    #  attributes:
+    #    area: "Farm"
+    #    severity: "Warning"
+    #    issue: "Fence should be running"
+    #    cause: "Fence relay is on but no power draw is detected"
+    #    fix: 
+    #    fix_service: "switch.turn_on"
+    #    fix_script:
+
+    #################################################
+    # WATER ISSUES
+    #################################################
+
+    ####----- WATER OUTGOING -------###
+    
+    - name: "Retic Pump Off"
+      unique_id: issue_retic_pump_off
+      state: > 
+        {{ is_state('switch.retic_pump', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Retic Pump is off"
+        cause: "Pump relay switch is off"
+        fix: "Turn Pump Power ON"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.retic_pump"
+        fix_script:
+    
+    - name: "Farm Valve Off"
+      unique_id: issue_farm_valve_off
+      state: >
+        {{ is_state('valve.water_retic_control_farm_valve', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Farm Valve Off"
+        cause: "Farm Valve was Tuned off"
+        fix: "Turn Farm Valve Back ON"
+        fix_service: "valve.turn_on"
+        fix_entity: "switch.water_retic_control_farm_valve"
+        fix_script: 
+
+    - name: "House Valve Off"
+      unique_id: issue_house_valve_off
+      state: >
+        {{ is_state('valve.water_retic_control_house_valve', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "House Valve Off"
+        cause: "House Valve was Tuned off"
+        fix: "Turn House Valve Back ON"
+        fix_service: "valve.turn_on"
+        fix_entity: "switch.water_retic_control_house_valve"
+        fix_script: 
+      
+    - name: "Retic Valve Off"
+      unique_id: issue_retic_valve_off
+      state: >
+        {{ is_state('valve.water_retic_control_retic_valve', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Retic Valve Off"
+        cause: "Retic Valve was Tuned off"
+        fix: "Turn Retic Valve Back ON"
+        fix_service: "valve.turn_on"
+        fix_entity: "switch.water_retic_control_retic_valve"
+        fix_script: 
+    
+    
+    ####----- TANK / RESIVOIR -------###
+    # Bore Pump Off for two LOng
+    - name: "Issue Bore Pump Off Too Long"
+      unique_id: issue_bore_pump_off_too_long
+      state: >
+        {% set max_hours = states('input_number.bore_max_off_hours') | float(0) %}
+        {% set last_changed = states.switch.bore_pump.last_changed %}
+        {% set hours_off = (as_timestamp(now()) - as_timestamp(last_changed)) / 3600 %}
+
+        {{ is_state('switch.bore_pump', 'off') and hours_off > max_hours }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Bore pump has been off too long"
+        cause: "Bore pump has exceeded the max off time"
+        fix: "Try turn on Bore Pump"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.bore_pump"
+        fix_script:
+
+
+    # Tank Level Low
+    - name: "Issue Reservoir Low"
+      unique_id: issue_reservoir_low
+      state: >
+        {{ states('sensor.reservoir_level') | float(0) < states('input_number.bore_turn_on_level') | float(0) }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Reservoir is low"
+        cause: "Reservoir level is below the bore turn-on level"
+        fix: "Check bore pump and incoming water supply"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.bore_pump"
+        fix_script: 
+
+
+    #################################################
+    # FARM ISSUES
+    #################################################
+
+    - name: "Fence Main Unit Looks Off At Unit"
+      unique_id: issue_fence_main_unit_looks_off_at_unit
+      state: >
+        {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+      delay_on:
+        seconds: 30
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Fence should be running"
+        cause: "Main Unit is ON but no power draw is detected"
+        fix: "Turn On Main Unit Manually or with Remote"
+        fix_service: 
+        fix_entity: 
+        fix_script:
+      
+    - name: "Fence Main Unit NOT connected to Wifi"
+      unique_id: issue_fence_main_unit_not_connected
+      state: >
+        {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Fence Wifi should be Connected"
+        cause: "Main Unit NOT connected to Wifi"
+        fix: "Check Main Unit Power supply or Try Power Cylce unit"
+        fix_service: 
+        fix_entity: 
+        fix_script:
+
+    - name: "Fence 257 Unit Looks Off At Unit"
+      unique_id: issue_fence_257_unit_looks_off_at_unit
+      state: >
+        {{ is_state('switch.257_fence_unit_257_fence_unit_relay', 'on') and is_state('binary_sensor.257_fence_unit_257_fence_unit_running', 'off') }}
+      delay_on:
+        seconds: 30
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Fence should be running"
+        cause: "257 Unit is ON but no power draw is detected"
+        fix: "Turn On 257 Unit Manually or with Remote"
+        fix_service: 
+        fix_entity: 
+        fix_script:
+    
+    - name: "257 Main Unit NOT connected to Wifi"
+      unique_id: issue_fence_257_unit_not_connected
+      state: >
+        {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+      attributes:
+         area: "Farm Fence"
+         severity: "Warning"
+         issue: "257 Unit Wifi should be Connected"
+         cause: "Check 257 Unit Power supply or Try Power Cylce unit"
+         fix:
+         fix_service:
+         fix_entity:
+         fix_script:
+    
+
+    #################################################
+    # Test ISSUES
+    #################################################
+
+    - name: "Issue Dairy Light Left ON"
+      unique_id: issue_dairy_light_left_on
+      state: >
+        {{ is_state('light.mancave_dairy', 'on') }}
+      attributes:
+        area: "Shed"
+        severity: "Warning"
+        issue: "Dairy Light Left on"
+        cause: "Some Muppet didnt turn iit"
+        fix: 
+        fix_service: "light.turn_on"
+        fix_entity: "light.mancave_dairy"
+        fix_script:
+
+    

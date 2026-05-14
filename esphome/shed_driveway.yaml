@@ -1,0 +1,29 @@
+esphome:
+  name: shed_driveway
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Shed Driveway Fallback Hotspot"
+    password: "6ojqMptgoY0r"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+remote_receiver:
+  pin: 
+    number: GPIO16
+    inverted: True
+  dump: all

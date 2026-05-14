@@ -1,0 +1,117 @@
+esphome:
+  name: "light-truck-yard"
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #use_address: light_truckyard.local
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Light Truckyard Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            light.is_on: truck_yard
+          then:
+            - component.update: truck_yard_watts
+            
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: truck_yard_button
+    on_press:
+      - light.toggle: truck_yard
+  
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: truck_yard_switch
+    name: Truck Yard Timer Switch
+    on_press:
+      if:
+        condition:
+          light.is_off: truck_yard
+        then: 
+          - light.turn_on: truck_yard
+          - delay: 20min
+          - light.turn_off: truck_yard
+        else:
+          - light.turn_off: truck_yard
+      
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay
+
+light:
+  - platform: binary
+    name: Truck Yard
+    id: truck_yard
+    output: relay
+  
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes
+
+sensor:
+  
+  - platform: template
+    name: "Truck Yard Watts"
+    id: truck_yard_watts
+    update_interval: ${update_interval_10}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(truck_yard).current_values.is_on()){
+        id(light_power) += 0.069444444;
+        return id(light_power);
+      } else {
+        return {};
+      }
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(light_power) = 0;
+          id(truck_yard_watts).publish_state(0);
+          
+          
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'

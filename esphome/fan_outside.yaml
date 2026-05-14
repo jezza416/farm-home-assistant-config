@@ -1,0 +1,59 @@
+esphome:
+  name: fan_outside
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Fan Outside Fallback Hotspot"
+    password: "bPKt5PB8gjVL"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: fan_outside_button
+    on_press:
+      - fan.toggle: fan_outside
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: fan_outside_switch
+    on_press:
+    - fan.toggle: fan_outside  
+    on_release:
+    - fan.toggle: fan_outside
+    
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay
+    
+fan:
+  - platform: binary
+    name: Fan Outside
+    id: fan_outside
+    output: relay
+  
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes

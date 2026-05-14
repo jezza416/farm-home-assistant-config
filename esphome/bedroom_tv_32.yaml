@@ -1,0 +1,23 @@
+esphome:
+  name: test-board
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: VERY_VERBOSE
+  baud_rate: 115200
+
+api:
+
+ota:
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+captive_portal:
+
+debug:

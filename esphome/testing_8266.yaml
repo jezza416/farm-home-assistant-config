@@ -1,0 +1,54 @@
+esphome:
+  name: testing_8266
+  platform: ESP8266
+  board: d1_mini
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Testing 8266 Fallback Hotspot"
+    password: "PCzyqsBaPEh1"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+
+
+output:
+  - platform: esp8266_pwm
+    pin: D0
+    frequency: 16000 Hz
+    id: pwm_output_1
+    min_power: 0.70
+    max_power: 1.00
+  
+#  - platform: esp8266_pwm
+#    pin: D1
+#    frequency: 5000 Hz
+#    id: pwm_output_2
+  
+  - platform: esp8266_pwm
+    pin: D3
+    frequency: 16000 Hz
+    id: pwm_output_2
+    min_power: 0.45
+    max_power: 1.00
+  
+fan:
+  - platform: speed
+    output: pwm_output_1
+    name: "Tent Inside West Fan"
+    
+  - platform: speed
+    output: pwm_output_2
+    name: "Tent Inside East Fan"

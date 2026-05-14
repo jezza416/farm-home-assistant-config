@@ -1,0 +1,85 @@
+esphome:
+  name: testing_esp32
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  networks:
+  - ssid: "hfpshed"
+    password: "hillview199@"
+  - ssid: "JezzaRM"
+    password: "Zues5399"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Testing Esp32 Fallback Hotspot"
+    password: "R1hS485ELsM2"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+  
+binary_sensor:
+ 
+ 
+  - platform: gpio
+    pin:
+      number: GPIO18
+      mode:
+        input: true
+        pullup: true
+    name: Test Beam A
+    id: beam_a
+    filters:
+      - delayed_off: 1s
+    on_press:
+      - lambda: |-
+          if (id(beam_b).state) {
+            id(beam_s).publish_state("Incoming");
+          } else {
+            id(beam_s).publish_state("Updating A");
+          }
+    on_release:
+       - lambda: |-
+          if (id(beam_b).state) {
+            id(beam_s).publish_state("Incoming");
+          } else {
+            id(beam_s).publish_state("None");
+          }
+  - platform: gpio
+    pin:
+      number: GPIO19
+      mode:
+        input: true
+        pullup: true
+    name: Test Beam B
+    id: beam_b
+    filters:
+      - delayed_off: 1s
+    on_press:
+      - lambda: |-
+          if (id(beam_a).state) {
+            id(beam_s).publish_state("Outgoing");
+          } else {
+            id(beam_s).publish_state("Updating B");
+          }
+    on_release:
+       - lambda: |-
+          if (id(beam_a).state) {
+            id(beam_s).publish_state("Outgoing");
+          } else {
+            id(beam_s).publish_state("None");
+          }
+text_sensor:
+  - platform: template
+    name: "Beam Staus"
+    id: beam_s
+    update_interval: 60s
+  

@@ -1,0 +1,1939 @@
+2026-04-23 10:41:32.437 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration nodered which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.440 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration frigate which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.441 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration delete which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.443 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration network_scanner which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.444 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration remote_homeassistant which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.446 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration hacs which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.448 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration spotcast which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:32.450 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration files which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2026-04-23 10:41:43.331 ERROR (MainThread) [homeassistant.components.notify] Error setting up platform file
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/components/notify/legacy.py", line 112, in async_setup_platform
+    raise HomeAssistantError("Invalid notify platform.")  # noqa: TRY301
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+homeassistant.exceptions.HomeAssistantError: Invalid notify platform.
+2026-04-23 10:41:43.335 ERROR (MainThread) [homeassistant.components.notify] Error setting up platform file
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/components/notify/legacy.py", line 112, in async_setup_platform
+    raise HomeAssistantError("Invalid notify platform.")  # noqa: TRY301
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+homeassistant.exceptions.HomeAssistantError: Invalid notify platform.
+2026-04-23 10:41:43.343 ERROR (MainThread) [homeassistant.components.notify] Error setting up platform file
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/components/notify/legacy.py", line 112, in async_setup_platform
+    raise HomeAssistantError("Invalid notify platform.")  # noqa: TRY301
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+homeassistant.exceptions.HomeAssistantError: Invalid notify platform.
+2026-04-23 10:41:46.679 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Farm Resivior Farm Off' failed to setup sequence and has been disabled: Unknown entity '97fc07a941c0f587cdb9c22a67c576fe'
+2026-04-23 10:41:46.681 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Farm Resivior House Off' failed to setup sequence and has been disabled: Unknown entity '97fc07a941c0f587cdb9c22a67c576fe'
+2026-04-23 10:41:46.684 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Farm Resivior Pump Off' failed to setup sequence and has been disabled: Unknown entity '97fc07a941c0f587cdb9c22a67c576fe'
+2026-04-23 10:41:46.719 ERROR (MainThread) [homeassistant.setup] Setup failed for custom integration 'spotcast': Unable to import component: No module named 'spotipy'
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/setup.py", line 343, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/loader.py", line 1018, in async_get_component
+    self._component_future.result()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/src/homeassistant/homeassistant/loader.py", line 998, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._get_component, True
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/usr/src/homeassistant/homeassistant/loader.py", line 1058, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/util/loop.py", line 201, in protected_loop_func
+    return func(*args, **kwargs)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/config/custom_components/spotcast/__init__.py", line 49, in <module>
+    from .helpers import (
+    ...<9 lines>...
+    )
+  File "/config/custom_components/spotcast/helpers.py", line 18, in <module>
+    import spotipy
+ModuleNotFoundError: No module named 'spotipy'
+2026-04-23 10:41:47.020 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Storage Fan Multi Speed low' failed to setup sequence and has been disabled: Unknown device '8b93014f6626d569c5789ae15f5a7ee6'
+2026-04-23 10:41:47.021 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Storage Fan Multi Speed medium' failed to setup sequence and has been disabled: Unknown device '8b93014f6626d569c5789ae15f5a7ee6'
+2026-04-23 10:41:47.022 ERROR (MainThread) [homeassistant.components.script] Script with alias 'Storage Fan Multi Speed High' failed to setup sequence and has been disabled: Unknown device '8b93014f6626d569c5789ae15f5a7ee6'
+2026-04-23 10:41:47.024 ERROR (MainThread) [homeassistant.components.script] Script with object id 'mode' could not be validated and has been disabled: expected a dictionary. Got 'single'
+2026-04-23 10:41:47.264 ERROR (MainThread) [homeassistant.components.automation] Automation with alias 'Notify Stock File' failed to setup triggers and has been disabled: Unknown device 'bd31304c223049fc958440bf15decb59'
+2026-04-23 10:41:47.266 ERROR (MainThread) [homeassistant.components.automation] Automation with alias 'Storage Fan Speed Control' failed to setup triggers and has been disabled: Unknown device '42ca57075a5d0e9765e98fe07eee9dc9'
+2026-04-23 10:41:55.694 ERROR (MainThread) [frontend.js.modern.202507023] Uncaught error from Chrome 147.0.0.0 on Windows 10
+Error: Failed to execute 'define' on 'CustomElementRegistry': the name "focus-trap" has already been used with this registry
+A.define (src/scoped-custom-element-registry.ts:180:12)
+/hacsfiles/advanced-camera-card/card-74d9012e.js:70:3686
+2026-04-23 10:41:59.774 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.water_retic_control_water_storage') | float >= states('input_number.bore_turn_off_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float >= states('input_number.bore_turn_off_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float >= states('input_number.bore_turn_off_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.793 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float >= states('input_number.bore_turn_off_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.water_retic_control_water_storage') | float >= states('input_number.bore_turn_off_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=4>' for attribute '_state' in entity 'binary_sensor.reservoir_is_at_bore_stop_level'
+2026-04-23 10:41:59.793 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.bore_turn_on_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.bore_turn_on_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.bore_turn_on_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.799 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.bore_turn_on_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.bore_turn_on_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=4>' for attribute '_state' in entity 'binary_sensor.reservoir_is_at_bore_start_level'
+2026-04-23 10:41:59.800 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.reservoir_last_resort_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.reservoir_last_resort_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.reservoir_last_resort_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.805 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.reservoir_last_resort_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.water_retic_control_water_storage') | float <= states('input_number.reservoir_last_resort_level') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=4>' for attribute '_state' in entity 'binary_sensor.reservoir_safety_level_reached'
+2026-04-23 10:41:59.808 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}' but no default was specified
+2026-04-23 10:41:59.813 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}' but no default was specified') while processing template 'Template<template=({% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}) renders=4>' for attribute '_state' in entity 'binary_sensor.257_fence_unit_running'
+2026-04-23 10:41:59.814 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ (states('sensor.rain_rate_5min_window') | float * 12) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (states('sensor.rain_rate_5min_window') | float * 12) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (states('sensor.rain_rate_5min_window') | float * 12) }}' but no default was specified
+2026-04-23 10:41:59.819 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (states('sensor.rain_rate_5min_window') | float * 12) }}' but no default was specified') while processing template 'Template<template=({{ (states('sensor.rain_rate_5min_window') | float * 12) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.rain_rate_5min_hr'
+2026-04-23 10:41:59.821 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction')|float %} {{ direction[((degree+11.25)/22.5)|int] }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction')|float %} {{ direction[((degree+11.25)/22.5)|int] }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction')|float %} {{ direction[((degree+11.25)/22.5)|int] }}' but no default was specified
+2026-04-23 10:41:59.826 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction')|float %} {{ direction[((degree+11.25)/22.5)|int] }}' but no default was specified') while processing template 'Template<template=({% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction')|float %} {{ direction[((degree+11.25)/22.5)|int] }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.weather_wind_dir'
+2026-04-23 10:41:59.832 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  Standby
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  Cooling
+{%- else -%}
+  Heating
+{%- endif %}") renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  Standby
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  Cooling
+{%- else -%}
+  Heating
+{%- endif %}"' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  Standby
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  Cooling
+{%- else -%}
+  Heating
+{%- endif %}"' but no default was specified
+2026-04-23 10:41:59.836 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  Standby
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  Cooling
+{%- else -%}
+  Heating
+{%- endif %}"' but no default was specified') while processing template 'Template<template=({% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  Standby
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  Cooling
+{%- else -%}
+  Heating
+{%- endif %}") renders=4>' for attribute '_attr_native_value' in entity 'sensor.dyson_mode'
+2026-04-23 10:41:59.837 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  0
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 5 | float(0) %}
+  {% set x2 = 18 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- else -%}
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 1390 | float(0) %}
+  {% set x2 = 1660 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  0
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 5 | float(0) %}
+  {% set x2 = 18 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- else -%}
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 1390 | float(0) %}
+  {% set x2 = 1660 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  0
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 5 | float(0) %}
+  {% set x2 = 18 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- else -%}
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 1390 | float(0) %}
+  {% set x2 = 1660 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- endif %}' but no default was specified
+2026-04-23 10:41:59.842 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  0
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 5 | float(0) %}
+  {% set x2 = 18 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- else -%}
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 1390 | float(0) %}
+  {% set x2 = 1660 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.0xa4c138f21c1d986f_power') | float <= 4 %}
+  0
+{% elif states('sensor.0xa4c138f21c1d986f_power') | float <= 200 %} 
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 5 | float(0) %}
+  {% set x2 = 18 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- else -%}
+  {% set watts = states('sensor.0xa4c138f21c1d986f_power') | float(0) %}
+  {% set x1 = 1390 | float(0) %}
+  {% set x2 = 1660 | float(0) %}
+  {% set m = 100 / (x2 - x1) %}
+  {% set c = 100 - (m * x2) %}
+  {{ ((watts * m  + c) / 10) | round(0) }}
+{%- endif %}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.dyson_fan_speed'
+2026-04-23 10:41:59.843 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ ( states('sensor.bore_pump_monthly_kwh') | float * 0.2483 ) / ( states('sensor.bore_monthly') | float / 1000 ) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.bore_pump_monthly_kwh') | float * 0.2483 ) / ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.bore_pump_monthly_kwh') | float * 0.2483 ) / ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified
+2026-04-23 10:41:59.848 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.bore_pump_monthly_kwh') | float * 0.2483 ) / ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified') while processing template 'Template<template=({{ ( states('sensor.bore_pump_monthly_kwh') | float * 0.2483 ) / ( states('sensor.bore_monthly') | float / 1000 ) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.bore_cost_per_m3'
+2026-04-23 10:41:59.849 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.bore_monthly') | float / 1000 ) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified
+2026-04-23 10:41:59.854 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.bore_monthly') | float / 1000 ) }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.bore_monthly') | float / 1000 ) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.bore_monthly_cost_total'
+2026-04-23 10:41:59.855 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ ( states('sensor.retic_pump_monthly_kwh') | float * 0.2493 ) / ( states('sensor.retic_monthly') | float / 1000 ) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.retic_pump_monthly_kwh') | float * 0.2493 ) / ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.retic_pump_monthly_kwh') | float * 0.2493 ) / ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified
+2026-04-23 10:41:59.862 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ ( states('sensor.retic_pump_monthly_kwh') | float * 0.2493 ) / ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified') while processing template 'Template<template=({{ ( states('sensor.retic_pump_monthly_kwh') | float * 0.2493 ) / ( states('sensor.retic_monthly') | float / 1000 ) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.retic_cost_per_m3'
+2026-04-23 10:41:59.863 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.retic_cost_per_m3') | float * ( states('sensor.retic_monthly') | float / 1000 ) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_cost_per_m3') | float * ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_cost_per_m3') | float * ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified
+2026-04-23 10:41:59.868 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_cost_per_m3') | float * ( states('sensor.retic_monthly') | float / 1000 ) }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.retic_cost_per_m3') | float * ( states('sensor.retic_monthly') | float / 1000 ) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.retic_monthly_cost_total'
+2026-04-23 10:41:59.868 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.tank_monthly') | float / 1000 ) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.tank_monthly') | float / 1000 ) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.tank_monthly') | float / 1000 ) }}' but no default was specified
+2026-04-23 10:41:59.873 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.tank_monthly') | float / 1000 ) }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.bore_cost_per_m3') | float * ( states('sensor.tank_monthly') | float / 1000 ) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.water_monthly_savings'
+2026-04-23 10:41:59.874 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.retic_monthly_cost_total') | float + states('sensor.bore_monthly_cost_total') | float }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unavailable'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_monthly_cost_total') | float + states('sensor.bore_monthly_cost_total') | float }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_monthly_cost_total') | float + states('sensor.bore_monthly_cost_total') | float }}' but no default was specified
+2026-04-23 10:41:59.879 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.retic_monthly_cost_total') | float + states('sensor.bore_monthly_cost_total') | float }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.retic_monthly_cost_total') | float + states('sensor.bore_monthly_cost_total') | float }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.water_monthly_cost'
+2026-04-23 10:41:59.880 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ state_attr('sensor.water_hourly_stats','min_value') | float }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+TypeError: float() argument must be a string or a real number, not 'NoneType'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float }}' but no default was specified
+2026-04-23 10:41:59.885 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float }}' but no default was specified') while processing template 'Template<template=({{ state_attr('sensor.water_hourly_stats','min_value') | float }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.retic_check_min'
+2026-04-23 10:41:59.886 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ state_attr('sensor.water_hourly_stats','min_value') | float * 24 | round(2) }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+TypeError: float() argument must be a string or a real number, not 'NoneType'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float * 24 | round(2) }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float * 24 | round(2) }}' but no default was specified
+2026-04-23 10:41:59.891 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'None' when rendering template '{{ state_attr('sensor.water_hourly_stats','min_value') | float * 24 | round(2) }}' but no default was specified') while processing template 'Template<template=({{ state_attr('sensor.water_hourly_stats','min_value') | float * 24 | round(2) }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.estimated_daily_loss'
+2026-04-23 10:41:59.892 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}' but no default was specified
+2026-04-23 10:41:59.897 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.water_usage_daily_warning'
+2026-04-23 10:41:59.898 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.retic_current_hour') | float <= states('input_number.water_box') | float  }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.retic_current_hour') | float <= states('input_number.water_box') | float  }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.retic_current_hour') | float <= states('input_number.water_box') | float  }}' but no default was specified
+2026-04-23 10:41:59.905 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.retic_current_hour') | float <= states('input_number.water_box') | float  }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.retic_current_hour') | float <= states('input_number.water_box') | float  }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.water_set_value'
+2026-04-23 10:41:59.906 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({{ states('sensor.fan_control_temperature') | float }}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.fan_control_temperature') | float }}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.fan_control_temperature') | float }}' but no default was specified
+2026-04-23 10:41:59.911 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ states('sensor.fan_control_temperature') | float }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.fan_control_temperature') | float }}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.storage_temp_number'
+2026-04-23 10:41:59.912 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if is_state('fan.fan_secondary_control','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.7 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 4, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('fan.fan_secondary_control','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.7 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('fan.fan_secondary_control','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.7 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.916 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('fan.fan_secondary_control','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.7 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if is_state('fan.fan_secondary_control','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.7 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.fan_control_number'
+2026-04-23 10:41:59.917 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if is_state('switch.fan_master_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.5 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 4, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.fan_master_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.5 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.fan_master_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.5 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.922 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.fan_master_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.5 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if is_state('switch.fan_master_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.5 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.fan_backup_number'
+2026-04-23 10:41:59.923 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if is_state('switch.light_middle_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.3 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 4, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.light_middle_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.3 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.light_middle_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.3 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.928 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if is_state('switch.light_middle_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.3 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if is_state('switch.light_middle_relay','on') %}
+  {{ states('sensor.fan_control_temperature') | float - 0.3 }}
+{% else %}
+  {{ states('sensor.fan_control_temperature') | float - 5 }}
+{% endif %}) renders=4>' for attribute '_attr_native_value' in entity 'sensor.middle_light_number'
+2026-04-23 10:41:59.930 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.matrix_out_one_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_one_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_one_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_one_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=3>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_one_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_one_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_one_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_one_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_one_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_one_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_one_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_one_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.935 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_one_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_one_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_one_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_one_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.matrix_out_one_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_one_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_one_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_one_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=5>' for attribute '_attr_icon' in entity 'switch.matrix_output_1'
+2026-04-23 10:41:59.936 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.matrix_out_two_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_two_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_two_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_two_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=3>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_two_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_two_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_two_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_two_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_two_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_two_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_two_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_two_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.941 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_two_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_two_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_two_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_two_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.matrix_out_two_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_two_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_two_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_two_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=5>' for attribute '_attr_icon' in entity 'switch.matrix_output_2'
+2026-04-23 10:41:59.942 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.matrix_out_three_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_three_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_three_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_three_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=3>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_three_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_three_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_three_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_three_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_three_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_three_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_three_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_three_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.947 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_three_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_three_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_three_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_three_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.matrix_out_three_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_three_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_three_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_three_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=5>' for attribute '_attr_icon' in entity 'switch.matrix_output_3'
+2026-04-23 10:41:59.948 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% if states('sensor.matrix_out_four_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_four_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_four_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_four_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=3>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2446, in forgiving_float_filter
+    return float(value)
+ValueError: could not convert string to float: 'unknown'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 641, in async_render
+    render_result = _render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2977, in _render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 1, in top-level template code
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 2449, in forgiving_float_filter
+    raise_no_default("float", value)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 1975, in raise_no_default
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_four_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_four_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_four_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_four_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 758, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template.py", line 643, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_four_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_four_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_four_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_four_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified
+2026-04-23 10:41:59.953 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{% if states('sensor.matrix_out_four_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_four_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_four_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_four_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.matrix_out_four_2') | float == 4.0 %}
+  mdi:laptop-chromebook
+{% elif states('sensor.matrix_out_four_2') | float == 3.0 %}
+  mdi:android
+{% elif states('sensor.matrix_out_four_2') | float == 2.0 %}
+  mdi:cast
+{% elif states('sensor.matrix_out_four_2') | float == 1.0 %}
+  mdi:cloud-outline
+{% else %}
+  mdi:alert-circle-outline
+{% endif %}) renders=5>' for attribute '_attr_icon' in entity 'switch.matrix_output_4'
+2026-04-23 10:41:59.985 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.wind_bearing_3hr_average')|float %} {{ direction[((degree+11.25)/22.5)|int] }}' but no default was specified') while processing template 'Template<template=({% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %} {% set degree = states('sensor.wind_bearing_3hr_average')|float %} {{ direction[((degree+11.25)/22.5)|int] }}) renders=6>' for attribute '_attr_native_value' in entity 'sensor.weather_wind_dir_3hr'
+2026-04-23 10:42:10.170 ERROR (MainThread) [frontend.js.modern.202507023] Uncaught error from Chrome 147.0.0.0 on Windows 10
+Error: Failed to execute 'define' on 'CustomElementRegistry': the name "focus-trap" has already been used with this registry
+A.define (src/scoped-custom-element-registry.ts:180:12)
+/hacsfiles/advanced-camera-card/card-74d9012e.js:70:3686
+2026-04-23 10:42:15.058 ERROR (MainThread) [homeassistant.config_entries] Error occurred loading flow for integration remote_homeassistant: cannot import name 'DATA_CUSTOMIZE' from 'homeassistant.config' (/usr/src/homeassistant/homeassistant/config.py)
+2026-04-23 10:42:15.065 ERROR (MainThread) [homeassistant.config_entries] Error occurred loading flow for integration remote_homeassistant: cannot import name 'DATA_CUSTOMIZE' from 'homeassistant.config' (/usr/src/homeassistant/homeassistant/config.py)
+2026-04-23 10:42:15.077 ERROR (MainThread) [homeassistant] Error doing job: Task exception was never retrieved (None)
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 3731, in _load_integration
+    await integration.async_get_platform("config_flow")
+  File "/usr/src/homeassistant/homeassistant/loader.py", line 1091, in async_get_platform
+    platforms = await self.async_get_platforms((platform_name,))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/loader.py", line 1186, in async_get_platforms
+    platforms[platform_name] = await future
+                               ^^^^^^^^^^^^
+ImportError: cannot import name 'DATA_CUSTOMIZE' from 'homeassistant.config' (/usr/src/homeassistant/homeassistant/config.py)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/discovery_flow.py", line 137, in _async_start
+    await gather_with_limited_concurrency(FLOW_INIT_LIMIT, *init_coros)
+  File "/usr/src/homeassistant/homeassistant/util/async_.py", line 113, in gather_with_limited_concurrency
+    return await gather(
+           ^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/util/async_.py", line 111, in sem_task
+    return await task
+           ^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 1446, in async_init
+    flow, result = await self._async_init(flow_id, handler, context, data)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 1482, in _async_init
+    flow = await self.async_create_flow(handler, context=context, data=data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 1704, in async_create_flow
+    handler = await _async_get_flow_handler(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.hass, handler_key, self._hass_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 3752, in _async_get_flow_handler
+    await _load_integration(hass, domain, hass_config)
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 3738, in _load_integration
+    raise data_entry_flow.UnknownHandler from err
+homeassistant.data_entry_flow.UnknownHandler
+2026-04-23 10:47:01.020 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unknown' when rendering template '{{ (states('sensor.rain_rate_5min_window') | float * 12) }}' but no default was specified') while processing template 'Template<template=({{ (states('sensor.rain_rate_5min_window') | float * 12) }}) renders=10>' for attribute '_attr_native_value' in entity 'sensor.rain_rate_5min_hr'
+2026-04-23 11:35:54.875 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}' but no default was specified') while processing template 'Template<template=({% if (states('sensor.257_fence_unit_power') | float < 0.10)  %}
+             {{ ('off') }}
+            {% else %}
+             {{ ('on') }}
+            {% endif %}) renders=10>' for attribute '_state' in entity 'binary_sensor.257_fence_unit_running'
+2026-04-23 11:38:42.919 ERROR (MainThread) [homeassistant.config_entries] Error setting up entry wled-44f4a0 for wled
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/config_entries.py", line 749, in __async_setup_with_context
+    result = await component.async_setup_entry(hass, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/components/wled/__init__.py", line 46, in async_setup_entry
+    await entry.runtime_data.async_config_entry_first_refresh()
+  File "/usr/src/homeassistant/homeassistant/helpers/update_coordinator.py", line 309, in async_config_entry_first_refresh
+    await self._async_refresh(
+        log_failures=False, raise_on_auth_failed=True, raise_on_entry_error=True
+    )
+  File "/usr/src/homeassistant/homeassistant/helpers/update_coordinator.py", line 382, in _async_refresh
+    self.data = await self._async_update_data()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/components/wled/coordinator.py", line 113, in _async_update_data
+    device = await self.wled.update()
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/backoff/_async.py", line 151, in retry
+    ret = await target(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/wled/wled.py", line 252, in update
+    if not (data := await self.request("/json")):
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/backoff/_async.py", line 151, in retry
+    ret = await target(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/wled/wled.py", line 188, in request
+    response = await self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/client.py", line 725, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "/usr/local/lib/python3.13/asyncio/selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+asyncio.exceptions.CancelledError: Home Assistant is stopping
+2026-04-23 11:41:22.982 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (states('sensor.bar_heating_setting') | float >= 1) }}' but no default was specified') while processing template 'Template<template=({{ (states('sensor.bar_heating_setting') | float >= 1) }}) renders=6>' for attribute '_state' in entity 'switch.bar_strip_heater'
+2026-04-23 11:41:22.983 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if states('sensor.bar_heating_setting') | float == 4.0 %}
+  mdi:numeric-4-circle
+{% elif states('sensor.bar_heating_setting') | float == 3.0 %}
+  mdi:numeric-3-circle
+{% elif states('sensor.bar_heating_setting') | float == 2.0 %}
+  mdi:numeric-2-circle
+{% elif states('sensor.bar_heating_setting') | float == 1.0 %}
+  mdi:numeric-1-circle
+{% else %}
+  mdi:radiator
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.bar_heating_setting') | float == 4.0 %}
+  mdi:numeric-4-circle
+{% elif states('sensor.bar_heating_setting') | float == 3.0 %}
+  mdi:numeric-3-circle
+{% elif states('sensor.bar_heating_setting') | float == 2.0 %}
+  mdi:numeric-2-circle
+{% elif states('sensor.bar_heating_setting') | float == 1.0 %}
+  mdi:numeric-1-circle
+{% else %}
+  mdi:radiator
+{% endif %}) renders=7>' for attribute '_attr_icon' in entity 'switch.bar_strip_heater'
+2026-04-23 11:41:22.991 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (states('sensor.fixed_heater_setting') | float >= 1) }}' but no default was specified') while processing template 'Template<template=({{ (states('sensor.fixed_heater_setting') | float >= 1) }}) renders=6>' for attribute '_state' in entity 'switch.fixed_strip_heater'
+2026-04-23 11:41:22.991 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if states('sensor.fixed_heater_setting') | float == 4.0 %}
+  mdi:numeric-4-circle
+{% elif states('sensor.fixed_heater_setting') | float == 3.0 %}
+  mdi:numeric-3-circle
+{% elif states('sensor.fixed_heater_setting') | float == 2.0 %}
+  mdi:numeric-2-circle
+{% elif states('sensor.fixed_heater_setting') | float == 1.0 %}
+  mdi:numeric-1-circle
+{% else %}
+  mdi:radiator
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.fixed_heater_setting') | float == 4.0 %}
+  mdi:numeric-4-circle
+{% elif states('sensor.fixed_heater_setting') | float == 3.0 %}
+  mdi:numeric-3-circle
+{% elif states('sensor.fixed_heater_setting') | float == 2.0 %}
+  mdi:numeric-2-circle
+{% elif states('sensor.fixed_heater_setting') | float == 1.0 %}
+  mdi:numeric-1-circle
+{% else %}
+  mdi:radiator
+{% endif %}) renders=7>' for attribute '_attr_icon' in entity 'switch.fixed_strip_heater'
+2026-04-23 11:41:23.008 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.water_retic_control_retic_last_5_min') | float >= 83.3 }}) renders=30>' for attribute '_attr_native_value' in entity 'sensor.water_usage_daily_warning'
+2026-04-23 11:41:23.011 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ (((states('sensor.water_retic_control_retic_meter_current_run')) | float ) / ((as_timestamp(now()) - as_timestamp(states.switch.water_retic_control_retic_reset_meter_run.last_changed | default(0)) | float ) / 60)) | round(3) }}' but no default was specified') while processing template 'Template<template=({{ (((states('sensor.water_retic_control_retic_meter_current_run')) | float ) / ((as_timestamp(now()) - as_timestamp(states.switch.water_retic_control_retic_reset_meter_run.last_changed | default(0)) | float ) / 60)) | round(3) }}) renders=240>' for attribute '_attr_native_value' in entity 'sensor.water_reservoir_outgoing_average'
+2026-04-23 11:41:23.014 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{{ states('sensor.water_retic_control_retic_current_hour') | float >= 600 }}' but no default was specified') while processing template 'Template<template=({{ states('sensor.water_retic_control_retic_current_hour') | float >= 600 }}) renders=122>' for attribute '_attr_native_value' in entity 'sensor.water_usage_hourly_warning'
+2026-04-23 11:41:23.016 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('input_number.house_hourly_water_cutoff') | float - 150) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.house_hourly_water_cutoff') | float - 1) %}
+  off
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if (states('input_number.house_hourly_water_cutoff') | float - 150) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.house_hourly_water_cutoff') | float - 1) %}
+  off
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.house_water_warning'
+2026-04-23 11:41:23.017 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if states('input_number.house_hourly_water_cutoff') | float < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.farm_hourly_water_cutoff') | float - 151) %}
+  off
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('input_number.house_hourly_water_cutoff') | float < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.farm_hourly_water_cutoff') | float - 151) %}
+  off
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.house_water_cutoff'
+2026-04-23 11:41:23.018 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('input_number.farm_hourly_water_cutoff') | float - 150) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.farm_hourly_water_cutoff') | float -1) %}
+  off
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if (states('input_number.farm_hourly_water_cutoff') | float - 150) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.farm_hourly_water_cutoff') | float -1) %}
+  off
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.farm_water_warning'
+2026-04-23 11:41:23.018 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if states('input_number.farm_hourly_water_cutoff') | float < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.pump_hourly_water_cutoff') | float - 201) %}
+  off
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('input_number.farm_hourly_water_cutoff') | float < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.pump_hourly_water_cutoff') | float - 201) %}
+  off
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.farm_water_cutoff'
+2026-04-23 11:41:23.019 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if (states('input_number.pump_hourly_water_cutoff') | float - 200) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.pump_hourly_water_cutoff') | float -1) %}
+  off
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if (states('input_number.pump_hourly_water_cutoff') | float - 200) < states('sensor.water_retic_control_retic_current_hour') | float %}
+  on
+{% elif states('sensor.water_retic_control_retic_current_hour') | float > (states('input_number.pump_hourly_water_cutoff') | float -1) %}
+  off
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.retic_pump_water_warning'
+2026-04-23 11:41:23.019 ERROR (MainThread) [homeassistant.components.template.template_entity] TemplateError('ValueError: Template error: float got invalid input 'unavailable' when rendering template '{% if states('sensor.water_retic_control_retic_current_hour') | float > states('input_number.pump_hourly_water_cutoff') | float %}
+  on
+{% else %}
+  off
+{% endif %}' but no default was specified') while processing template 'Template<template=({% if states('sensor.water_retic_control_retic_current_hour') | float > states('input_number.pump_hourly_water_cutoff') | float %}
+  on
+{% else %}
+  off
+{% endif %}) renders=122>' for attribute '_state' in entity 'binary_sensor.retic_pump_water_cutoff'
+2026-04-23 11:41:39.818 ERROR (SyncWorker_2) [homeassistant] Error doing job: Task exception was never retrieved (None)
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/components/hassio/__init__.py", line 465, in update_info_data
+    ) = await asyncio.gather(
+        ^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/components/hassio/handler.py", line 61, in _wrapper
+    data = await funct(*argv, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/components/hassio/handler.py", line 295, in send_command
+    response = await self.websession.request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<10 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/client.py", line 527, in _request
+    raise RuntimeError("Session is closed")
+RuntimeError: Session is closed
+2026-04-23 11:41:39.840 ERROR (MainThread) [homeassistant] Error doing job: Task exception was never retrieved (None)
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/components/cloud/__init__.py", line 287, in async_startup_repairs
+    if subscription_info := await async_subscription_info(cloud):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/src/homeassistant/homeassistant/components/cloud/subscription.py", line 22, in async_subscription_info
+    return await cloud_api.async_subscription_info(cloud)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/hass_nabucasa/cloud_api.py", line 75, in check_token
+    return await func(cloud, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/hass_nabucasa/cloud_api.py", line 329, in async_subscription_info
+    resp = await cloud.websession.get(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/aiohttp/client.py", line 527, in _request
+    raise RuntimeError("Session is closed")
+RuntimeError: Session is closed

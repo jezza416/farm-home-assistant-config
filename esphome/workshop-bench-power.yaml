@@ -1,0 +1,307 @@
+esphome:
+  name: 257-fence-unit
+  friendly_name: 257 Fence Unit
+  min_version: 2026.4.0
+  on_boot:
+    priority: -10
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(timer_running) && id(my_time).now().is_valid() && id(timer_end_epoch) > 0;
+          then:
+            - if:
+                condition:
+                  lambda: 'return id(my_time).now().timestamp >= id(timer_end_epoch);'
+                then:
+                  - lambda: |-
+                      id(timer_running) = false;
+                      id(timer_end_epoch) = 0;
+                  - switch.template.publish:
+                      id: fence_257_timer
+                      state: OFF
+                  - sensor.template.publish:
+                      id: off_time_remaining
+                      state: 0
+                  - switch.turn_on: fakebutton
+                else:
+                  - switch.template.publish:
+                      id: fence_257_timer
+                      state: ON
+                  - component.update: off_time_remaining
+
+esp8266:
+  board: esp01_1m
+  board_flash_mode: dout
+  restore_from_flash: true
+  early_pin_init: false
+  framework:
+    version: recommended
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+      
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "257 Fence Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  parity: EVEN
+
+# Enable Home Assistant API
+api:
+  reboot_timeout: 30min
+  max_connections: 2
+  max_send_queue: 8
+
+ota:
+  platform: esphome
+
+substitutions:
+  timer_update: 1s
+  power_publish_throttle: 1s
+
+interval:
+  - interval: ${timer_update}
+    then:
+      - component.update: off_time_remaining
+      - if:
+          condition:
+            lambda: |-
+              if (!id(timer_running)) return false;
+              if (!id(my_time).now().is_valid()) return false;
+              return id(my_time).now().timestamp >= id(timer_end_epoch);
+          then:
+            - lambda: |-
+                id(timer_running) = false;
+                id(timer_end_epoch) = 0;
+            - switch.template.publish:
+                id: fence_257_timer
+                state: OFF
+            - sensor.template.publish:
+                id: off_time_remaining
+                state: 0
+            - switch.turn_on: fakebutton
+
+
+binary_sensor:
+  - platform: status
+    name: "Mums Fence Unit Status"
+    
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "257 Fence Unit Button"
+    on_press:
+      - switch.toggle: fakebutton
+
+  - platform: template
+    name: "257 Fence Unit Running"
+    id: fence_unit_257_running
+    filters:
+      - delayed_on: 3s
+      - delayed_off: 4s
+    lambda: |-
+      if (isnan(id(power).state)) {
+        return {};
+      } else if (id(power).state > 3) {
+        // Running
+        return true;
+      } else {
+        // Not running
+        return false;
+      }
+
+  - platform: template
+    name: "257 Fence 5 Min Remaining"
+    id: five_min_remaining
+    lambda: |-
+      return id(timer_running) && id(off_time_remaining).state > 0 && id(off_time_remaining).state <= 300;
+
+#  - platform: template
+#    name: Fence Timer is Zero
+#    on_press:
+#    - switch.turn_off: fence_timer
+#    filters:
+#    lambda: |-
+#      if (id(fence_timer).state) {
+#        if (id(time_status) > 0) {
+#          return true;
+#        } else {
+#          return false;
+#        }
+#      } else {
+#        return false;
+#      }
+        
+switch:
+  - platform: template
+    name: "257 Fence Countdown Timer"
+    id: fence_257_timer
+    optimistic: true
+    turn_on_action:
+      - lambda: |-
+          if (id(my_time).now().is_valid()) {
+            id(timer_running) = true;
+            id(timer_end_epoch) = id(my_time).now().timestamp + 3600;
+          } else {
+            id(timer_running) = true;
+            id(timer_end_epoch) = 0;
+          }
+      - switch.template.publish:
+          id: fence_257_timer
+          state: ON
+      - component.update: off_time_remaining
+      - switch.turn_off: fakebutton
+
+    turn_off_action:
+      - lambda: |-
+          id(timer_running) = false;
+          id(timer_end_epoch) = 0;
+      - switch.template.publish:
+          id: fence_257_timer
+          state: OFF
+      - sensor.template.publish:
+          id: off_time_remaining
+          state: 0
+      - switch.turn_on: fakebutton
+
+  - platform: template
+    name: "257 Fence Unit Relay"
+    id: fakebutton
+    restore_mode: ALWAYS_ON
+    lambda: |-
+      return id(relay).state;
+    turn_on_action:
+      - switch.turn_on: relay
+      - light.turn_on: led
+      - if: 
+          condition: 
+            switch.is_on: fence_257_timer
+          then: 
+            switch.turn_off: fence_257_timer
+    turn_off_action:
+      - switch.turn_off: relay
+      - light.turn_off: led
+    
+  - platform: gpio
+    id: relay
+    pin: GPIO12
+    restore_mode: ALWAYS_ON
+
+output:
+  - platform: esp8266_pwm
+    id: pow_blue_led
+    pin:
+      number: GPIO13
+      inverted: True
+
+light:
+  - platform: monochromatic
+    name: "257 Fence Unit LED"
+    output: pow_blue_led
+    id: led
+
+sensor:
+  - platform: template
+    name: "257 Fence Time Remaining"
+    id: off_time_remaining
+    icon: "mdi:progress-clock"
+    accuracy_decimals: 0
+    update_interval: never
+    unit_of_measurement: "s"
+    lambda: |-
+      if (!id(timer_running)) {
+        return 0;
+      }
+
+      if (!id(my_time).now().is_valid()) {
+        return 0;
+      }
+
+      int remain = id(timer_end_epoch) - id(my_time).now().timestamp;
+      if (remain < 0) remain = 0;
+      return remain;
+        
+  - platform: template
+    name: "257 Fence Unit Power"
+    id: power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    update_interval: 1s
+    lambda: |-
+      if ((millis() - id(fence_power_last_seen)) <= 3000) {
+        return id(fence_power_held);
+      }
+
+      return 0.0;
+      
+  - platform: cse7766
+    current:
+      name: "257 Fence Unit Current"
+    voltage:
+      name: "257 Fence Unit Voltage"
+    power:
+      name: "257 Fence Unit Power Raw"
+      id: power_raw
+      internal: true
+      unit_of_measurement: W
+      accuracy_decimals: 1
+      on_value:
+        then:
+          - lambda: |-
+              if (!isnan(x) && x > 0.5) {
+                id(fence_power_held) = x;
+                id(fence_power_last_seen) = millis();
+              }
+
+           
+  - platform: total_daily_energy
+    name: "257 Fence Unit Daily kWh"
+    id: daily_kw
+    power_id: power_raw
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(daily_kw).publish_state(0);
+
+globals:
+
+  - id: timer_end_epoch
+    type: int
+    restore_value: yes
+    initial_value: "0"
+
+  - id: timer_running
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+
+  - id: fence_power_held
+    type: float
+    restore_value: no
+    initial_value: "0.0"
+
+  - id: fence_power_last_seen
+    type: unsigned long
+    restore_value: no
+    initial_value: "0"

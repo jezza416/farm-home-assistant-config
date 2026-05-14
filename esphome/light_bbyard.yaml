@@ -1,0 +1,119 @@
+esphome:
+  name: light-bbyard
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #manual_ip:
+  #  static_ip: 192.168.1.196
+  #  gateway: 192.168.1.254
+  #  subnet: 255.255.255.0
+  #use_address: light_bbyard.local
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Light Bbyard Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            light.is_on: bb_yard
+          then:
+            - component.update: bb_yard_watts
+            
+  
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: bb_yard_button
+    on_press:
+      - light.toggle: bb_yard 
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: bb_yard_switch
+    on_press:
+    - light.toggle: bb_yard   
+    
+light:
+  - platform: binary
+    name: BB Yard
+    id: bb_yard
+    output: relay
+
+output:
+
+  - platform: gpio
+    pin: GPIO12
+    id: relay
+    
+  
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes
+    
+sensor:
+  
+  - platform: template
+    name: "BB Yard Watts"
+    id: bb_yard_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(bb_yard).current_values.is_on()){
+        id(light_power) += 0.069444444;
+        return id(light_power);
+      } else {
+        return {};
+      }
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(bb_yard_watts).publish_state(0);
+          id(light_power) = 0;
+
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: heat_power
+    type: float
+    restore_value: no
+    initial_value: '0'  

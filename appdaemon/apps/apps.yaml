@@ -1,0 +1,7 @@
+nspanel-1:
+  module: nspanel-lovelace-ui
+  class: NsPanelLovelaceManager
+  config:
+    panelRecvTopic: "tele/nspanel/shed"
+    panelSendTopic: "cmnd/nspanel/shed"
+    model: us

@@ -1,0 +1,428 @@
+esphome:
+  name: storage-irrigation
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "b767d954ed302c837e1fcda9992527ef"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Storage-Irrigation"
+    password: "hillview199@"
+
+captive_portal:
+    
+    
+switch:
+  - platform: gpio
+    pin: GPIO32
+    name: "Circulation Pump Base"
+    id: pump_base
+    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: |-
+          if (id(use_base).state);
+            id(circ_r_time).publish_state(id(circ_off).state);
+    on_turn_off:
+      - lambda: |-
+          if (id(use_base).state);
+            id(circ_r_time).publish_state(id(circ_on).state);
+  
+  - platform: gpio
+    pin: GPIO03
+    name: "Drain Pump"
+    id: drain_pump
+    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    
+  - platform: gpio
+    pin: GPIO25
+    name: "Circulation Internal Pump"
+    id: pump_circ1
+    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: |-
+          if (id(use_base).state){
+            ESP_LOGI("main", "dont reset wait till base pump");
+          } else {
+            id(circ_r_time).publish_state(id(circ_off).state);
+          }   
+    on_turn_off:
+      - lambda: |-
+          if (id(use_base).state){
+            ESP_LOGI("main", "dont reset wait till base pump");
+          } else {
+            id(circ_r_time).publish_state(id(circ_on).state);
+          }   
+
+  
+  - platform: template
+    name: "Meter 3a Reset"
+    id: reset_3a_meter
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_3a_meter
+          state: ON
+      - delay: 10s
+      - lambda: |-
+                id(meter_3a_last_run).publish_state(id(tank_3a_meter).state);
+                id(meter_3a_float) = 0;
+                id(tank_3a_meter).publish_state(0);
+      - switch.turn_off: reset_3a_meter
+    turn_off_action:
+      - switch.template.publish:
+          id: reset_3a_meter
+          state: OFF  
+  
+  - platform: template
+    name: "Drain/Empty Tank"
+    id: drain_tank
+    restore_state: yes
+    turn_on_action:
+      - lambda: |- 
+          if (id(empty_tank).state){
+            id(drain_pump).turn_off();
+          } else {
+            id(drain_pump).turn_on();
+          }
+      - switch.template.publish:
+          id: drain_tank
+          state: ON
+    turn_off_action:
+      - switch.turn_off: drain_pump
+      - switch.template.publish:
+          id: drain_tank
+          state: OFF
+
+  - platform: template
+    name: "Use Internal Pump"
+    id: use_int
+    turn_on_action:
+      - switch.template.publish:
+          id: use_int
+          state: ON
+    turn_off_action:
+      - switch.template.publish:
+          id: use_int
+          state: OFF  
+  
+  - platform: template
+    name: "Use Base Pump"
+    id: use_base
+    turn_on_action:
+      - switch.template.publish:
+          id: use_base
+          state: ON
+    turn_off_action:
+      - switch.template.publish:
+          id: use_base
+          state: OFF  
+  
+
+  - platform: template
+    name: "Auto Mixing Tank Pumps"
+    id: auto_pumps
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: auto_pumps
+          state: ON
+      - lambda: |-
+          if (id(use_base).state) {
+              if (id(use_int).state) {
+                id(pump_circ1).turn_on();
+                ESP_LOGI("main", "got both on");
+              } else { 
+                id(pump_base).turn_on();
+                ESP_LOGI("main", "got base on");
+              }
+          if (id(use_int).state){
+              id(pump_circ1).turn_on();
+              ESP_LOGI("main", "got int on");
+             } else {
+              id(use_int).turn_on();
+              id(pump_circ1).turn_on();
+              ESP_LOGI("main", "None on so set int to on");
+             }
+  
+    turn_off_action:
+      - switch.template.publish:
+          id: auto_pumps
+          state: OFF
+      - lambda: |-
+          if (id(use_base).state) {
+              id(pump_base).turn_off();
+              ESP_LOGI("main", "got base off");
+             } 
+          if (id(use_int).state) {
+              id(pump_circ1).turn_off();
+              ESP_LOGI("main", "got int off");
+             } 
+            
+sensor:
+
+  - platform: hx711
+    id: scale_raw
+    dout_pin: GPIO16
+    clk_pin: GPIO17
+    gain: 128
+    update_interval: 15s
+    accuracy_decimals: 2
+    on_value:
+      then:
+      - lambda: |-
+          id(l_litres).publish_state(x);
+         
+#    filters:
+#      - calibrate_linear:
+#           - -3964929 -> 0
+#          -  15415 -> 0
+#          - -15513 -> 20
+#      - lambda: |-
+#          return x - id(scale_float);
+#    unit_of_measurement: kg
+    
+
+    
+#  - platform: template
+#    name: "Current Weight"
+#    id: weight0  
+#    unit_of_measurement: kg
+#    filters:
+#      - calibrate_linear:
+#          - -274813 -> 0
+#          - 41413 -> 13.175
+##          - 982516 -> 94
+#      - lambda: |-
+#          return x - id(scale_float);
+  
+  - platform: template
+    name: "Tank litres"
+    id: l_litres
+    unit_of_measurement: L
+    filters:
+    - calibrate_linear:
+      - 23700 -> 0
+      - 1430916 -> 60
+          
+      
+  - platform: pulse_counter
+    name: "Tank Pump Feed Meter Count"
+    pin: GPIO34
+    update_interval: 10s
+    id: tank_3a_meter
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(meter_3a_float) += x / 2469.1;   
+          return id(meter_3a_float);
+#         id(meter_3a_float) += x / 0;
+
+  - platform: template
+    name: "Last Meter Count"
+    id: meter_3a_last_run
+    unit_of_measurement: "Litres"
+    accuracy_decimals: 2
+
+  - platform: template
+    name: "Current Time"
+    id: time_now
+    unit_of_measurement: "O'Clock"
+    accuracy_decimals: 2
+     
+  - platform: template
+    name: "Circ Remaining Timer"
+    id: circ_r_time
+    unit_of_measurement: "Mins"
+    accuracy_decimals: 2
+
+number:
+  - platform: template
+    name: Circulation Pump Off
+    id: circ_on
+    optimistic: true
+    min_value: 0
+    max_value: 360
+    step: 1
+    restore_value: true
+    unit_of_measurement: Mins
+    mode: box
+    
+  - platform: template
+    name: Circulation Pump On
+    id: circ_off
+    optimistic: true
+    min_value: 0
+    max_value: 60
+    step: 1
+    restore_value: true
+    unit_of_measurement: Mins
+    mode: box
+  
+          
+#  - platform: template
+#    name: Feed Timer
+#    id: feed_timer_3a
+#    optimistic: true
+#    min_value: 0
+#    max_value: 24
+#    step: 0.01
+#    restore_value: true
+#    mode: box
+#    on_value:
+#      - lambda: |- 
+#          static float time = 0;
+#          
+#          time = x;
+#          id(intival_time_3a) = time;
+#          return id(time_test2).publish_state(time);
+          
+           
+time:
+  - platform: sntp
+    id: sntp_time
+    on_time:
+      - seconds: 0
+        minutes: '0-59'
+        then:
+          - lambda: |-
+              static float hour = 0;
+              static float min = 0;
+              static float time = 0; 
+              static int day = 0;
+              static float timer_1 = 0;
+              static float timer_2 = 0;
+              static float timer_3 = 0;
+              static float timer_4 = 0;
+              static float timer_5 = 0;
+              static float timer_6 = 0;
+              static float timer_7 = 0;
+              static float timer_8 = 0;
+              static float timer_9 = 0;
+              static float timer_10 = 0;
+              static float timer_11 = 0;
+              static float timer_12 = 0;
+              static float circ_rem = 0;
+              static float litre_1 = 0;
+              static float litre_2 = 0;
+              static float litre_3 = 0;
+              
+              
+              
+              hour = id(sntp_time).now().hour;
+              min = id(sntp_time).now().minute;
+              day = id(sntp_time).now().day_of_week;
+              time = hour + (min / 100);
+              circ_rem = id(circ_r_time).state;
+              
+              
+              id(time_now).publish_state(time);
+
+              if (id(auto_pumps).state){
+                  if (id(pump_circ1).state){
+                      if (circ_rem == 0){
+                        id(pump_circ1).turn_off();
+                      } else {
+                        id(circ_r_time).publish_state(circ_rem -= 1);
+                      }  
+                } else {
+                      if (circ_rem == 0){
+                        id(pump_circ1).turn_on();
+                      } else {
+                        id(circ_r_time).publish_state(circ_rem -= 1);
+                      }
+                }
+              }
+
+
+
+
+
+             
+
+             
+
+binary_sensor:
+  - platform: template
+    name: "Tank Has Min Liters"
+    id: tank_good
+    lambda: |-
+      if (id(l_litres).state > 10) {
+        // Garage Door is open.
+        return true;
+      } else {
+        // Garage Door is closed.
+        return false;
+      }
+    on_press:
+       - lambda: |-
+          id(auto_pumps).turn_on();
+
+
+  - platform: template
+    name: "Low Water Waring"
+    id: low_tank
+    lambda: |-
+      if (id(l_litres).state < 20) {
+        // Garage Door is open.
+        return true;
+      } else {
+        // Garage Door is closed.
+        return false;
+      }
+    
+  - platform: template
+    name: "No Water Waring"
+    id: empty_tank
+    lambda: |-
+      if (id(l_litres).state < 2) {
+        // Garage Door is open
+        return true;
+      } else {
+        // Garage Door is closed.
+        return false;
+      }
+    on_press:
+      - switch.turn_off: pump_base
+      - switch.turn_off: pump_circ1
+      - lambda: |-
+          if (id(drain_tank).state){
+              id(drain_tank).turn_off();
+          }
+          
+globals:
+    
+  - id: meter_3a_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+
+  - id: circ_time_on
+    type: int
+    restore_value: yes
+    
+  - id: circ_time_off
+    type: int
+    restore_value: yes
+    
+  - id: intival_time_3a
+    type: float
+    restore_value: yes
+
+  

@@ -1,0 +1,126 @@
+esphome:
+  name: storage-3-3gang1
+  friendly_name: Storage Multi Switch
+  min_version: 2026.4.0
+
+esp8266:
+  board: esp01_1m
+  board_flash_mode: dout
+  restore_from_flash: True
+  early_pin_init: False
+  framework: 
+    version: recommended
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #use_address: 192.168.1.189
+  #manual_ip:
+  #    static_ip: 192.168.1.189
+  #    gateway: 192.168.1.254
+  #    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Storage 3Gang1 Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  reboot_timeout: 30min
+  max_connections: 2
+  max_send_queue: 8
+
+ota:
+  platform: esphome
+  
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO10
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "Storage Multi-Switch Top Touched"
+    id: top_switch
+    on_press:
+      - light.toggle: top_light
+
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "Storage Multi-Switch Middle Touched"
+    id: middle_switch
+    on_press:
+      - light.toggle: middle_light
+
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "Storage Multi-Switch Bottom Touched"
+    id: bottom_switch
+    on_press:
+      - light.toggle: bottom_light
+
+output:
+  - platform: gpio
+    pin: GPIO5
+    id: relay1
+
+  - platform: gpio
+    pin: GPIO12
+    id: relay3
+
+  - platform: gpio
+    pin: GPIO4
+    id: relay2
+
+  - platform: esp8266_pwm
+    id: blue_led
+    pin:
+      number: GPIO13
+      inverted: true
+
+light:
+  - platform: binary
+    name: "Storage Room Switch"
+    id: top_light
+    output: relay1
+
+  - platform: binary
+    name: "Storage Kitchen"
+    id: middle_light
+    output: relay2
+
+  - platform: binary
+    name: "Storage Outside"
+    id: bottom_light
+    output: relay3
+
+  - platform: monochromatic
+    id: mancave_3gang1_led
+    output: blue_led
+
+sensor:
+  - platform: wifi_signal
+    name: "Storage Multi Switch WiFi Signal"
+    id: storage_wifi_signal
+    update_interval: 60s
+
+button:
+  - platform: restart
+    name: "Restart Storage Multi Switch"

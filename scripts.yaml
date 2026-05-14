@@ -1,0 +1,796 @@
+farm_fence_10pm_check_turn_on_possible:
+  alias: Farm Fence 10pm Check Turn On Possible
+  sequence:
+  - type: turn_on
+    device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+    entity_id: switch.fence_unit_relay
+    domain: switch
+  mode: single
+farm_fence_10pm_check_turn_on_not_possible:
+  alias: Farm Fence 10pm Check Turn On Not Possible
+  sequence:
+  - delay: 00:00:30
+  - condition: state
+    entity_id: binary_sensor.fence_unit_running
+    state: 'off'
+  - condition: state
+    entity_id: switch.fence_unit_relay
+    state: 'off'
+  - service: persistent_notification.create
+    data:
+      message: Unit turn ON...Failed, Must be on Standby
+      title: Farm Fence
+  mode: single
+farm_water_free_off:
+  alias: Farm Water Free OFF
+  sequence:
+  - condition: state
+    entity_id: automation.farm_water_reset_hourly
+    state: 'off'
+  - data: {}
+    entity_id: automation.farm_water_reset_hourly
+    service: automation.turn_on
+  - data:
+      notification_id: free_water
+    service: persistent_notification.dismiss
+  - data:
+      message: 2 Free Hours of Water Has Finished
+      title: Farm Water
+    service: notify.mobile_app_jezza_iphone_13_max
+  - data:
+      message: 2 Free Hours of Water Has Finished
+      title: Farm Water
+    service: notify.mobile_app_martin
+  mode: single
+farm_water_free_on:
+  alias: Farm Water Free ON
+  sequence:
+  - condition: state
+    entity_id: switch.water_retic_control_water_free
+    state: 'on'
+  - condition: state
+    entity_id: automation.farm_water_reset_hourly
+    state: 'on'
+  - data: {}
+    entity_id: automation.farm_water_reset_hourly
+    service: automation.turn_off
+  - data:
+      message: 2 Free Hours Of Water Usage Has Started
+      notification_id: free_water
+      title: Farm Water
+    service: persistent_notification.create
+  - data:
+      message: 2 Free Hours Of Water Usage Has Started
+      title: Farm Water
+    service: notify.mobile_app_jezza_iphone_13_max
+  - data:
+      message: 2 Free Hours Of Water Usage Has Started
+      title: Farm Water
+    service: notify.mobile_app_martin
+  - data: {}
+    service: script.free_water_free_delay
+  mode: single
+farm_water_free_delay:
+  alias: Farm Water Free Delay
+  sequence:
+  - condition: state
+    entity_id: automation.farm_water_reset_hourly
+    state: 'off'
+  - delay: 02:00:00
+  - data: {}
+    service: script.farm_water_free_off
+  mode: single
+resivior_farm_off:
+  alias: Farm Resivior Farm Off
+  sequence:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.water_retic_control_water_storage
+      below: '84'
+    - condition: device
+      type: is_off
+      device_id: 8a22887632e0d34806c97eb563457699
+      entity_id: 97fc07a941c0f587cdb9c22a67c576fe
+      domain: switch
+  - type: turn_off
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: f0dbacbdf1596b8f900fd5e72d9895cc
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Resivoir Below 84%, Turned Off Farm Valve
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Resivoir Below 84%, Turned Off Farm Valve
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Resivoir Below 84%, Turned Off Farm Valve
+      title: Farm Water
+  mode: single
+farm_resivior_house_off:
+  alias: Farm Resivior House Off
+  sequence:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.water_storage
+      below: '83'
+    - condition: device
+      type: is_off
+      device_id: 8a22887632e0d34806c97eb563457699
+      entity_id: 97fc07a941c0f587cdb9c22a67c576fe
+      domain: switch
+  - type: turn_off
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: b95b44e62d289a4c1b16b6c3cfa267da
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Resivoir Below 83%, Turned Off House Valve
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Resivoir Below 83%, Turned Off House Valve
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Resivoir Below 83%, Turned Off House Valve
+      title: Farm Water
+  mode: single
+farm_resivior_pump_off:
+  alias: Farm Resivior Pump Off
+  sequence:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.water_retic_control_water_storage
+      below: '80'
+    - condition: device
+      type: is_off
+      device_id: 8a22887632e0d34806c97eb563457699
+      entity_id: 97fc07a941c0f587cdb9c22a67c576fe
+      domain: switch
+  - type: turn_off
+    device_id: edda2dfb414c48dc8b25fd486cbe9af4
+    entity_id: 6c3c0ae409029b189511f63ce9ca5202
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Resivoir LEVEL 80%, Turned Off PUMP
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Resivoir Below 80%, Turned Off PUMP
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Resivoir Below 80%, Turned Off PUMP
+      title: Farm Water
+  mode: single
+farm_resivior_reset_bore_start:
+  alias: Farm Resivior Bore Start
+  sequence:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_off
+      device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+      entity_id: switch.bore_pump
+      domain: switch
+    - condition: numeric_state
+      entity_id: sensor.water_retic_control_water_storage
+      below: '86'
+  - type: turn_on
+    device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+    entity_id: switch.bore_pump
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Bore Turned on through automation
+      title: Farm Water
+  mode: single
+farm_resivior_at_102_bore_off:
+  alias: Farm Resivior At 101% Bore OFF
+  sequence:
+  - condition: numeric_state
+    entity_id: sensor.water_retic_control_water_storage
+    above: '100'
+  - type: turn_off
+    device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+    entity_id: switch.bore_pump
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone
+    data:
+      message: Resivoir Above 102%, Turned BORE OFF
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Resivoir Above 102%, Turned BORE OFF
+      title: Farm Water
+    enabled: false
+  - service: persistent_notification.create
+    data:
+      message: Resivoir Above 102%, Turned BORE OFF
+      title: Farm Water
+  mode: single
+farm_resivior_at_70_turn_all_off:
+  alias: Farm Resivior At 70% All OFF
+  sequence:
+  - condition: numeric_state
+    entity_id: sensor.water_retic_control_water_storage
+    below: '71'
+  - type: turn_off
+    device_id: edda2dfb414c48dc8b25fd486cbe9af4
+    entity_id: 6c3c0ae409029b189511f63ce9ca5202
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Resivoir AT 70%, Turned Water OFF
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Resivoir AT 70%, Turned Water OFF
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Resivoir AT 70%, Turned Water OFF
+      title: Farm Water
+  mode: single
+farm_resivior_at_96_reset_condition_70:
+  alias: Farm Resivior At 96% Reset Condition 70%
+  sequence:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.water_retic_control_water_storage
+      above: '94'
+    - condition: state
+      entity_id: switch.water_retic_control_resivior_run_to_70
+      state: 'on'
+  - type: turn_off
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: switch.resivior_run_to_70
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Run Resivoir to 70%, Turned OFF
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Run Resivoir to 70%, Turned OFF
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Run Resivoir to 70%, Turned OFF
+      title: Farm Water
+  mode: single
+farm_resivior_at_96_reset_condition_bore_off:
+  alias: Farm Resivior At 96% Reset Condition Bore Off
+  sequence:
+  - condition: and
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.water_retic_control_water_storage
+      below: '96'
+    - condition: state
+      entity_id: switch.bore_pump
+      state: 'off'
+  - type: turn_on
+    device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+    entity_id: switch.bore_pump
+    domain: switch
+  - service: notify.mobile_app_jezza_iphone_13_max
+    data:
+      message: Bore Pump control, Turned Back ON
+      title: Farm Water
+  - service: notify.mobile_app_martin
+    data:
+      message: Bore Pump control, Turned Back ON
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Bore Pump control, Turned Back ON
+      title: Farm Water
+  mode: single
+farm_water_set_off:
+  alias: Farm Water Set Off
+  sequence:
+  - condition: state
+    entity_id: switch.water_set_value
+    state: 'on'
+  - condition: state
+    entity_id: sensor.water_set_value
+    state: 'False'
+  - data: {}
+    entity_id: switch.retic_pump
+    service: switch.turn_off
+  - data: {}
+    entity_id: switch.retic_check_reset
+    service: switch.turn_on
+  - data: {}
+    entity_id: automation.farm_water_reset_hourly
+    service: automation.turn_on
+  - data: {}
+    entity_id: switch.water_set_value
+    service: switch.turn_off
+  - data:
+      message: Water Set Number Reached, Turned off Pump
+      title: Farm Water
+    service: notify.mobile_app_jezza_iphone
+  - data:
+      notification_id: water_set
+    service: persistent_notification.dismiss
+  - data:
+      message: Water Set Number Reached, Turned off Pump
+      title: Farm Water
+    service: notify.mobile_app_martin
+  mode: single
+farm_water_set_on:
+  alias: Farm Water Set On
+  sequence:
+  - condition: state
+    entity_id: switch.water_retic_control_water_set_value
+    state: 'on'
+  - data: {}
+    entity_id: switch.retic_check_reset
+    service: switch.turn_on
+  - delay: 00:00:10
+  - condition: state
+    entity_id: sensor.water_set_value
+    state: 'True'
+  - data: {}
+    entity_id: automation.farm_water_reset_hourly
+    service: automation.turn_off
+  - data:
+      message: Water Set Proccess Started
+      title: Farm Water
+    service: notify.mobile_app_jezza_iphone
+  - data:
+      message: Water Set Proccess Started
+      notification_id: water_set
+      title: Farm Water
+    service: persistent_notification.create
+  - data:
+      message: Water Set Proccess Started
+      title: Farm Water
+    service: notify.mobile_app_martin
+  mode: single
+storage_light_west_on:
+  alias: Storage Light West ON
+  sequence:
+  - after: '13:00'
+    before: '23:59'
+    condition: time
+  - data: {}
+    entity_id: switch.light_west_relay
+    service: switch.turn_on
+  - service: input_boolean.turn_on
+    target:
+      entity_id:
+      - input_boolean.storage_light_west_on
+  mode: single
+storage_light_west_off:
+  alias: Storage Light West OFF
+  sequence:
+  - after: 00:30
+    before: '13:00'
+    condition: time
+  - data: {}
+    entity_id: switch.light_west_relay
+    service: switch.turn_off
+  - service: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.storage_light_west_on
+  mode: single
+storage_light_middle_on:
+  alias: Storage Light Middle ON
+  sequence:
+  - after: '13:00'
+    before: '23:59'
+    condition: time
+  - data: {}
+    entity_id: switch.light_middle_relay
+    service: switch.turn_on
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.storage_light_middle_on
+  - condition: state
+    entity_id: switch.light_middle_relay
+    state: unavailable
+  - data:
+      message: Light is Unavailable, Maybe not Turned ON
+      title: Storage Power
+    service: notify.mobile_app_jezza_iphone
+  - data:
+      message: Light is Unavailable, Maybe not Turned ON
+      title: Storage Power
+    service: notify.mobile_app_martin
+  mode: single
+storage_light_middle_off:
+  alias: Storage Light Middle OFF
+  sequence:
+  - after: 00:30
+    before: '13:00'
+    condition: time
+  - data: {}
+    entity_id: switch.light_middle_relay
+    service: switch.turn_off
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.storage_light_middle_on
+  - condition: state
+    entity_id: switch.light_middle_relay
+    state: unavailable
+  - data:
+      message: Light Unavailable, Maybe not turned OFF
+      title: Storage Power
+    service: notify.mobile_app_jezza_iphone
+  - data:
+      message: Light Unavailable, Maybe not turned OFF
+      title: Storage Power
+    service: notify.mobile_app_martin
+  mode: single
+storage_light_east_on:
+  alias: Storage Light East ON
+  sequence:
+  - after: '13:00'
+    before: '23:59'
+    condition: time
+  - data: {}
+    entity_id: switch.light_east_relay
+    service: switch.turn_on
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.storage_light_east_on
+  - condition: state
+    entity_id: switch.light_east_relay
+    state: unavailable
+  - data:
+      message: Light is Unavailabe
+      title: Storage Power
+    service: notify.mobile_app_jezza_iphone
+  mode: single
+storage_light_east_off:
+  alias: Storage Light East OFF
+  sequence:
+  - after: 00:30
+    before: '13:00'
+    condition: time
+  - data: {}
+    entity_id: switch.light_east_relay
+    service: switch.turn_off
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.storage_light_east_on
+  mode: single
+storage_fan_multi_speed_low:
+  alias: Storage Fan Multi Speed low
+  sequence:
+  - condition: device
+    device_id: 8b93014f6626d569c5789ae15f5a7ee6
+    domain: fan
+    entity_id: fan.fan_secondary_control
+    type: is_on
+  - type: is_value
+    condition: device
+    device_id: 42ca57075a5d0e9765e98fe07eee9dc9
+    entity_id: sensor.outside_temperature
+    domain: sensor
+    below: 12.5
+  - data:
+      speed: low
+    entity_id: fan.fan_secondary_control
+    service: fan.set_speed
+  mode: single
+storage_fan_multi_speed_medium:
+  alias: Storage Fan Multi Speed medium
+  sequence:
+  - condition: device
+    device_id: 8b93014f6626d569c5789ae15f5a7ee6
+    domain: fan
+    entity_id: fan.fan_secondary_control
+    type: is_on
+  - type: is_value
+    condition: device
+    device_id: 42ca57075a5d0e9765e98fe07eee9dc9
+    entity_id: sensor.outside_temperature
+    domain: sensor
+    above: 12.6
+    below: 18
+  - data:
+      speed: medium
+    entity_id: fan.fan_secondary_control
+    service: fan.set_speed
+  mode: single
+storage_fan_multi_speed_high:
+  alias: Storage Fan Multi Speed High
+  sequence:
+  - condition: device
+    device_id: 8b93014f6626d569c5789ae15f5a7ee6
+    domain: fan
+    entity_id: fan.fan_secondary_control
+    type: is_on
+  - type: is_value
+    condition: device
+    device_id: 42ca57075a5d0e9765e98fe07eee9dc9
+    entity_id: sensor.outside_temperature
+    domain: sensor
+    above: 18.1
+  - data:
+      speed: high
+    entity_id: fan.fan_secondary_control
+    service: fan.set_speed
+  mode: single
+storage_fan_multi_speed_off:
+  alias: Storage Fan Multi Speed off
+  sequence:
+  - below: '22.2'
+    condition: numeric_state
+    entity_id: sensor.fan_control_temperature
+  - data: {}
+    entity_id: fan.fan_secondary_control
+    service: fan.turn_off
+  mode: single
+mode: single
+storage_fan_multi_speed_on:
+  alias: Storage Fan Multi Speed on
+  sequence:
+  - condition: numeric_state
+    entity_id: sensor.fan_control_temperature
+    above: '23.8'
+  - data:
+      speed: medium
+    entity_id: fan.fan_secondary_control
+    service: fan.set_speed
+  mode: single
+boom_rock:
+  alias: Boom Rock
+  sequence:
+  - service: media_player.play_media
+    data:
+      entity_id: media_player.spotify_jeremy_shephard
+      media_content_type: playlist
+      media_content_id: https://open.spotify.com/playlist/7647ckFFGk9OXZ9fJBIzG1
+    entity_id: media_player.shed_speaker
+  mode: single
+boom_teh_original:
+  alias: Boom teh Shed
+  sequence:
+  - service: media_player.turn_on
+    data: {}
+    target:
+      entity_id: media_player.shed_speaker
+  - delay: 00:00:02
+  - service: spotcast.start
+    data:
+      media_content_id: https://open.spotify.com/playlist/6I7nV0dZNAtju8kHeAQlTx
+      entity_id: media_player.shed_speaker
+  mode: single
+dyson_power:
+  alias: Dyson Power
+  sequence:
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      payload: '{"ir_code_to_send": "A90I3AJAAQEcA0ADAVcFQAMB3ALgFQEFHAPcAtwCQCdAAwH//8BDgAFAE0ADgAGAK+ABAeAFDwdXBdwCVwUcAw=="}'
+      topic: zigbee2mqtt/ZBRemote/set
+  mode: single
+dyson_fan_speed_down:
+  alias: Dyson Fan Speed Down
+  sequence:
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      payload: '{"ir_code_to_send": "Ba8I3gIcA4ADCd4CUQUcA1EF3gLgAwFAD+APA0ABAf//QEPAAYA/QC8F3gIcA94CQAEBHANADwFRBcAHwAuAD0ABAWbDQEOADwtmw68I3gLeAlEF3gI="}'
+      topic: zigbee2mqtt/ZBRemote/set
+  mode: single
+dyson_fan_speed_up:
+  alias: Dyson Fan Speed Up
+  sequence:
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      payload: '{"ir_code_to_send": "BcsI4AIcA8ADAVgFQAMB4ALgBwHAE+ALBwFvBkBD4AEBQCNAA+AHAcAT4AUHBRwDWAXgAg=="}'
+      topic: zigbee2mqtt/ZBRemote/set
+  mode: single
+dyson_cooling:
+  alias: Dyson Cooling
+  sequence:
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      payload: '{"ir_code_to_send": "BeEI2wIbA8ADAVQFgAMB2wJAAYAHB1QF2wLbAhsD4AUHgAFAEwE7B0BD4AEBQBNAA+ADAcAPB1QFGwPbAtsCwAcH2wLbAlQF2wI="}'
+      topic: zigbee2mqtt/ZBRemote/set
+  mode: single
+dyson_heat_up:
+  alias: Dyson Heat Up
+  sequence:
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      payload: '{"ir_code_to_send": "BYMI4QIdA4ADD+ECUQUdA1EF4QLhAh0D4QLAAQEdA0AT4AMDQAHADwHQAUBD4AEBwBcF4QIdA+ECwAEBHQPAFwFRBYALC+EC4QJRBeECUQUdAw=="}'
+      topic: zigbee2mqtt/ZBRemote/set
+  mode: single
+toggle_257_fence_timer:
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: timer.257_fence_unit_timer
+        state: active
+      sequence:
+      - action: timer.finish
+        metadata: {}
+        data: {}
+        target:
+          entity_id: timer.257_fence_unit_timer
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: timer.257_fence_unit_timer
+          state: active
+      sequence:
+      - action: timer.start
+        metadata: {}
+        data: {}
+        target:
+          entity_id: timer.257_fence_unit_timer
+  alias: Toggle 257 Fence Timer
+  description: ''
+farm_water_restore_after_trip:
+  alias: Farm Water Restore After Trip
+  sequence:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.water_retic_control_retic_last_60_reset
+  - delay: 00:00:02
+  - action: valve.open_valve
+    target:
+      entity_id:
+      - valve.water_retic_control_farm_valve
+      - valve.water_retic_control_house_valve
+      - valve.water_retic_control_retic_valve
+  - action: notify.mobile_app_jezza_iphone
+    data:
+      title: Farm Water
+      message: Water reset completed. Meter reset and valves reopened.
+  - action: notify.mobile_app_sm_s731b
+    data:
+      title: Farm Water
+      message: Water reset completed. Meter reset and valves reopened.
+  mode: single
+  description: ''
+issue_try_fix:
+  alias: Issue Try Fix
+  mode: single
+  fields:
+    issue_entity:
+      description: Issue binary sensor entity
+      example: binary_sensor.issue_water_retic_pump_off
+  sequence:
+  - variables:
+      fix_service: '{{ state_attr(issue_entity, ''fix_service'') }}'
+      fix_entity: '{{ state_attr(issue_entity, ''fix_entity'') }}'
+      fix_script: '{{ state_attr(issue_entity, ''fix_script'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ fix_script not in [none, '''', ''unknown'', ''unavailable'']
+          }}
+
+          '
+      sequence:
+      - action: '{{ fix_script }}'
+    - conditions:
+      - condition: template
+        value_template: "{{ fix_service not in [none, '', 'unknown', 'unavailable']\n
+          \  and fix_entity not in [none, '', 'unknown', 'unavailable'] }}\n"
+      sequence:
+      - target:
+          entity_id: '{{ fix_entity }}'
+        action: '{{ fix_service }}'
+  description: ''
+water_fix_volume_farm:
+  alias: Water Fix Volume Farm
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.water_retic_control_retic_last_60_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_farm_valve
+
+water_fix_volume_house:
+  alias: Water Fix Volume House
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.water_retic_control_retic_last_60_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_house_valve
+
+water_fix_volume_retic:
+  alias: Water Fix Volume Retic
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.water_retic_control_retic_last_60_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_retic_valve
+
+water_fix_volume_stand:
+  alias: Water Fix Volume Stand
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.water_retic_control_retic_last_60_reset
+    - delay: "00:00:02"
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump
+water_fix_runtime_farm:
+  alias: Water Fix Runtime Farm
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_farm_valve
+
+water_fix_runtime_house:
+  alias: Water Fix Runtime House
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_house_valve
+
+water_fix_runtime_retic:
+  alias: Water Fix Runtime Retic
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+    - delay: "00:00:02"
+    - action: valve.open_valve
+      target:
+        entity_id: valve.water_retic_control_retic_valve
+
+water_fix_runtime_stand:
+  alias: Water Fix Runtime Stand
+  mode: single
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+    - delay: "00:00:02"
+    - action: switch.turn_on
+      target:
+        entity_id: switch.retic_pump

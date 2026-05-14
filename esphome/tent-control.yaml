@@ -1,0 +1,500 @@
+esphome:
+  name: tent-control
+  platform: ESP32
+  board: wemos_d1_mini32
+  includes:
+    - grofan1.h
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+  sda: 22
+  scl: 21
+  scan: True
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  manual_ip:
+      static_ip: 192.168.1.92
+      gateway: 192.168.1.254
+      subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Tent-Control Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+#bme680_bsec:
+#  address: 0x76
+#  sample_rate: ulp
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_10}
+    then:
+      - if:   
+          condition:
+            or:
+            - switch.is_on: tent_heater
+            - light.is_on: tent_led
+          then:
+            - component.update: tent_watts     
+      
+        
+esp32_ble_tracker:
+  
+sensor:
+# - platform: bme680_bsec
+#    temperature:
+#      name: "Tent Temperature"
+#    pressure:
+#      name: "Tent Pressure"
+#    humidity:
+#      name: "Tent Humidity"
+#    iaq:
+#      name: "Tent IAQ"
+#    co2_equivalent:
+#      name: "Tent CO2 Equivalent"
+#    breath_voc_equivalent:
+#      name: "Tent Breath VOC Equivalent"
+  - platform: bme680
+    temperature:
+      name: "Tent Temperature"
+      id: wired_temp
+      oversampling: 4x
+      filters:
+      - filter_out: 201.8
+      - max:
+          window_size: 7
+          send_every: 4
+          send_first_at: 2
+    pressure:
+      name: "Tent Pressure"
+    humidity:
+      name: "Tent Humidity"
+      filters:
+      - filter_out: 100
+      - max:
+          window_size: 7
+          send_every: 4
+          send_first_at: 2
+    gas_resistance:
+      name: "Tent Gas Resistance"
+    address: 0x76
+    update_interval: 60s
+
+  - platform: tsl2561
+    name: "Tent Ambient Light Sensor"
+    address: 0x39
+    integration_time: 14ms
+    update_interval: 60s
+
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:1E:C5:0F"
+    temperature:
+      name: "BT Temperature"
+      id: bt_temp
+    humidity:
+      name: "BT Humidity"
+    battery_level:
+      name: "BT Battery-Level"
+    battery_voltage:
+      name: "BT Battery-Voltage"
+  
+#  - platform: xiaomi_hhccjcy01
+#    mac_address: C4:7C:8D:6D:79:8A
+#    temperature:
+#      name: "Plant 1 Temperature"
+#    moisture:
+#      name: "Plant 1 Moisture"
+#    illuminance:
+#      name: "Plant 1 Illuminance"
+#    conductivity:
+#      name: "Plant 1 Soil Conductivity"
+#    battery_level:
+#      name: "Plant 1 Battery Level"
+      
+#  - platform: xiaomi_hhccjcy01
+#    mac_address: C4:7C:8D:6D:71:FD
+#    temperature:
+#      name: "Plant 2 Temperature"
+#    moisture:
+#      name: "Plant 2 Moisture"
+#    illuminance:
+#      name: "Plant 2 Illuminance"
+#    conductivity:
+#      name: "Plant 2 Soil Conductivity"
+#    battery_level:
+#      name: "Plant 3 Battery Level"
+
+#  - platform: xiaomi_hhccjcy01
+#    mac_address: C4:7C:8D:6D:78:A3
+#    temperature:
+#      name: "Plant 3 Temperature"
+#    moisture:
+#      name: "Plant 3 Moisture"
+#    illuminance:
+#      name: "Plant 3 Illuminance"
+#    conductivity:
+#      name: "Plant 3 Soil Conductivity"
+#    battery_level:
+#      name: "Plant 3 Battery Level"
+      
+# - platform: atc_mithermometer
+#    mac_address: "A4:C1:38:6D:DE:EC"
+#    temperature:
+#      name: "BT 2 Temperature"
+#    humidity:
+#      name: "BT 2 Humidity"
+#    battery_level:
+ #     name: "BT 2 Battery-Level"
+#    battery_voltage:
+#      name: "BT 2 Battery-Voltage"
+#text_sensor:
+#  - platform: bme680_bsec
+#    iaq_accuracy:
+#      name: "Tent IAQ Accuracy"
+    
+      
+  
+binary_sensor:
+  - platform: gpio
+    id: led_touch
+    name: Tent Light Button
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - delay: 2s
+        - light.toggle: tent_led
+  
+  - platform: gpio
+    id: up_touch
+    pin:
+      number: GPIO27
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+    - min_length: 50ms
+      max_length: 350ms
+      then:
+        - fan.turn_on:
+            id: custom_fan
+            speed: 1
+    - min_length: 500ms
+      max_length: 2500ms
+      then:
+        - fan.turn_on:
+            id: custom_fan
+            speed: 2
+       
+  - platform: gpio
+    id: down_touch
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - delay: 200ms
+        - fan.turn_off: custom_fan
+        
+  - platform: template
+    id: heater_max
+    name: "Heater Max Off"
+    lambda: |-
+      if (id(bt_temp).state >= 32) {
+        // Fan is Off.
+        return true;
+      } else if (id(wired_temp).state >= 32) {
+        // Fan Is On.
+        return true;
+      } else {
+        // Fan Is On.
+        return false;
+      }
+    on_state:
+    - switch.turn_on: tent_heater
+    
+  - platform: template
+    name: "Tent Extraction Fan Off"
+    lambda: |-
+      if (id(custom_fan).state) {
+        // Fan is Off.
+        return false;
+      } else {
+        // Fan Is On.
+        return true;
+      } 
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "Off"
+        
+  - platform: template
+    name: "Tent Extraction Fan Speed Low"
+    lambda: |-
+      if (id(custom_fan).state) {
+        if (id(custom_fan).speed == 1.0) {
+          // Fan Is On low.
+          return true;
+        } else {
+         // Fan Is Off.
+          return false;
+        }  
+      } else {
+        // Fan Is Off.
+        return false;
+      }  
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "Low"  
+      
+  - platform: template
+    name: "Tent Extraction Fan Speed High"
+    lambda: |-
+      if (id(custom_fan).state) {
+        if (id(custom_fan).speed == 2.0) {
+          // Fan Is On low.
+          return true;
+        } else {
+         // Fan Is Off.
+          return false;
+        }  
+      } else {
+        // Fan Is Off.
+        return false;
+      }
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "High"
+  
+  - platform: template
+    name: "Fan A Speed Fault"
+    lambda: |-
+      if (id(fan_a).state) {
+        if (id(fan_a).speed == 0) {
+          // Fan Is at Zero.
+          return true;
+        } else {
+         // Fan Is Above Zero.
+          return false;
+        }  
+      } else {
+        // Fan Is Off.
+        return false;
+      }
+    on_press:
+      - fan.turn_on:
+          id: fan_a
+          speed: 45
+          
+  - platform: template
+    name: "Fan B Speed Fault"
+    lambda: |-
+      if (id(fan_b).state) {
+        if (id(fan_b).speed == 0) {
+          // Fan Is at Zero.
+          return true;
+        } else {
+         // Fan Is Above Zero.
+          return false;
+        }  
+      } else {
+        // Fan Is Off.
+        return false;
+      }
+    on_press:
+      - fan.turn_on:
+          id: fan_b
+          speed: 45
+text_sensor:
+  - platform: template
+    name: "Tent Fan Setting"
+    id: extraction_setting
+    
+    
+output:
+  - platform: custom
+    type: float
+    outputs:
+      id: fanoutput
+    lambda: |-
+      auto custom_fan = new FanOutput();
+      App.register_component(custom_fan);
+      return {custom_fan};
+
+  - platform: gpio
+    pin: GPIO23
+    inverted: True
+    id: light_output
+  
+  - platform: ledc
+    pin: GPIO16
+    id: fan_output_inside
+    frequency: 16000hz
+    min_power: 0.13
+    max_power: 1
+  
+  - platform: ledc
+    pin: GPIO02
+    id: fan_output_intake
+    frequency: 16000hz
+    
+  - platform: ledc
+    pin: GPIO17
+    id: fan_output_intake_2
+    frequency: 16000hz
+    min_power: 0.13
+    max_power: 1
+    
+light:
+  - platform: binary
+    name: "Tent LED"
+    output: light_output
+    restore_mode: ALWAYS_OFF
+    id: tent_led
+
+switch:
+  - platform: gpio
+    pin: GPIO05
+    name: "Tent Heater"
+    id: tent_heater
+    inverted: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: template
+    id: update_fan_speed
+    optimistic: True
+    turn_on_action:
+      then:
+        - delay: 200ms
+        - if:
+            condition:
+              and:
+                - switch.is_off: fan_relay1
+            then:
+              - fan.turn_off: custom_fan
+        - if:
+            condition:
+              and:
+                - switch.is_off: fan_relay1
+                - switch.is_off: fan_relay2
+            then:
+              - fan.turn_on:
+                  id: custom_fan
+                  speed: 1
+        - if:
+            condition:
+              and:
+                - switch.is_on: fan_relay1
+                - switch.is_on: fan_relay2
+            then:
+              - fan.turn_on:
+                  id: custom_fan
+                  speed: 2
+        - switch.turn_off: update_fan_speed
+        
+  - platform: restart
+    name: "Tent Control Chip Restart"
+    icon: "mdi:restart"
+
+  - platform: gpio
+    pin: GPIO18
+    inverted: True
+    id: fan_relay1
+    on_turn_on:
+    - logger.log: "Switch Turned On Fan!"
+    on_turn_off:
+    - logger.log: "Switch Turned Off Fan!"
+     
+
+  - platform: gpio
+    pin: GPIO19
+    inverted: True
+    id: fan_relay2
+    on_turn_on:
+    - logger.log: "Switch Turned Speed High!"
+    on_turn_off:
+    - logger.log: "Switch Turned Spped Low!"
+    
+    
+fan:
+  - platform: speed
+    output: fan_output_intake
+    name: "Tent Intake Fan"
+    
+  - platform: speed
+    output: fan_output_inside
+    name: "Tent Inside"
+    id: fan_a
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_a
+            speed: 45
+    
+    
+  - platform: speed
+    output: fan_output_intake_2
+    name: "Tent Intake Fan 2"
+    id: fan_b
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_b
+            speed: 45
+    
+  - platform: speed
+    output: fanoutput
+    id: custom_fan
+    speed_count: 2
+    name: "Tent Extraction Fan"
+    on_turn_on:
+    - delay: 400ms
+    - if:
+        condition:
+          - switch.is_off: fan_relay1
+        then:
+          - logger.log: "Fan Condition Turned On!"
+          - fan.turn_on:
+              id: custom_fan
+              speed: 1
+              
+
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(tent_power) = 0;
+          id(tent_watts).publish_state(0);
+          
+globals:
+  
+  - id: tent_power
+    type: float
+    restore_value: no
+    initial_value: '0'    
+    
+  
+              

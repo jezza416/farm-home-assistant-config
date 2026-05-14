@@ -1,0 +1,1048 @@
+esphome:
+  name: test-32
+  on_boot:
+    priority: 600
+    then:
+      - light.turn_on:
+          id: status_led
+          brightness: 50%
+          effect: Waiting
+    
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+
+#        if (id(status_text).state == "" ){
+#            id(status_text).publish_state("Waiting...");
+#            auto call = id(status_led).turn_on();
+#            call.set_effect("Waiting");
+#            call.perform();
+#            }  
+  
+external_components:
+  # use all components from a local folder
+  - source:
+      type: local
+      path: my_components
+
+# Enable logging
+logger:
+  level: VERBOSE
+  baud_rate: 0
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+  password: "6fdaf95037feb02765b14c34d98edbb5"
+
+wifi:
+  networks:
+  - ssid: "hfpshed"
+    password: "hillview199@"
+  - ssid: "JezzaRM"
+    password: "Zues5399"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test-32 Fallback Hotspot"
+    password: "rUyFHwyv1fE3"
+
+captive_portal:
+
+      
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+display:
+  - platform: lcd_pcf8574
+    dimensions: 20x4
+    address: 0x27
+    lambda: |-
+      it.printf(0, 0, "%s", id(status_text).state.c_str());
+      it.printf(0, 1, "Lg:%d", id(log_int));
+      it.printf(5, 1, "W:%s", id(wifi_state).state ? "Y" : "N");
+      it.printf(10,1, "KG: %2.1f", id(weight0).state);
+      it.printf(0, 2, "T= %s", id(tag0).state.c_str());
+      it.printf(0, 3, "%s", id(zero_scale_sw).state ? "Zero'd" : "");
+      it.printf(7, 3, "KG:  %2.1f", id(weight_a).state);
+      
+#      it.printf(0, 2, "T= %s", id(tag0).state.c_str());
+
+uart:
+  rx_pin: GPIO5
+  baud_rate: 9600
+  
+text_sensor:
+  - platform: wl_134_2
+    name: EARTAG
+    reset: False
+    on_value:
+        then:
+        - rtttl.play: "beep:d=16,o=5,b=100:b"
+        - lambda: |-
+            id(tag0).publish_state(x);
+            id(status_text).publish_state("Scan Done...");
+            auto call = id(status_led).turn_on();
+            call.set_effect("Ready");
+            call.perform();
+  
+  - platform: homeassistant
+    name: "Current Note"
+    id: note0
+    entity_id: input_text.tag_scan_note
+
+  - platform: template
+    name: "Current Tag ID"
+    id: tag0
+
+  - platform: template
+    name: "Tag 1 ID"
+    id: tag1
+  - platform: template
+    name: "Tag 1 Note"
+    id: note1
+
+  - platform: template
+    name: "Tag 2 ID"
+    id: tag2
+  - platform: template
+    name: "Tag 2 Note"
+    id: note2
+  
+  - platform: template
+    name: "Tag 3 ID"
+    id: tag3  
+  - platform: template
+    name: "Tag 3 Note"
+    id: note3  
+  
+  - platform: template
+    name: "Tag 4 ID"
+    id: tag4
+  - platform: template
+    name: "Tag 4 Note"
+    id: note4  
+    
+  - platform: template
+    name: "Tag 5 ID"
+    id: tag5
+  - platform: template
+    name: "Tag 5 Note"
+    id: note5  
+  
+  - platform: template
+    name: "Tag 6 ID"
+    id: tag6  
+  - platform: template
+    name: "Tag 6 Note"
+    id: note6  
+  
+  - platform: template
+    name: "Tag 7 ID"
+    id: tag7
+  - platform: template
+    name: "Tag 7 Note"
+    id: note7  
+  
+  - platform: template
+    name: "Tag 8 ID"
+    id: tag8
+  - platform: template
+    name: "Tag 8 Note"
+    id: note8  
+  
+  - platform: template
+    name: "Tag 9 ID"
+    id: tag9  
+  - platform: template
+    name: "Tag 9 Note"
+    id: note9  
+    
+  - platform: template
+    name: "Tag 10 ID"
+    id: tag10
+  - platform: template
+    name: "Tag 10 Note"
+    id: note10  
+    
+  - platform: template
+    name: "Tag 11 ID"
+    id: tag11
+  - platform: template
+    name: "Tag 11 Note"
+    id: note11  
+   
+  - platform: template
+    name: "Tag 12 ID"
+    id: tag12
+  - platform: template
+    name: "Tag 12 Note"
+    id: note12  
+  
+  - platform: template
+    name: "Tag 13 ID"
+    id: tag13  
+  - platform: template
+    name: "Tag 13 Note"
+    id: note13  
+    
+  - platform: template
+    name: "Tag 14 ID"
+    id: tag14
+  - platform: template
+    name: "Tag 14 Note"
+    id: note14  
+  
+  - platform: template
+    name: "Tag 15 ID"
+    id: tag15
+  - platform: template
+    name: "Tag 15 Note"
+    id: note15  
+  
+  - platform: template
+    name: "Tag 16 ID"
+    id: tag16  
+  - platform: template
+    name: "Tag 16 Note"
+    id: note16  
+    
+  - platform: template
+    name: "Tag 17 ID"
+    id: tag17
+  - platform: template
+    name: "Tag 17 Note"
+    id: note17  
+    
+  - platform: template
+    name: "Tag 18 ID"
+    id: tag18
+  - platform: template
+    name: "Tag 18 Note"
+    id: note18  
+  
+  - platform: template
+    name: "Tag 19 ID"
+    id: tag19  
+  - platform: template
+    name: "Tag 19 Note"
+    id: note19  
+    
+  - platform: template
+    name: "Tag 20 ID"
+    id: tag20
+  - platform: template
+    name: "Tag 20 Note"
+    id: note20  
+    
+  - platform: template
+    name: "Tag 21 ID"
+    id: tag21
+  - platform: template
+    name: "Tag 21 Note"
+    id: note21  
+    
+  - platform: template
+    name: "Tag 22 ID"
+    id: tag22
+  - platform: template
+    name: "Tag 22 Note"
+    id: note22  
+  
+  - platform: template
+    name: "Tag 23 ID"
+    id: tag23  
+  - platform: template
+    name: "Tag 23 Note"
+    id: note23  
+    
+  - platform: template
+    name: "Tag 24 ID"
+    id: tag24
+  - platform: template
+    name: "Tag 24 Note"
+    id: note24  
+    
+  - platform: template
+    name: "Tag 25 ID"
+    id: tag25
+  - platform: template
+    name: "Tag 25 Note"
+    id: note25  
+  
+  - platform: template
+    name: "Tag 26 ID"
+    id: tag26  
+  - platform: template
+    name: "Tag 26 Note"
+    id: note26  
+    
+  - platform: template
+    name: "Tag 27 ID"
+    id: tag27
+  - platform: template
+    name: "Tag 27 Note"
+    id: note27  
+    
+  - platform: template
+    name: "Tag 28 ID"
+    id: tag28
+  - platform: template
+    name: "Tag 28 Note"
+    id: note28  
+    
+  - platform: template
+    name: "Tag 29 ID"
+    id: tag29  
+  - platform: template
+    name: "Tag 29 Note"
+    id: note29  
+    
+  - platform: template
+    name: "Tag 30 ID"
+    id: tag30
+  - platform: template
+    name: "Tag 30 Note"
+    id: note30  
+    
+  - platform: template
+    name: "Status"
+    id: status_text
+    on_value:
+      then:
+      - lambda: |-
+          std::string str = (x);
+          std::string a ("Got");
+          std::string b ("Placed");
+          std::size_t founda = str.find(a);
+          std::size_t foundb = str.find(b);
+          if (founda!=std::string::npos){
+            ESP_LOGD("main", "Found Got in String");
+            auto call = id(status_led).turn_on();
+            call.set_effect("Fault");
+            call.perform();
+          } else if (foundb!=std::string::npos){
+            ESP_LOGD("main", "Found Placed in String");
+            auto call = id(status_led).turn_on();
+            call.set_effect("Waiting");
+            call.perform();
+          } else {
+            ESP_LOGD("main", "Could not find Got Or Placed in Text");
+          }
+sensor:       
+  
+  - platform: hx711
+    id: scale_raw
+    dout_pin: GPIO16
+    clk_pin: GPIO17
+    gain: 128
+    update_interval: 2s
+    accuracy_decimals: 2
+    on_value:
+      then:
+      - lambda: |-
+          id(weight0).publish_state(x);
+          id(weight_a).publish_state(x);
+#    filters:
+#      - calibrate_linear:
+#          -  15415 -> 0
+#          - -15513 -> 20
+#      - lambda: |-
+#          return x - id(scale_float);
+#    unit_of_measurement: kg
+    
+
+    
+  - platform: template
+    name: "Current Weight"
+    id: weight0  
+    unit_of_measurement: kg
+    filters:
+      - calibrate_linear:
+          - 19000 -> 0
+          - -577019 -> 543.81
+      - lambda: |-
+          return x - id(scale_float);
+          
+#    - calibrate_linear:
+#          - 19000 -> 0
+#          - -560163 -> 527
+    
+  - platform: template
+    name: "Current Average Weight"
+    id: weight_a  
+    unit_of_measurement: kg
+    filters:
+      - calibrate_linear:
+          - 19000 -> 0
+          - -577019 -> 543.81
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 5
+      - lambda: |-
+          return x - id(scale_float);
+      
+    
+  - platform: template
+    name: "Weight 1"
+    id: weight1  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 2"
+    id: weight2  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 3"
+    id: weight3  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 4"
+    id: weight4  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 5"
+    id: weight5  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 6"
+    id: weight6  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 7"
+    id: weight7  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 8"
+    id: weight8  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 9"
+    id: weight9  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 10"
+    id: weight10  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 11"
+    id: weight11  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 12"
+    id: weight12  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 13"
+    id: weight13  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 14"
+    id: weight14  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 15"
+    id: weight15  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 16"
+    id: weight16  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 17"
+    id: weight17  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 18"
+    id: weight18  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 19"
+    id: weight19  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 20"
+    id: weight20  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 21"
+    id: weight21  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 22"
+    id: weight22  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 23"
+    id: weight23  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 24"
+    id: weight24  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 25"
+    id: weight25  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 26"
+    id: weight26  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 27"
+    id: weight27  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 28"
+    id: weight28  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 29"
+    id: weight29  
+    unit_of_measurement: kg  
+    
+  - platform: template
+    name: "Weight 30"
+    id: weight30  
+    unit_of_measurement: kg  
+    
+binary_sensor:
+  - platform: status
+    name: "Scale Status"
+    id: wifi_state
+    
+  - platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Zero Scale Button"
+    id: zero_scale
+    on_click:
+      min_length: 1s
+      max_length: 4s
+      then:
+      - lambda: |-
+          if (id(zero_scale_sw).state) {
+            id(zero_scale_sw).turn_off();
+          } else {
+            id(zero_scale_sw).turn_on();
+          }
+#
+#      - switch.turn_on: zero_scale_sw
+#    on_double_click:
+#      min_length: 50ms
+#      max_length: 350ms
+#      then:
+#        - switch.turn_off: zero_scale_sw
+        
+  - platform: gpio
+    pin:
+      number: GPIO33
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Upload Button"
+    id: upload
+    on_press:
+      - if:
+          condition:
+            binary_sensor.is_off: zero_scale
+          then:
+              - switch.turn_on: upload_scale_sw
+          else: 
+              - switch.turn_on: upload_data_file
+ 
+    
+      
+switch:
+  - platform: template
+    name: "Upload Data File"
+    id: upload_data_file
+    turn_on_action:
+      - switch.template.publish:
+          id: upload_data_file
+          state: ON
+      - rtttl.play: "beep:d=8,o=5,b=100:b"
+      - lambda: |-
+          id(status_text).publish_state("Uploading Started..");
+    turn_off_action:
+      - rtttl.play: "beep:d=8,o=5,b=100:b"
+      - switch.template.publish:
+          id: upload_data_file
+          state: OFF
+      - lambda: |-
+          id(status_text).publish_state("Uploading Finshed..");
+          
+          
+  - platform: template
+    name: "Zero Scale"
+    id: zero_scale_sw
+    turn_on_action:
+      - switch.template.publish:
+          id: zero_scale_sw
+          state: ON
+      - rtttl.play: "beep:d=8,o=5,b=100:b"
+      - lambda: |-
+          id(scale_float) = id(weight0).state;
+    turn_off_action:
+      - lambda: |-
+          id(scale_float) = 0;
+      - switch.template.publish:
+          id: zero_scale_sw
+          state: OFF
+          
+  - platform: template
+    name: "Save States"
+    id: upload_scale_sw
+    turn_on_action:
+      - switch.template.publish:
+          id: upload_scale_sw
+          state: ON
+      - rtttl.play: "beep:d=16,o=5,b=100:b"
+      - lambda: |-
+          if (id(tag0).state == ""){
+              id(status_text).publish_state("Need Tag ID!!!");
+          } else if (id(tag0).state == "0"){
+              id(status_text).publish_state("Need Tag ID!!!");
+          } else if (id(tag0).state == " 000000000000000"){
+              id(status_text).publish_state("Need Tag ID!!!");
+          } else if (id(tag1).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 1)..");
+            } else if (id(tag1).state == "" ){
+                id(status_text).publish_state("Placed At (ID 1)...");
+                id(weight1).publish_state(id(weight_a).state);
+                id(note1).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag1).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag2).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 2)..");
+            } else if (id(tag2).state == "" ){
+                id(status_text).publish_state("Placed At (ID 2)...");
+                id(weight2).publish_state(id(weight_a).state);
+                id(note2).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag2).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag3).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 3)..");
+            } else if (id(tag3).state == "" ){
+                id(status_text).publish_state("Placed In (ID 3)..");
+                id(weight3).publish_state(id(weight_a).state);
+                id(note3).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag3).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag4).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 4)..");
+            } else if (id(tag4).state == "" ){
+                id(status_text).publish_state("Placed In (ID 4)...");
+                id(weight4).publish_state(id(weight_a).state);
+                id(note4).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag4).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag5).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 5)..");
+            } else if (id(tag5).state == "" ){
+                id(status_text).publish_state("Placed In (ID 5)...");
+                id(weight5).publish_state(id(weight_a).state);
+                id(note5).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag5).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag6).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 6)..");
+            } else if (id(tag6).state == "" ){
+                id(status_text).publish_state("Placed In (ID 6)...");
+                id(weight6).publish_state(id(weight_a).state);
+                id(note6).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag6).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+            } else if (id(tag7).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 7)..");
+            } else if (id(tag7).state == "" ){
+                id(status_text).publish_state("Placed At (ID 7)...");
+                id(weight7).publish_state(id(weight_a).state);
+                id(note7).publish_state(id(note0).state);
+                id(log_int) += 1;
+                return id(tag7).publish_state(id(tag0).state);
+                id(tag0).publish_state("0");
+          } else if (id(tag8).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 8)..");
+            } else if (id(tag8).state == "" ){
+                id(status_text).publish_state("Placed In (ID 8)...");
+                id(weight8).publish_state(id(weight_a).state);
+                id(note8).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag8).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag9).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 9)..");
+            } else if (id(tag9).state == "" ){
+                id(status_text).publish_state("Placed In (ID 9)...");
+                id(weight9).publish_state(id(weight_a).state);
+                id(note9).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag9).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag10).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 10).");
+            } else if (id(tag10).state == "" ){
+                id(status_text).publish_state("Placed In (ID 10)..");
+                id(weight10).publish_state(id(weight_a).state);
+                id(note10).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag10).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag11).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 11).");
+            } else if (id(tag11).state == "" ){
+                id(status_text).publish_state("Placed In (ID 11)..");
+                id(weight11).publish_state(id(weight_a).state);
+                id(note11).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag11).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+            } else if (id(tag12).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 12).");
+            } else if (id(tag12).state == "" ){
+                id(status_text).publish_state("Placed At (ID 12)..");
+                id(weight12).publish_state(id(weight_a).state);
+                id(note12).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag12).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag13).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 13).");
+            } else if (id(tag13).state == "" ){
+                id(status_text).publish_state("Placed In (ID 13)..");
+                id(weight13).publish_state(id(weight_a).state);
+                id(note13).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag13).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag14).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 14).");
+            } else if (id(tag14).state == "" ){
+                id(status_text).publish_state("Placed In (ID 14)..");
+                id(weight14).publish_state(id(weight_a).state);
+                id(note14).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag14).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag15).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 15).");
+            } else if (id(tag15).state == "" ){
+                id(status_text).publish_state("Placed In (ID 15)..");
+                id(weight15).publish_state(id(weight_a).state);
+                id(note15).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag15).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag16).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 16).");
+            } else if (id(tag16).state == "" ){
+                id(status_text).publish_state("Placed In (ID 16)..");
+                id(weight16).publish_state(id(weight_a).state);
+                id(note16).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag16).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+            } else if (id(tag17).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 17).");
+            } else if (id(tag17).state == "" ){
+                id(status_text).publish_state("Placed At (ID 17)..");
+                id(weight17).publish_state(id(weight_a).state);
+                id(note17).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag17).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag18).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 18).");
+            } else if (id(tag18).state == "" ){
+                id(status_text).publish_state("Placed In (ID 18)..");
+                id(weight18).publish_state(id(weight_a).state);
+                id(note18).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag18).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag19).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 19).");
+            } else if (id(tag19).state == "" ){
+                id(status_text).publish_state("Placed In (ID 19)..");
+                id(weight19).publish_state(id(weight_a).state);
+                id(note19).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag19).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag20).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 20).");
+            } else if (id(tag20).state == "" ){
+                id(status_text).publish_state("Placed In (ID 20)..");
+                id(weight20).publish_state(id(weight_a).state);
+                id(note20).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag20).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag21).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 21).");
+            } else if (id(tag21).state == "" ){
+                id(status_text).publish_state("Placed At (ID 21)..");
+                id(weight21).publish_state(id(weight_a).state);
+                id(note21).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag21).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag22).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 22).");
+            } else if (id(tag22).state == "" ){
+                id(status_text).publish_state("Placed At (ID 22)..");
+                id(weight22).publish_state(id(weight_a).state);
+                id(note22).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag22).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag23).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 23).");
+            } else if (id(tag23).state == "" ){
+                id(status_text).publish_state("Placed In (ID 23)..");
+                id(weight23).publish_state(id(weight_a).state);
+                id(note23).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag23).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag24).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 24).");
+            } else if (id(tag24).state == "" ){
+                id(status_text).publish_state("Placed In (ID 24)..");
+                id(weight24).publish_state(id(weight_a).state);
+                id(note24).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag24).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag25).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 25).");
+            } else if (id(tag25).state == "" ){
+                id(status_text).publish_state("Placed In (ID 25)..");
+                id(weight25).publish_state(id(weight_a).state);
+                id(note25).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag25).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag26).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 26).");
+            } else if (id(tag26).state == "" ){
+                id(status_text).publish_state("Placed In (ID 26)..");
+                id(weight26).publish_state(id(weight_a).state);
+                id(note26).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag26).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+            } else if (id(tag27).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 27).");
+            } else if (id(tag27).state == "" ){
+                id(status_text).publish_state("Placed At (ID 27)..");
+                id(weight27).publish_state(id(weight_a).state);
+                id(note27).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag27).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag28).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 28).");
+            } else if (id(tag28).state == "" ){
+                id(status_text).publish_state("Placed In (ID 28)..");
+                id(weight28).publish_state(id(weight_a).state);
+                id(note28).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag28).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag29).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 29).");
+            } else if (id(tag29).state == "" ){
+                id(status_text).publish_state("Placed In (ID 29)..");
+                id(weight29).publish_state(id(weight_a).state);
+                id(note29).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag29).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else if (id(tag30).state == id(tag0).state){
+              id(status_text).publish_state("Already Got (ID 30).");
+            } else if (id(tag30).state == "" ){
+                id(status_text).publish_state("Placed In (ID 30)..");
+                id(weight30).publish_state(id(weight_a).state);
+                id(note30).publish_state(id(note0).state);
+                id(log_int) += 1;
+                id(tag30).publish_state(id(tag0).state);
+                return id(tag0).publish_state("0");
+          } else {
+            id(status_text).publish_state("Slots Filled...");
+            auto call = id(status_led).turn_on();
+            call.set_effect("Fault");
+            call.perform();
+          }
+      - switch.turn_off: upload_scale_sw
+    turn_off_action:
+      - rtttl.play: "siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e"
+      - switch.template.publish:
+          id: upload_scale_sw
+          state: OFF
+      
+      
+    
+output:
+          
+  - platform: ledc
+    pin: GPIO02
+    id: buzzer
+
+rtttl:
+  output: buzzer
+  
+light:
+
+  - platform: fastled_clockless
+    id: status_led
+    chipset: WS2812B
+    pin: GPIO23
+    num_leds: 1
+    rgb_order: GRB 
+    name: "Scale Status LED"
+    effects:
+      - lambda:
+          name: "Fault"
+          update_interval: .05s
+          lambda: |-
+            static int state = 0;
+            static float in = 0;
+            static float out = 0;
+          
+            // Scale sin output from -1/1 to 0/1
+            out = sin(in) * 0.5 + 0.5;  
+ 
+            auto call = id(status_led).turn_on();
+            call.set_transition_length(100);
+            // COLOR + BRIGHTNESS
+            call.set_rgb(1.0, 0.0, 0.0);
+            call.set_brightness(out);
+            // Do not publish state to eliminate flooding of logs
+            call.set_publish(false);
+            call.set_save(false);
+            if (state == 0) {
+              call.set_rgb(1.0, 0.0, 0.0);
+            } else if (state == 150) {
+              call.set_effect("Waiting");
+            } else {
+              ESP_LOGD("main", "Wait %i", state);
+            }
+            call.perform();
+            state += 1;
+            if (state == 151)
+              state = 0;
+          
+              // RESOLUTION
+            in += 0.314;
+            if (in > 6.283){
+              in = 0; }
+              
+            
+      - lambda:
+          name: "Ready"
+          update_interval: 60s
+          lambda: |-
+            auto call = id(status_led).turn_on();
+            call.set_transition_length(10);
+            // COLOR + BRIGHTNESS
+            call.set_rgb(0.0, 1.0, 0.0);
+            call.set_brightness(0.5);
+            // Do not publish state to eliminate flooding of logs
+            call.set_publish(false);
+            call.set_save(false);
+            call.perform();
+              // RESOLUTION
+            
+           
+      - lambda:
+          name: "Waiting"
+          update_interval: 5s
+          lambda: |-
+            static int state = 0;
+ 
+            auto call = id(status_led).turn_on();
+            call.set_transition_length(100);
+            // COLOR + BRIGHTNESS
+            call.set_rgb(0.0, 0.0, 1.0);
+            call.set_brightness(0.5);
+            // Do not publish state to eliminate flooding of logs
+            call.set_publish(false);
+            call.set_save(false);
+            if (state == 0) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else if (state == 1){
+              if (id(status_text).state == "" ){
+                id(status_text).publish_state("Startup Done..");
+              }
+            } else if (state >= 6) {
+              id(status_text).publish_state("Ready for Scan..");
+            } else {
+              ESP_LOGD("main", "Wait %i", state);
+            }
+            call.perform();
+        
+            state += 1;
+            if (state == 151)
+              state = 0;
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "Slow Pulse"
+          # transition_length: 1s      # defaults to 1s
+          update_interval: 2s
+ 
+
+    
+globals:
+  - id: scale_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: log_int
+    type: int
+    restore_value: no
+    initial_value: '0'
+    

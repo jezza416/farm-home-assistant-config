@@ -1,0 +1,20 @@
+- id: '1610244350582'
+  name: Shed Start UP
+  entities:
+    light.mancave:
+      friendly_name: Mancave
+      supported_features: 8
+      state: 'on'
+    light.mancave_bar:
+      friendly_name: Mancave Bar
+      supported_features: 8
+      state: 'on'
+    switch.sony_amp_power_switch:
+      friendly_name: Sony AMP
+      state: 'on'
+    switch.soniq_tv_power_switch:
+      friendly_name: Soniq TV
+      state: 'on'
+    switch.konic_tv_power_switch:
+      friendly_name: Konic TV
+      state: 'on'

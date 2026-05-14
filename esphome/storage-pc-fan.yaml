@@ -1,0 +1,24 @@
+esphome:
+  name: storage-pc-fan
+  platform: ESP32
+  board: esp32dev
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "0504370fe298df1a7ec030b716f64844"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Storage-Pc-Fan Fallback Hotspot"
+    password: "5osSqyB5t2xS"
+
+captive_portal:

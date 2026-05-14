@@ -1,0 +1,1147 @@
+esphome:
+  name: mancave-remote
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #use_address: 192.168.1.207
+#  manual_ip:
+#    static_ip: 192.168.1.218
+#    subnet: 255.255.255.0
+#    gateway: 192.168.1.254
+    
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Remote Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+
+remote_transmitter:
+  - pin: GPIO16
+    carrier_duty_percent: 50%
+    id: one
+    
+  - pin: GPIO17
+    carrier_duty_percent: 50%
+    id: two
+
+sensor:
+  - platform: homeassistant
+    name: "Sony Slider"
+    id: ha_sony_slider
+    entity_id: input_number.sony_volume_slider
+    on_value:
+      then:
+      - if:
+          condition:
+            lambda: |-
+              if (id(ha_sony_slider).state < id(sony_current_vol)){
+              return true;
+              } else {
+              return false;
+              }
+          then:
+            - switch.turn_on: sony_vol_down_auto
+            - logger.log: "volume down logged"
+      - if:
+          condition:
+            lambda: |-
+              if (id(ha_sony_slider).state > id(sony_current_vol)){
+              return true;
+              } else {
+              return false;
+              }
+          then:
+            - switch.turn_on: sony_vol_up_auto
+            - logger.log: "volume up logged"
+
+  - platform: template
+    name: "Matrix Out One"
+    id: matrix_1
+    update_interval: 60s
+ 
+  - platform: template
+    name: "Matrix Out Two"
+    id: matrix_2
+    update_interval: 60s
+    
+  - platform: template
+    name: "Matrix Out Three"
+    id: matrix_3
+    update_interval: 60s
+    
+  - platform: template
+    name: "Matrix Out Four"
+    id: matrix_4
+    update_interval: 60s
+       
+  - platform: adc
+    pin: GPIO33
+    name: "Soniq Tv ADC"
+    id: soniq_adc
+    attenuation: 11db
+    update_interval: 28s
+    
+  - platform: adc
+    pin: GPIO35
+    name: "Sony Amp ADC"
+    attenuation: 11db
+    id: sony_adc
+    update_interval: 29s
+    
+  - platform: adc
+    pin: GPIO34
+    name: "Konic Tv ADC"
+    id: konic_adc
+    attenuation: 11db
+    update_interval: 27s
+    
+binary_sensor:
+  
+  - platform: template
+    name: "Soniq Tv ON"
+    id: soniq_on
+    lambda: |-
+      if  (id(soniq_adc).state >= 0.13){
+      return true;
+      } else {
+      return false;
+      }
+    on_release:
+      then:
+        - lambda: |- 
+            id(soniq_mute).publish_state(false);
+  
+  - platform: template
+    name: "Konic Tv ON"
+    id: konic_on
+    lambda: |-
+      if  (id(konic_adc).state >= 0.012){
+      return true;
+      } else {
+      return false;
+      }
+    on_release:
+      then:
+        - lambda: |- 
+            id(konic_mute).publish_state(false);
+  - platform: template
+    name: "Sony Tv ON"
+    id: sony_on
+    lambda: |-
+      if  (id(sony_adc).state >= 0.50){
+      return true;
+      } else {
+      return false;
+      }
+    on_press:
+      then:
+        - delay: 10s
+        - lambda: |-
+            if (id(sony_input) == 2){
+              id(sony_sky).turn_on();
+            } else if (id(sony_input) == 1){
+                id(sony_cast).turn_on();
+            } else {
+              id(sony_hd).turn_on();
+            }
+    on_release:
+      then:
+        - lambda: |-
+            id(sony_cast).publish_state(false);
+            id(sony_hd).publish_state(false);
+            id(sony_sky).publish_state(false);
+            id(sony_mute).publish_state(false);
+  
+  - platform: homeassistant
+    name: Heater Fixed On
+    id: heater_fixed_on
+    entity_id: binary_sensor.heater_fixed_running
+  
+  - platform: homeassistant
+    name: Heater Bar On
+    id: heater_bar_on
+    entity_id: binary_sensor.heater_bar_running
+    
+  
+globals:
+  - id: sony_current_vol
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: sony_input
+    type: int
+    restore_value: yes
+    initial_value: '3'
+    
+  - id: konic_vol
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: sony_vol
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+script:
+  - id: fixed_heater_turn_on
+    then:
+      - if:
+          condition:
+            binary_sensor.is_off: heater_fixed_on
+          then:
+          - logger.log: Command Too Fixed Heater
+          - remote_transmitter.transmit_nec:
+              transmitter_id: one
+              address: 0x01FE
+              command: 0x58A7
+          - delay: 35s
+          - logger.log: Delay Finshed Check Heater Fixed Status
+          - if:
+              condition:
+                binary_sensor.is_off: heater_fixed_on
+              then:
+              - logger.log: Script Restart Turn ON Fixed Heater
+              - script.execute: fixed_heater_turn_on
+              else:
+              - switch.turn_off: fixed_heater_power
+              - switch.template.publish:
+                  id: fixed_heater_power
+                  state: OFF
+              - logger.log: Script Turn ON Fixed Heater Completed   
+              - script.stop: fixed_heater_turn_on
+  - id: fixed_heater_turn_off
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: heater_fixed_on
+          then:
+          - logger.log: Command Too Fixed Heater
+          - remote_transmitter.transmit_nec:
+              transmitter_id: one
+              address: 0x01FE
+              command: 0x58A7
+          - delay: 35s
+          - logger.log: Delay Finshed Check Heater Fixed Status
+          - if:
+              condition:
+                binary_sensor.is_on: heater_fixed_on
+              then:
+              - logger.log: Script Restart Turn OFF Fixed Heater
+              - script.execute: fixed_heater_turn_off
+              else:
+              - switch.turn_off: fixed_heater_power
+              - switch.template.publish:
+                  id: fixed_heater_power
+                  state: OFF
+              - logger.log: Script Turn OFF Fixed Heater Completed   
+              - script.stop: fixed_heater_turn_off
+  - id: bar_heater_turn_on
+    then:
+      - if:
+          condition:
+            binary_sensor.is_off: heater_bar_on
+          then:
+          - logger.log: Command To Bar Heater
+          - remote_transmitter.transmit_nec:
+              transmitter_id: two
+              address: 0x01FE
+              command: 0x58A7
+          - delay: 35s
+          - logger.log: Delay Finshed Check Heater Bar Status
+          - if:
+              condition:
+                binary_sensor.is_off: heater_bar_on
+              then:
+              - logger.log: Script Restart Turn ON Bar Heater
+              - script.execute: bar_heater_turn_on
+              else:
+              - switch.turn_off: bar_heater_power
+              - switch.template.publish:
+                  id: bar_heater_power
+                  state: OFF
+              - logger.log: Script Turn ON Bar Heater Completed   
+              - script.stop: bar_heater_turn_on 
+              
+  - id: bar_heater_turn_off
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: heater_bar_on
+          then:
+          - logger.log: Command To Bar Heater
+          - remote_transmitter.transmit_nec:
+              transmitter_id: two
+              address: 0x01FE
+              command: 0x58A7
+          - delay: 35s
+          - logger.log: Delay Finshed Check Heater Bar Status
+          - if:
+              condition:
+                binary_sensor.is_on: heater_bar_on
+              then:
+              - logger.log: Script Restart Turn OFF Bar Heater
+              - script.execute: bar_heater_turn_off
+              else:
+              - switch.turn_off: bar_heater_power
+              - switch.template.publish:
+                  id: bar_heater_power
+                  state: OFF
+              - logger.log: Script Turn OFF Bar Heater Completed
+              - script.stop: bar_heater_turn_off
+switch:
+  - platform: restart
+    name: Reset Remote
+    
+  - platform: template
+    id: sony_vol_up_auto
+    icon: "mdi:volume-plus"
+    turn_on_action:
+      - switch.template.publish:
+          id: sony_vol_up_auto
+          state: ON
+      - if:
+          condition:
+            lambda: |-
+              return id(ha_sony_slider).state > id(sony_current_vol);
+          then:
+          - remote_transmitter.transmit_sony:
+              transmitter_id: one
+              data: 0x0000240C
+              nbits: 15
+          - lambda: |- 
+              id(sony_current_vol) += 1;
+          - logger.log:
+              format: "The global sensor reports value %.0i"
+              args: [ 'id(sony_current_vol)' ] 
+          - delay: 0.7s
+          - if:
+              condition:
+                lambda: |-
+                  return id(ha_sony_slider).state > id(sony_current_vol);
+              then:
+              - switch.turn_on: sony_vol_up_auto
+              else:
+              - lambda: |-
+                  id(ha_sony_slider).publish_state(id(sony_current_vol)); 
+              - switch.template.publish:
+                  id: sony_vol_up_auto
+                  state: OFF
+  - platform: template
+    id: sony_vol_down_auto
+    icon: "mdi:volume-minus"
+    turn_on_action:
+      - switch.template.publish:
+          id: sony_vol_down_auto
+          state: ON
+      - if:
+          condition:
+            lambda: |-
+              return id(ha_sony_slider).state < id(sony_current_vol);
+          then:
+          - remote_transmitter.transmit_sony:
+              transmitter_id: one
+              data: 0x0000640C
+              nbits: 15
+          - lambda: |- 
+              id(sony_current_vol) -= 1;
+          - logger.log:
+              format: "The global sensor reports value %.1i"
+              args: [ 'id(sony_current_vol)' ]   
+          - delay: 0.7s
+          - if:
+              condition:
+                lambda: |-
+                  return id(ha_sony_slider).state < id(sony_current_vol); 
+              then:
+              - switch.turn_on: sony_vol_down_auto
+              else:
+              - lambda: |-
+                  id(ha_sony_slider).publish_state(id(sony_current_vol)); 
+              - switch.template.publish:
+                  id: sony_vol_down_auto
+                  state: OFF    
+    
+  - platform: template
+    name: Konic TV Power
+    id: konic_power
+    icon: "mdi:television"
+    turn_on_action:
+      - switch.template.publish:
+          id: konic_power
+          state: ON
+      - remote_transmitter.transmit_raw:
+              transmitter_id: two
+              code: [9117, -4468, 590, -1659, 589, -521, 591, -520, 589, -520, 593, -519, 590, -519, 593, -519, 590, -521, 592, -518, 592, -1655, 593, -1680, 591, -1630, 590, -1658, 589, -1655, 591, -1656, 590, -1658, 587, -519, 593, -516, 592, -517, 590, -518, 
+                     588, -1648, 589, -516, 590, -515, 590, -517, 587, -1657, 587, -1657, 591, -1655, 589, -1653, 590, -519, 590, -1654, 591, -1676, 564, -1654, 591]
+              carrier_frequency: 38khz
+      - delay: 5s
+      - switch.turn_off: konic_power
+#      - switch.template.publish:
+#          id: konic_power
+#          state: ON
+#      - if:
+#          condition:
+#            binary_sensor.is_on: konic_on
+#         then:
+#         - remote_transmitter.transmit_raw:
+#              transmitter_id: two
+#              code: [9117, -4468, 590, -1659, 589, -521, 591, -520, 589, -520, 593, -519, 590, -519, 593, -519, 590, -521, 592, -518, 592, -1655, 593, -1680, 591, -1630, 590, -1658, 589, -1655, 591, -1656, 590, -1658, 587, -519, 593, -516, 592, -517, 590, -518, 
+#                     588, -1648, 589, -516, 590, -515, 590, -517, 587, -1657, 587, -1657, 591, -1655, 589, -1653, 590, -519, 590, -1654, 591, -1676, 564, -1654, 591]
+#              carrier_frequency: 38khz
+#          - delay: 30s
+#          - if:
+ #             condition:
+#                binary_sensor.is_on: konic_on
+#              then:
+ #             - switch.turn_off: konic_power
+#              else:
+#              - switch.template.publish:
+ #                 id: konic_power
+#                  state: OFF
+#          else:
+#          - if:
+#              condition:
+##                binary_sensor.is_off: konic_on
+#              then:
+#              - remote_transmitter.transmit_raw:
+#                  transmitter_id: two
+#                  code: [9117, -4468, 590, -1659, 589, -521, 591, -520, 589, -520, 593, -519, 590, -519, 593, -519, 590, -521, 592, -518, 592, -1655, 593, -1680, 591, -1630, 590, -1658, 589, -1655, 591, -1656, 590, -1658, 587, -519, 593, -516, 592, -517, 590, -518, 
+#                         588, -1648, 589, -516, 590, -515, 590, -517, 587, -1657, 587, -1657, 591, -1655, 589, -1653, 590, -519, 590, -1654, 591, -1676, 564, -1654, 591]
+#                  carrier_frequency: 38khz
+#              - delay: 30s
+#              - if:
+#                  condition:
+#                    binary_sensor.is_off: konic_on
+#                  then:
+#                  - switch.turn_on: konic_power
+#                  else:
+#                  - switch.template.publish:
+#                      id: konic_power
+#                      state: OFF
+#             else:
+##              - switch.template.publish:
+#                  id: konic_power
+ #                 state: OFF
+    turn_off_action:
+      - switch.template.publish:
+          id: konic_power
+          state: OFF
+#      - if:
+#          condition:
+#            binary_sensor.is_on: konic_on
+#          then:
+#          - remote_transmitter.transmit_raw:
+#              transmitter_id: two
+#              code: [9117, -4468, 590, -1659, 589, -521, 591, -520, 589, -520, 593, -519, 590, -519, 593, -519, 590, -521, 592, -518, 592, -1655, 593, -1680, 591, -1630, 590, -1658, 589, -1655, 591, -1656, 590, -1658, 587, -519, 593, -516, 592, -517, 590, -518, 
+#                     588, -1648, 589, -516, 590, -515, 590, -517, 587, -1657, 587, -1657, 591, -1655, 589, -1653, 590, -519, 590, -1654, 591, -1676, 564, -1654, 591]
+#              carrier_frequency: 38khz
+#          - delay: 30s
+#          - switch.turn_off: konic_power
+#          else:
+#          - switch.template.publish:
+#              id: konic_power
+#              state: OFF
+  - platform: template
+    name: Konic TV Vol Up
+    icon: "mdi:volume-plus"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          repeat:
+            times: 10
+            wait_time: 400ms
+          transmitter_id: two
+          address: 0x807F
+          command: 0x708F
+      - lambda: |-
+          id(konic_vol) += 1;
+  - platform: template
+    name: Konic TV Vol Down
+    icon: "mdi:volume-minus"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          repeat:
+            times: 10
+            wait_time: 400ms
+          transmitter_id: two
+          address: 0x807F
+          command: 0xF00F
+      - lambda: |-
+          id(konic_vol) -= 1;
+  - platform: template
+    name: Konic TV Vol Mute
+    id: konic_mute
+    icon: "mdi:volume-mute"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x807F
+          command: 0xE817
+      - switch.template.publish:
+          id: konic_mute
+          state: ON
+    turn_off_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x807F
+          command: 0xE817
+      - switch.template.publish:
+          id: konic_mute
+          state: OFF
+  - platform: template
+    name: Konic TV Source
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9081, -4485, 616, -1633, 591, -519, 619, -490, 594, -516, 621, -493, 593, -517, 594, -517, 619, -491, 593, -518, 595, -1678, 571, -1676, 571, -1677, 596, -1650, 570, -1654, 616, -1655, 595, -1652, 570, -518, 592, -1676, 571, -516, 617, 
+                -494, 617, -1648, 595, -491, 592, -519, 615, -492, 617, -1650, 570, -518, 615, -1650, 595, -1647, 569, -518, 615, -1651, 570, -1674, 593, -1652, 592]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV OK
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9096, -4455, 614, -1629, 619, -518, 590, -520, 592, -519, 569, -541, 592, -518, 593, -517, 591, -518, 591, -518, 591, -1627, 618, -1626, 594, -1652, 609, -1637, 618, -1628, 594, -1654, 617, -1627, 593, -1653, 618, -520, 592, -1627, 618, 
+                 -1628, 592, -1655, 619, -519, 591, -520, 592, -521, 569, -539, 566, -1653, 618, -520, 591, -519, 592, -518, 591, -1626, 618, -1629, 594, -1652, 619]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV Exit
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9085, -4483, 592, -1656, 618, -493, 592, -518, 592, -520, 591, -519, 592, -518, 594, -519, 592, -520, 619, -493, 593, -1653, 591, -1655, 593, -1657, 588, -1656, 615, -1630, 588, -1657, 563, -1681, 564, -569, 541, -1681, 596, -1646, 633, 
+                 -502, 599, -1620, 641, -494, 638, -471, 640, -469, 641, -1767, 479, -467, 641, -468, 643, -1579, 664, -471, 638, -1583, 661, -1582, 635, -1609, 636]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV Up
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9043, -4465, 611, -527, 642, -1615, 618, -519, 618, -518, 622, -1648, 634, -1618, 641, -1620, 614, -522, 617, -1641, 620, -518, 670, -1616, 617, -1643, 591, -1643, 616, -519, 620, -1641, 642, -1619, 615, -522, 618, -519, 644, -1617, 643, 
+                 -494, 644, -495, 618, -520, 642, -1617, 617, -521, 619, -1641, 618, -1666, 592, -520, 619, -1667, 591, -1644, 616, -1666, 618, -495, 643, -1642, 592]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV Down
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9071, -4452, 617, -1627, 619, -518, 588, -519, 591, -517, 591, -519, 591, -517, 594, -517, 591, -518, 591, -519, 590, -1627, 618, -1626, 618, -1625, 617, -1626, 619, -1623, 618, -1623, 619, -1624, 616, -519, 591, -1624, 618, -519, 590, 
+                 -1625, 617, -1626, 618, -518, 591, -518, 591, -517, 592, -1623, 619, -517, 590, -1625, 618, -517, 590, -518, 591, -1623, 618, -1627, 617, -1623, 618]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV Right
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9066, -4506, 560, -1661, 562, -571, 563, -546, 563, -547, 588, -499, 585, -547, 562, -524, 587, -547, 562, -547, 563, -1654, 566, -1681, 563, -1678, 568, -1676, 596, -1650, 599, -1673, 569, -1651, 596, -539, 567, -541, 544, -1703, 569, 
+                 -1646, 600, -1673, 567, -541, 543, -567, 542, -569, 539, -1680, 569, -1679, 566, -566, 541, -570, 539, -572, 538, -1708, 539, -1682, 562, -1682, 564]
+          carrier_frequency: 38khz
+  - platform: template
+    name: Konic TV Left
+    turn_on_action:
+      - remote_transmitter.transmit_raw:
+          transmitter_id: two
+          code: [9045, -4489, 650, -514, 630, -1601, 654, -512, 631, -507, 632, -1600, 654, -1604, 653, -1606, 653, -514, 630, -1602, 652, -513, 627, -1794, 463, -1605, 652, -1608, 653, -513, 626, -1605, 651, -1607, 652, -516, 627, -1605, 651, -1607, 651, 
+                -1608, 651, -1609, 650, -516, 624, -514, 625, -513, 625, -1607, 650, -516, 624, -514, 623, -515, 625, -513, 624, -1608, 650, -1609, 650, -1609, 649]
+          carrier_frequency: 38khz
+# Sony System          
+  - platform: template
+    name: Sony Audio Power
+    id: sony_power
+    icon: "mdi:amplifier"
+    turn_on_action:
+      - switch.template.publish:
+          id: sony_power
+          state: ON
+      - if:
+          condition:
+            binary_sensor.is_on: sony_on
+          then:
+          - remote_transmitter.transmit_sony:
+              transmitter_id: one
+              data: 0x0000540C
+              nbits: 15
+          - delay: 30s
+          - if:
+              condition:
+                binary_sensor.is_on: sony_on
+              then:
+              - switch.turn_off: sony_power
+              else:
+              - switch.template.publish:
+                  id: sony_power
+                  state: OFF
+          else:
+          - if:
+              condition:
+                binary_sensor.is_off: sony_on
+              then:
+              - remote_transmitter.transmit_sony:
+                  transmitter_id: one
+                  data: 0x0000540C
+                  nbits: 15
+              - delay: 30s
+              - if:
+                  condition:
+                    binary_sensor.is_off: sony_on
+                  then:
+                  - switch.turn_on: sony_power
+                  else:
+                  - switch.template.publish:
+                      id: sony_power
+                      state: OFF
+              else:
+              - switch.template.publish:
+                  id: sony_power
+                  state: OFF
+    turn_off_action:
+      - switch.template.publish:
+          id: sony_power
+          state: ON
+      - if:
+          condition:
+            binary_sensor.is_on: sony_on
+          then:
+          - remote_transmitter.transmit_sony:
+              transmitter_id: one
+              data: 0x0000540C
+              nbits: 15
+          - delay: 30s
+          - switch.turn_off: sony_power
+          else:
+          - switch.template.publish:
+              id: sony_power
+              state: OFF
+  - platform: template
+    name: Sony Audio Vol UP
+    icon: "mdi:volume-plus"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          repeat:
+            times: 10
+            wait_time: 500ms
+          transmitter_id: one
+          data: 0x0000240C
+          nbits: 15
+  - platform: template
+    name: Sony Audio Vol DOWN
+    icon: "mdi:volume-minus"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          repeat:
+            times: 10
+            wait_time: 500ms
+          transmitter_id: one
+          data: 0x0000640C
+          nbits: 15
+  - platform: template
+    name: Sony Audio Vol MUTE
+    id: sony_mute
+    icon: "mdi:volume-mute"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          transmitter_id: one
+          data: 0x0000140C
+          nbits: 15
+      - switch.template.publish:
+          id: sony_mute
+          state: ON
+    turn_off_action:
+      - remote_transmitter.transmit_sony:
+          transmitter_id: one
+          data: 0x0000140C
+          nbits: 15
+      - switch.template.publish:
+          id: sony_mute
+          state: OFF
+  - platform: template
+    name: Sony Input HDMI IN
+    id: sony_hd
+    icon: "mdi:high-definition-box"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          transmitter_id: one
+          data: 0x00001F0C
+          nbits: 15
+      - switch.template.publish:
+          id: sony_hd
+          state: ON
+      - lambda: |-
+          if (id(sony_on).state) {
+            id(sony_input) = 0;
+            id(sony_sky).publish_state(false);
+            id(sony_cast).publish_state(false);
+          } else {
+            id(sony_input) = 0;
+            id(sony_power).turn_on();
+          }
+    turn_off_action:
+      - switch.template.publish:
+          id: sony_hd
+          state: OFF
+  - platform: template
+    name: Sony Input CHROMECAST IN
+    id: sony_cast
+    icon: "mdi:cast-audio"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          transmitter_id: one
+          data: 0x0000520C
+          nbits: 15
+      - switch.template.publish:
+          id: sony_cast
+          state: ON
+      - lambda: |-
+          if (id(sony_on).state){
+            id(sony_input) = 1;
+            id(sony_sky).publish_state(false);
+            id(sony_hd).publish_state(false);
+          } else {
+            id(sony_input) = 1;
+            id(sony_power).turn_on();
+          }
+    turn_off_action:
+      - switch.template.publish:
+          id: sony_cast
+          state: OFF
+  - platform: template
+    name: Sony Input SKY TV IN
+    id: sony_sky
+    icon: "mdi:television"
+    turn_on_action:
+      - remote_transmitter.transmit_sony:
+          transmitter_id: one
+          data: 0x0000600D
+          nbits: 15
+      - switch.template.publish:
+          id: sony_sky
+          state: ON
+      - lambda: |-
+          if (id(sony_on).state){
+            id(sony_input) = 2;
+            id(sony_cast).publish_state(false);
+            id(sony_hd).publish_state(false);
+          } else {
+            id(sony_input) = 2;
+            id(sony_power).turn_on();
+          }
+    turn_off_action:
+      - switch.template.publish:
+          id: sony_sky
+          state: OFF
+          
+# Matix Switch
+  - platform: template
+    name: HDMI Switch Power
+    icon: "mdi:power"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x00FF
+          command: 0x3AC5
+      - lambda: |-
+          id(matrix_1).publish_state(1);
+          id(matrix_2).publish_state(1);
+          id(matrix_3).publish_state(1);
+          id(matrix_4).publish_state(1);
+  - platform: template
+    name: HDMI Switch Kronic TV
+    icon: "mdi:numeric-1-circle"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x00FF
+          command: 0xAA55
+      - lambda: |-
+          if (id(matrix_1).state == 1) {
+            id(matrix_1).publish_state(2);
+          }
+          else if (id(matrix_1).state == 2) {
+            id(matrix_1).publish_state(3);
+          }
+          else if (id(matrix_1).state == 3) {
+            id(matrix_1).publish_state(4);
+          }
+          else if (id(matrix_1).state == 4) {
+            id(matrix_1).publish_state(1);
+          } else {
+            id(matrix_1).publish_state(1);
+          }
+  - platform: template
+    name: HDMI Switch Sonic TV
+    icon: "mdi:numeric-2-circle"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x00FF
+          command: 0xA857
+      - lambda: |-
+          if (id(matrix_2).state == 1) {
+            id(matrix_2).publish_state(2);
+          }
+          else if (id(matrix_2).state == 2) {
+            id(matrix_2).publish_state(3);
+          }
+          else if (id(matrix_2).state == 3) {
+            id(matrix_2).publish_state(4);
+          }
+          else if (id(matrix_2).state == 4) {
+            id(matrix_2).publish_state(1);
+          } else {
+            id(matrix_2).publish_state(1);
+          }
+  - platform: template
+    name: HDMI Switch Output 3
+    icon: "mdi:numeric-3-circle"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x00FF
+          command: 0xBA45
+      - lambda: |-
+          if (id(matrix_3).state == 1) {
+            id(matrix_3).publish_state(2);
+          }
+          else if (id(matrix_3).state == 2) {
+            id(matrix_3).publish_state(3);
+          }
+          else if (id(matrix_3).state == 3) {
+            id(matrix_3).publish_state(4);
+          }
+          else if (id(matrix_3).state == 4) {
+            id(matrix_3).publish_state(1);
+          } else {
+            id(matrix_3).publish_state(1);
+          }
+  - platform: template
+    name: HDMI Switch Sony AMP
+    icon: "mdi:numeric-4-circle"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x00FF
+          command: 0x38C7
+      - lambda: |-
+          if (id(matrix_4).state == 1) {
+            id(matrix_4).publish_state(2);
+          }
+          else if (id(matrix_4).state == 2) {
+            id(matrix_4).publish_state(3);
+          }
+          else if (id(matrix_4).state == 3) {
+            id(matrix_4).publish_state(4);
+          }
+          else if (id(matrix_4).state == 4) {
+            id(matrix_4).publish_state(1);
+          } else {
+            id(matrix_4).publish_state(1);
+          }
+          
+# Heat Strip
+  - platform: template
+    name: Heat Strip Power
+    id: fixed_heater_power
+    icon: "mdi:power"
+    turn_on_action:
+      - switch.template.publish:
+          id: fixed_heater_power
+          state: ON
+      - if:
+          condition:
+            or:
+              - script.is_running: fixed_heater_turn_on
+              - script.is_running: fixed_heater_turn_off
+          then:
+          - script.stop: fixed_heater_turn_on
+          - script.stop: fixed_heater_turn_off
+          - logger.log: Fixed Heater Scripts Stopped
+          - switch.turn_off: fixed_heater_power
+          - switch.template.publish:
+              id: fixed_heater_power
+              state: OFF
+          else:
+          - if:
+              condition:
+                binary_sensor.is_on: heater_fixed_on
+              then:
+                - logger.log: Start Fixed Heater OFF Script
+                - script.execute: fixed_heater_turn_off
+              else:
+                - logger.log: Start Fixed Heater ON Script
+                - script.execute: fixed_heater_turn_on
+  - platform: template
+    name: Heat Strip UP
+    icon: "mdi:arrow-up-bold"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x01FE
+          command: 0xC03F
+  - platform: template
+    name: Heat Strip DOWN
+    icon: "mdi:arrow-down-bold"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x01FE
+          command: 0x807F
+  - platform: template
+    name: Heat Strip Timer
+    icon: "mdi:av-timer"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x01FE
+          command: 0xE01F
+  - platform: template
+    name: Heat Strip Level
+    icon: "mdi:spirit-level"
+    turn_on_action:
+        remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x01FE
+          command: 0x906F
+  - platform: template
+    name: Heat Strip Sensor
+    icon: "mdi:motion-sensor"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x01FE
+          command: 0xD827
+
+# Rottating Heater           
+  - platform: template
+    name: Bar Heat Strip Power
+    id: bar_heater_power
+    icon: "mdi:power"
+    turn_on_action:
+      - switch.template.publish:
+          id: bar_heater_power
+          state: ON
+      - if:
+          condition:
+            or:
+              - script.is_running: bar_heater_turn_on
+              - script.is_running: bar_heater_turn_off
+          then:
+          - script.stop: bar_heater_turn_on
+          - script.stop: bar_heater_turn_off
+          - logger.log: Bar Heater Scripts Stopped
+          - switch.turn_off: bar_heater_power
+          - switch.template.publish:
+              id: bar_heater_power
+              state: OFF
+          else:
+          - if:
+              condition:
+                binary_sensor.is_on: heater_bar_on
+              then:
+                - logger.log: Start Bar Heater OFF Script
+                - script.execute: bar_heater_turn_off
+                
+              else:
+                - logger.log: Start Bar Heater ON Script
+                - script.execute: bar_heater_turn_on
+  - platform: template
+    name: Bar Heat Strip UP
+    icon: "mdi:arrow-up-bold"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x01FE
+          command: 0xC03F
+  - platform: template
+    name: Bar Heat Strip DOWN
+    icon: "mdi:arrow-down-bold"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x01FE
+          command: 0x807F
+  - platform: template
+    name: Bar Heat Strip Timer
+    icon: "mdi:av-timer"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x01FE
+          command: 0xE01F
+  - platform: template
+    name: Bar Heat Strip Level
+    icon: "mdi:spirit-level"
+    turn_on_action:
+        remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x01FE
+          command: 0x906F
+  - platform: template
+    name: Bar Heat Strip Sensor
+    icon: "mdi:motion-sensor"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: two
+          address: 0x01FE
+          command: 0xD827
+# Sonic TV
+  - platform: template
+    name: Soniq TV Power
+    icon: 'mdi:television'
+    id: soniq_power
+    turn_on_action:
+      - switch.template.publish:
+          id: soniq_power
+          state: ON
+      - remote_transmitter.transmit_nec:
+              transmitter_id: one
+              address: 0x4EBB
+              command: 0x708F
+      - delay: 5s
+      - switch.turn_off: soniq_power
+      
+          
+#      - if:
+#         condition:
+##            binary_sensor.is_on: soniq_on
+##          then:
+#          - remote_transmitter.transmit_nec:
+#              transmitter_id: one
+#              address: 0x4EBB
+#              command: 0x708F
+#         - delay: 20s
+#          - if:
+#             condition:
+#                binary_sensor.is_on: soniq_on
+##              then:
+#              - switch.turn_off: soniq_power
+#              else:
+#              - switch.template.publish:
+#                  id: soniq_power
+#         else:
+#          - if:
+#              condition:
+#                binary_sensor.is_off: soniq_on
+#              then:
+#              - remote_transmitter.transmit_nec:
+##                  transmitter_id: one
+#                  address: 0x4EBB
+#                  command: 0x708F
+#              - delay: 20s
+#              - if:
+#                  condition:
+#                    binary_sensor.is_off: soniq_on
+#                  then:
+#                  - switch.turn_on: soniq_power
+#                  - switch.template.publish:
+#                      id: soniq_power
+#                      state: OFF
+#              else:
+#              - switch.template.publish:
+#                  id: soniq_power
+#                  state: OFF
+    turn_off_action:
+      - switch.template.publish:
+          id: soniq_power
+          state: OFF
+#      - if:
+#          condition:
+#            binary_sensor.is_on: soniq_on
+#          - remote_transmitter.transmit_nec:
+#              transmitter_id: one
+#              address: 0x4EBB
+#              command: 0x708F
+#          - delay: 20s
+#          - switch.turn_off: soniq_power
+#          else:
+#          - switch.template.publish:
+#              id: soniq_power
+#              state: OFF
+  - platform: template
+    name: Soniq TV Source
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0x7887
+  - platform: template
+    name: Soniq TV Vol Up
+    icon: "mdi:volume-plus"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          repeat:
+            times: 10
+            wait_time: 400ms
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0x926D
+  - platform: template
+    name: Soniq TV Vol Down
+    icon: "mdi:volume-minus"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          repeat:
+            times: 10
+            wait_time: 400ms
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0xC23D
+  - platform: template
+    name: Soniq TV Vol Mute
+    id: soniq_mute
+    icon: "mdi:volume-mute"
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0xE817
+      - switch.template.publish:
+          id: soniq_mute
+          state: ON
+    turn_off_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0xE817
+      - switch.template.publish:
+          id: soniq_mute
+          state: OFF
+  - platform: template
+    name: Soniq TV Up
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: one
+          address: 0x4EBB
+          command: 0x22DD
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  

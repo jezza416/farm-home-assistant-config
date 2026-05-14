@@ -1,0 +1,200 @@
+esphome:
+  name: fan_secondary_control
+  platform: ESP8266
+  board: nodemcuv2
+  
+  includes:
+    - fan_custom.h
+  
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Fan Secondary Control"
+    password: "hillview199@"
+    
+      
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+  sda: D4
+  scl: D5
+  scan: True
+
+sensor:
+  - platform: bme280
+    temperature:
+      name: "Fan Control Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Fan Control Pressure"
+    humidity:
+      name: "Fan Control Humidity"
+    address: 0x76
+    update_interval: 60s
+ 
+  
+output:
+  - platform: custom
+    type: float
+    outputs:
+      id: fanoutput
+    lambda: |-
+      auto custom_fan = new FanOutput();
+      App.register_component(custom_fan);
+      return {custom_fan};
+
+switch:
+  - platform: template
+    id: update_fan_speed
+    optimistic: True
+    turn_on_action:
+      then:
+        - delay: 200ms
+        - if:
+            condition:
+              and:
+                - switch.is_off: fan_relay1
+                - switch.is_off: fan_relay2
+                - switch.is_off: fan_relay3
+            then:
+              - fan.turn_off: custom_fan
+          
+        - if:
+            condition:
+              and:
+                - switch.is_on: fan_relay1
+                - switch.is_off: fan_relay2
+                - switch.is_off: fan_relay3
+            then:
+              - fan.turn_on:
+                  id: custom_fan
+                  speed: 1
+            
+        - if:
+            condition:
+              and:
+                - switch.is_on: fan_relay1
+                - switch.is_on: fan_relay2
+                - switch.is_off: fan_relay3
+            then:
+              - fan.turn_on:
+                  id: custom_fan
+                  speed: 2
+              
+        - if:
+            condition:
+              and:
+                - switch.is_on: fan_relay1
+                - switch.is_on: fan_relay2
+                - switch.is_on: fan_relay3
+            then:
+              - fan.turn_on:
+                  id: custom_fan
+                  speed: 3
+              
+              
+
+  - platform: gpio
+    pin: GPIO12
+    id: fan_relay1
+
+  - platform: gpio
+    pin: GPIO13
+    id: fan_relay2
+
+  - platform: gpio
+    pin: GPIO10
+    id: fan_relay3
+
+fan:
+  - platform: speed
+    output: fanoutput
+    restore_mode: RESTORE_DEFAULT_ON 
+    speed_count: 3
+    id: custom_fan
+    name: "Storage Multi Speed Fan"
+    
+    
+binary_sensor:
+  - platform: template
+    name: Storage Mutli Fan Low
+    id: fan_low
+    lambda: |-
+      if (id(custom_fan).speed == 1){
+        if(id(custom_fan).state){
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "Low"
+        
+  - platform: template
+    id: fan_mid
+    name: Storage Mutli Fan Med
+    lambda: |-
+      if (id(custom_fan).speed == 2){
+        if(id(custom_fan).state){
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "Meduim"
+        
+  - platform: template
+    id: fan_high
+    name: Storage Mutli Fan High
+    lambda: |-
+      if (id(custom_fan).speed == 3){
+        if(id(custom_fan).state){
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "High"
+        
+  - platform: template
+    id: fan_off
+    name: Storage Mutli Fan Off
+    lambda: |-
+      if (id(custom_fan).state){
+        return false;
+      } else {
+        return true;
+      }
+    on_press:
+    - text_sensor.template.publish:
+        id: extraction_setting
+        state: "Off"
+text_sensor:
+  - platform: template
+    name: "Storage Multi Fan Setting"   
+    id: extraction_setting

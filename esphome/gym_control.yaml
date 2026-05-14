@@ -1,0 +1,56 @@
+esphome:
+  name: gym_control
+  platform: ESP8266
+  board: d1_mini
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Gym Control Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+sensor:
+    
+  - platform: dht
+    pin: D2
+    temperature:
+      name: "Gym Temperature"
+    humidity:
+      name: "Gym Humidity"
+    update_interval: 60s
+    
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D5
+      mode: INPUT_PULLUP
+    id: gym_door
+    name: Gym Door
+    device_class: door
+    
+  - platform: gpio
+    pin:  D6
+    name: "Gym Motion"
+    device_class: motion
+    filters:
+      - delayed_off: 5min
+
+switch:    
+  - platform: gpio
+    pin: D8
+    id: amp
+    name: "Gym AMP"    
+    

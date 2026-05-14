@@ -1,0 +1,53 @@
+esphome:
+  name: storage_2
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  manual_ip:
+      static_ip: 192.168.1.216
+      gateway: 192.168.1.254
+      subnet: 255.255.255.0
+      
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Storage 2 Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+  sda: 04
+  scl: 05
+  scan: True
+
+sensor:
+  - platform: bme280
+    temperature:
+      name: "Storage 2 Inside Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Storage 2 Inside Pressure"
+    humidity:
+      name: "Storage 2 Inside Humidity"
+    address: 0x76
+    update_interval: 60s
+  
+  - platform: bmp280
+    temperature:
+      name: "Outside Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Outside Pressure"
+    address: 0x77
+    update_interval: 60s

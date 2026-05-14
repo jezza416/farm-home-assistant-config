@@ -1,0 +1,128 @@
+{
+    "0x70ac08fffeadca8f": {
+        "battery": 100,
+        "voltage": 1500,
+        "learned_ir_code": "BVYjjxE4AuAXAQGVBuAZA0ABQCdAAeAHB0AB4AcT4AMPD3GcViPACDgC//9WI8AIOAI=",
+        "linkquality": 92
+    },
+    "0xa4c138ce76e8352c": {
+        "state": "OFF",
+        "countdown": 0,
+        "power_on_behavior": "previous",
+        "switch_type": "toggle",
+        "linkquality": 152
+    },
+    "0xa4c1380eb553c9f9": {
+        "energy": 126.5,
+        "voltage": 239,
+        "state": "ON",
+        "countdown": 0,
+        "power_outage_memory": "on",
+        "indicator_mode": "off/on",
+        "child_lock": "UNLOCK",
+        "power": 0,
+        "current": 0,
+        "linkquality": 152
+    },
+    "0xa4c1381ead970074": {
+        "state_l1": "ON",
+        "power_on_behavior_l1": "off",
+        "switch_type": "momentary",
+        "state_l2": "ON",
+        "state_l3": "OFF",
+        "state_l4": "OFF",
+        "linkquality": 60,
+        "countdown_l4": 0,
+        "countdown_l1": 0,
+        "countdown_l2": 0,
+        "countdown_l3": 0
+    },
+    "0xa4c138d99d2e150d": {
+        "battery": 80,
+        "water_leak": false,
+        "tamper": false,
+        "battery_low": false,
+        "linkquality": 168
+    },
+    "0xa4c138a3b07e3123": {
+        "battery": 96,
+        "linkquality": 180,
+        "water_leak": true,
+        "tamper": false,
+        "battery_low": false
+    },
+    "0xa4c138c3d91bd22e": {
+        "occupancy": false,
+        "battery": 100,
+        "keep_time": "10",
+        "sensitivity": "medium",
+        "linkquality": 156,
+        "illuminance_interval": 5
+    },
+    "0xa4c138dfd0c2f596": {
+        "inching_control_set": {
+            "inching_control_1": "ENABLE",
+            "inching_time_1": 3600,
+            "inching_control_2": "ENABLE",
+            "inching_time_2": 3600
+        },
+        "state_l1": "OFF",
+        "countdown_l1": 0,
+        "backlight_mode": "ON",
+        "indicator_mode": "on",
+        "power_on_behavior_l1": "previous",
+        "switch_type": "state",
+        "state_l2": "OFF",
+        "countdown_l2": 0,
+        "power_on_behavior_l2": "previous",
+        "linkquality": 140
+    },
+    "0xa4c138b747bf052f": {
+        "energy": 221.76,
+        "voltage": 235,
+        "state": "ON",
+        "countdown": 0,
+        "power_outage_memory": "restore",
+        "indicator_mode": "off/on",
+        "child_lock": "UNLOCK",
+        "power": 16,
+        "current": 0.05,
+        "linkquality": 36
+    },
+    "0xa4c138425a680ca5": {
+        "state": "OFF",
+        "countdown": 0,
+        "power_on_behavior": "previous",
+        "switch_type": "toggle",
+        "linkquality": 120
+    },
+    "0x8cf681fffefb934c": {
+        "linkquality": 96
+    },
+    "0xa4c138dd92759666": {
+        "state_l1": "OFF",
+        "power_on_behavior_l1": "off",
+        "switch_type": "momentary",
+        "state_l2": "OFF",
+        "state_l3": "OFF",
+        "state_l4": "OFF",
+        "linkquality": 60,
+        "countdown_l1": 0,
+        "countdown_l4": 0
+    },
+    "0x94b216fffe8d1aeb": {
+        "network_indicator": true,
+        "turbo_mode": true,
+        "delayed_power_on_state": false,
+        "delayed_power_on_time": 45,
+        "detach_relay_mode": false,
+        "external_trigger_mode": "edge",
+        "state": "OFF",
+        "linkquality": 84,
+        "power_on_behavior": "off"
+    },
+    "0x84ba20fffe0122b6": {
+        "state": "OFF",
+        "linkquality": 36
+    }
+}

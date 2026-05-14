@@ -1,0 +1,137 @@
+esphome:
+  name: mancave_3gang3
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave 3Gang3 Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            light.is_on: light_mancave_office
+          then:
+            - component.update: mancave_office_watts
+            
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: light_mancave_office_touch
+    on_press:
+     - light.toggle: light_mancave_office
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: light_mancave_workshop_touch
+    on_press:
+        - light.toggle: light_mancave_workshop
+  - platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: True
+    name: light_extra_mancave_touch
+    on_press:
+        - light.toggle: light_extra_mancave
+
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay1
+    
+  - platform: gpio
+    pin: GPIO5
+    id: relay2
+    
+  - platform: gpio
+    pin: GPIO4
+    id: relay3
+    
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+
+light:
+  - platform: binary
+    name: Mancave Office
+    id: light_mancave_office
+    output: relay1
+
+  - platform: binary
+    name: Mancave Workshop Fake
+    id: light_mancave_workshop
+    output: relay2
+    
+  - platform: binary
+    name: Mancave Extra 
+    id: light_extra_mancave
+    output: relay3
+    
+  - platform: monochromatic
+    name: mancave_3gang3_led
+    output: blue_led
+
+sensor:
+    
+  - platform: template
+    name: "Mancave Office Watts"
+    id: mancave_office_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(light_mancave_office).current_values.is_on()){
+        id(light_power) += 0.008333333;
+        return id(light_power);
+      } else {
+        return {};
+      }
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(light_power) = 0;
+          id(mancave_office_watts).publish_state(0);
+          
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'  

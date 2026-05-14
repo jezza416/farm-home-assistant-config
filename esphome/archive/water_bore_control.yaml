@@ -1,0 +1,475 @@
+esphome:
+  name: water_bore_control
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+   
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Water Bore Control"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: True
+
+ads1115:
+  - address: 0x48
+
+substitutions:
+  update_interval_1: 1s
+  update_interval_10: 10s
+  update_interval_60: 60s
+  update_interval_300: 300s
+  update_interval_600: 600s
+
+interval:
+  - interval: ${update_interval_60}
+    then:
+      - if:   
+          condition:
+            switch.is_on: bore_pump_control_switch
+          then:
+            - component.update: bore_current_litres   
+
+            
+  - interval: ${update_interval_10}  
+    then:
+      - if:
+          condition:
+            switch.is_on: tank_filling_active
+          then:
+            - component.update: inlet_psi
+            - component.update: tank_current_litres
+text_sensor:
+  - platform: template
+    name: "Resivor Status"
+    id: text2
+
+switch:
+
+  - platform: gpio
+    pin: GPIO2
+    name: "Bore Pump Control"   
+    restore_mode: ALWAYS_OFF
+    id: bore_pump_control_switch
+   
+  - platform: gpio
+    pin: GPIO27
+    inverted: yes
+    name: "Tank Inlet Valve"                         
+    id: tank_inlet_valve
+  
+  #- platform: gpio
+  #  pin: GPIO0
+  #  name: "Primary House Valve"                         
+  #  id: primary_house_valve
+    
+  - platform: gpio
+    pin: GPIO25
+    name: "Bore Inlet Valve"      
+    inverted: yes
+    id: bore_inlet_valve
+  
+  - platform: template
+    name: Tank Filling Active
+    id: tank_filling_active
+    turn_on_action:
+      - switch.template.publish:
+          id: tank_filling_active
+          state: ON
+      - if:
+          condition:
+            or:
+            - binary_sensor.is_off: level_switch
+            - binary_sensor.is_off: ha_level_switch
+          then:
+          - if:
+              condition:
+                - binary_sensor.is_on: tank_pressure_high
+              then:  
+              - switch.turn_on: tank_inlet_valve
+              - delay: 300s
+              - switch.turn_off: tank_filling_active
+              else:    
+              - switch.turn_off: tank_filling_active
+    turn_off_action:
+      - delay: 30s
+      - if:
+          condition:
+            or:
+              - binary_sensor.is_off: ha_level_switch
+              - binary_sensor.is_off: level_switch
+          then:
+          - if:
+              condition:
+                - binary_sensor.is_on: tank_pressure_high
+              then:
+              - switch.turn_on: tank_filling_active
+              else:    
+              - switch.template.publish:
+                  id: tank_filling_active
+                  state: OFF
+    
+      
+  
+  - platform: template
+    name: "Bore Filling Active"
+    id: bore_filling_active
+    turn_on_action:
+      - if:
+          condition:
+            or:
+            - binary_sensor.is_on: ha_level_switch
+            - binary_sensor.is_on: level_switch
+          then:
+          - switch.template.publish:
+              id: bore_filling_active
+              state: ON
+          - switch.turn_off: tank_inlet_valve     
+          - switch.turn_on: bore_inlet_valve
+          - delay: 10s
+          - switch.turn_on: bore_pump_control_switch
+          - text_sensor.template.publish:
+              id: text2
+              state: The Bore is filling the Resivoir...
+          else:    
+          - switch.turn_off: bore_filling_active
+    turn_off_action:  
+      - switch.turn_off: bore_pump_control_switch
+      - delay: 10s
+      - switch.turn_off: bore_inlet_valve
+      - delay: 10s
+      - switch.template.publish:
+          id: bore_filling_active
+          state: OFF
+      - text_sensor.template.publish:
+          id: text2
+          state: The Resivoir was filled by Bore
+      - switch.turn_off: tank_filling_active
+  
+  - platform: template
+    name: "Inlet Data Reset"
+    id: reset_inlet_data
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_inlet_data
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(inlet_last_run).publish_state(id(inlet_current_litres).state);
+          id(bore_last_run).publish_state(id(bore_current_litres).state);
+          id(tank_last_run).publish_state(id(tank_current_litres).state);
+          id(inlet_result_time).publish_state(id(count_inlet_time).state / 60);
+          id(inlet_test_results).publish_state(id(inlet_last_run).state / (id(inlet_result_time).state));
+          id(count_inlet_time).publish_state(0);
+          id(inlet_current_litres).publish_state(0);
+          id(bore_current_litres).publish_state(0);
+          id(tank_current_litres).publish_state(0);
+          id(inlet_float) = 0;
+          id(bore_float) = 0;
+          id(tank_float) = 0;
+      - switch.template.publish:
+          id: reset_inlet_data
+          state: OFF
+
+sensor:
+  
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    name: "Inlet Psi"
+    id: inlet_psi
+    unit_of_measurement: "PSI"
+    update_interval: ${update_interval_600}
+    filters:
+      - offset: -0.05
+      - multiply: 7.5
+  
+  - platform: ina219
+    address: 0x40
+    shunt_resistance: 0.1 ohm
+    shunt_voltage:
+      id: shunt_voltage
+      name: "INA219 Shunt Voltage"
+      filters:
+      - lambda: |-
+          id(volts_float) = x;
+          id(volts).publish_state(id(volts_float));
+          return id(volts_float);
+    max_voltage: 32.0V
+    max_current: 3.2A
+    update_interval: 60s
+    
+#  - platform: ultrasonic
+#    trigger_pin: GPIO23
+#    echo_pin: GPIO05
+#    unit_of_measurement: "%"
+#    icon: "mdi:water-percent"
+#    accuracy_decimals: 0
+#    update_interval: 120s
+#    name: "Water Storage Bore Control"
+#    id: resivior_level_bore_control
+#    filters:
+#      - lambda: return ((1.57 - (x - 0.22)) / 1.57) *100;
+#      - filter_out: nan   
+#      - sliding_window_moving_average:
+#            window_size: 6
+#            send_every: 6  
+
+    
+    # Bore Meter
+  - platform: pulse_counter
+    name: "Inlet Flow Rate"
+    pin: GPIO35
+    update_interval: 60s
+    id: inlet_meter
+    unit_of_measurement: "L/Min"
+    filters:
+      - lambda: return x / 213.4;
+      
+  - platform: pulse_counter
+    name: "Inlet Current Litres"
+    pin: GPIO35
+    update_interval: 60s
+    id: inlet_current_litres
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(inlet_float) += x / 213.4;
+          return id(inlet_float);
+          
+  - platform: pulse_counter
+    name: "Bore Current Litres"
+    pin: GPIO35
+    update_interval: 60s
+    id: bore_current_litres
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          if (id(bore_pump_control_switch).state){
+          id(bore_float) += x / 213.4;
+          return id(bore_float);
+          } else {
+          return id(bore_float);
+          }
+  
+  - platform: pulse_counter
+    name: "Tank Current Litres"
+    pin: GPIO35
+    update_interval: ${update_interval_600}
+    id: tank_current_litres
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          if (id(tank_inlet_valve).state){
+          id(tank_float) += x / 213.4;
+          return id(tank_float);
+          } else {
+          return id(tank_float);
+          }
+          
+  - platform: template
+    name: "Inlet Time Count"
+    id: count_inlet_time
+    update_interval: 60s
+    unit_of_measurement: "Seconds"
+    lambda: |-
+      if (id(inlet_status).state){
+      id(inlet_time) += 1;
+      return id(inlet_time);
+      } else {
+      return id(inlet_time);
+      }
+    
+  - platform: template
+    name: "Inlet Last Run"
+    id: inlet_last_run
+    unit_of_measurement: "Litres"
+    
+  - platform: template
+    name: "Inlet Result Time"
+    id: inlet_result_time
+    unit_of_measurement: "Minutes"
+    
+  - platform: template
+    name: "Inlet Test Results"
+    id: inlet_test_results
+    unit_of_measurement: "L/min"  
+    
+  - platform: template
+    name: "Bore Last Run"
+    id: bore_last_run
+    unit_of_measurement: "Litres"  
+    
+  - platform: template
+    name: "Tank Last Run"
+    id: tank_last_run
+    unit_of_measurement: "Litres" 
+    
+  - platform: template
+    name: "Voltage"
+    id: volts
+    unit_of_measurement: "V"   
+  
+  - platform: template
+    name: "Voltage Bore Switch"
+    lambda: |-
+      return id(volts_float);
+    accuracy_decimals: 2
+    update_interval: 60s
+    unit_of_measurement: "V"
+  
+  - platform: homeassistant
+    name: Resivor Level
+    id: water_storage
+    entity_id: sensor.water_storage
+
+globals:
+  
+  - id: bore_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: tank_float
+    type: float
+    restore_value: no
+    initial_value: '0'  
+  
+  - id: inlet_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: inlet_time
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: volts_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+binary_sensor:
+  - platform: gpio
+    name: Yard Gate Beam Sensor 
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 4s
+      
+  - platform: status
+    name: "Bore Control Status"
+    
+  - platform: template
+    name: Bore Fault
+    id: bore_fault
+    lambda: |-
+      if (id(volts).state >= 0.01){
+        if (id(inlet_meter).state <= 0.01){
+        return true;
+        } else {
+        return false;
+        }
+      } else {
+        return false;
+      }
+  - platform: template
+    name: "Inlet Water Status"
+    id: inlet_status
+    lambda: |-
+      if (id(inlet_meter).state >= 0.01){
+      return true;
+      } else {
+      return false;
+      }
+      
+  - platform: template
+    name: "Resivior Manual Level Switch"
+    id: level_switch
+    lambda: |-
+      if (id(volts).state >= 0.10){
+      return true;
+      } else {
+      return false;
+      }
+#    on_state:  
+#    - switch.turn_on: bore_filling_active
+#    - switch.turn_off: tank_filling_active
+#    on_release:
+#    - switch.turn_off: bore_filling_active
+#    - delay: 20s
+#    - switch.turn_on: tank_filling_active
+  
+  - platform: template
+    id: bore_start
+    lambda: |-
+      if (id(water_storage).state <= 85){
+        return true;
+      } else {
+        return false;
+      }
+    on_state:
+    - lambda: |-
+        id(ha_level_switch).publish_state(true);
+    
+  - platform: template
+    id: bore_stop
+    lambda: |-
+      if (id(water_storage).state >= 99){
+        return true;
+      } else {
+        return false;
+      }
+    on_state:
+    - lambda: |-
+        id(ha_level_switch).publish_state(false);
+        
+  - platform: template  
+    name: HA Level Switch
+    id: ha_level_switch
+    on_state:  
+    - text_sensor.template.publish:
+        id: text2
+        state: Bore is being controled by Home Assistant
+    - switch.turn_on: bore_filling_active
+    - switch.turn_off: tank_filling_active
+    on_release:
+    - switch.turn_off: bore_filling_active
+    - delay: 20s
+    - switch.turn_on: tank_filling_active
+  
+    
+    
+  - platform: template
+    name: "Tank Pressure High"
+    id: tank_pressure_high
+    lambda: |-
+      if (id(inlet_psi).state >= 2.0){
+      return true;
+      } else {
+      return false;
+      }
+    on_state:  
+    - switch.turn_on: tank_filling_active
+    

@@ -1,0 +1,361 @@
+esphome:
+  name: seedling-control
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "a130c9e0a9874aaa785e3f3336f82303"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Seedling-Control"
+    password: "TZc7yrsyLD80"
+
+captive_portal:
+    
+    
+    
+i2c:
+  sda: 22
+  scl: 21
+  scan: True
+
+esp32_ble_tracker:
+  
+sensor:
+      
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:E8:A0:23"
+    temperature:
+      name: "Vedge Temperature"
+      id: vedge_temp
+    humidity:
+      name: "Vedge Humidity"
+    battery_level:
+      name: "Vedge Battery-Level"
+    battery_voltage:
+      name: "Vedge Battery-Voltage"
+      
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:B4:E3:56"
+    temperature:
+      name: "Storage Outside Temperature"
+    humidity:
+      name: "Storage Outside Humidity"
+    battery_level:
+      name: "Storage Outside Battery-Level"
+    battery_voltage:
+      name: "Storage Outside Battery-Voltage"
+      
+      
+      
+  - platform: template
+    name: "Vedge Current Time"
+    id: vedge_time_now
+    unit_of_measurement: "O'Clock"
+    accuracy_decimals: 2
+
+binary_sensor:
+  - platform: gpio
+    id: led_touch
+    name: Vedge Light Button
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      then:
+        - delay: 1s
+        - switch.toggle: light_override
+
+switch:     
+  - platform: template
+    name: "Vedge Light Override"
+    id: light_override
+    restore_state: no
+    turn_on_action:
+      - switch.template.publish:
+          id: light_override
+          state: ON
+      - if:
+          condition:
+            light.is_on: vedge_led
+          then:
+               - lambda: |-
+                    auto call = id(vedge_led).turn_off();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is ON, Turn Off");
+          else:    
+                - lambda: |-
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is OFF, Turn On");
+    turn_off_action:
+      - switch.template.publish:
+          id: light_override
+          state: OFF
+      - lambda: |-
+              static float hour = 0;
+              static float min = 0;
+              static float time = 0; 
+              static int day = 0;
+              static float on_time = 0;
+              static float off_time = 0;
+              
+              hour = id(sntp_time).now().hour;
+              min = id(sntp_time).now().minute;
+              day = id(sntp_time).now().day_of_week;
+              time = hour + (min / 100);
+              on_time = id(on_time_vedge).state;
+              off_time = id(off_time_vedge).state;
+              
+              id(vedge_time_now).publish_state(time);                                             
+              
+              
+              if (id(auto_timer).state){
+                
+              if (on_time <= off_time){
+                 if ((time >= on_time) && (time <= off_time)){
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn On");
+                      auto call = id(vedge_led).turn_on();
+                      call.perform();
+                 } else {
+                      auto call = id(vedge_led).turn_off();
+                      call.perform();
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn Off");
+                 }
+              } else {
+                if ((time >= on_time) && (time <= 24.00)){
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, Before Midingt, Turn On");
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                } else if ((time <= off_time) && (time >= 00.00)){
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, After Midnight, Turn On");
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                } else {
+                   auto call = id(vedge_led).turn_off();
+                   call.perform();
+                   ESP_LOGD("main", "ON time not after OFF time, else statement, Turn Off");
+                }
+              }
+              } else {
+                 if (id(vedge_led).current_values.is_on()){
+                    auto call = id(vedge_led).turn_off();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is ON, Turn Off");
+                 } else {
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                    ESP_LOGD("main", "Light Override: Led is ON, Turn On");
+                    id(light_override).publish_state(true);
+                 }
+              }
+                
+  - platform: template
+    name: "Vedge Timer Auto"
+    id: auto_timer
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: auto_timer
+          state: ON
+    turn_off_action:
+      - switch.template.publish:
+          id: auto_timer
+          state: OFF
+    
+  - platform: gpio
+    pin:
+      number: GPIO19
+      inverted: true
+    name: "Vedge Heat Matt"
+    id: heat_matt
+    restore_mode: RESTORE_DEFAULT_OFF
+    
+climate:
+  - platform: bang_bang
+    name: "Vedge Matt Climate Controller"
+    sensor: vedge_temp
+    default_target_temperature_low: 10 °C
+    default_target_temperature_high: 22 °C
+
+    heat_action:
+      - switch.turn_on: heat_matt
+    idle_action:
+      - switch.turn_off: heat_matt
+
+
+
+output:
+
+  - platform: gpio
+    pin: GPIO23
+    inverted: True
+    id: light_output
+    
+  - platform: ledc
+    pin: GPIO16
+    id: fan_output_vedge
+    frequency: 16000hz
+    min_power: 0.05
+    max_power: 1
+  
+fan:
+
+  - platform: speed
+    output: fan_output_vedge
+    name: "Vedge Fan"
+    id: fan_vedge
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+        - fan.turn_on:
+            id: fan_vedge
+            speed: !lambda |-  
+              return id(fan_vedge_speed);
+    on_speed_set:
+        - lambda: |-  
+            id(fan_vedge_speed) = id(fan_vedge).speed;
+            ESP_LOGD("main", "Fan A Speed Set: %i", id(fan_vedge_speed));
+        
+light:
+
+  - platform: binary
+    name: "Vedge LED"
+    output: light_output
+    restore_mode: RESTORE_AND_OFF
+    id: vedge_led
+
+number:      
+      
+  - platform: template
+    name: Turn On Vedge Time
+    id: on_time_vedge
+    optimistic: true
+    min_value: 0
+    max_value: 24
+    step: 0.01
+    restore_value: true
+    mode: box
+    
+  - platform: template
+    name: Turn Off Vedge Time
+    id: off_time_vedge
+    optimistic: true
+    min_value: 0
+    max_value: 24
+    step: 0.01
+    restore_value: true
+    mode: box
+    
+time:          
+  - platform: sntp
+    id: sntp_time
+    on_time:
+      - seconds: 0
+        minutes: '0-59'
+        then:
+          - lambda: |-
+              static float hour = 0;
+              static float min = 0;
+              static float time = 0; 
+              static int day = 0;
+              static float on_time = 0;
+              static float off_time = 0;
+              
+              hour = id(sntp_time).now().hour;
+              min = id(sntp_time).now().minute;
+              day = id(sntp_time).now().day_of_week;
+              time = hour + (min / 100);
+              on_time = id(on_time_vedge).state;
+              off_time = id(off_time_vedge).state;
+              
+              id(vedge_time_now).publish_state(time);                                             
+              
+              
+              if (id(auto_timer).state){
+                
+              if (on_time <= off_time){
+                 if ((time >= on_time) && (time <= off_time)){
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn On");
+                      auto call = id(vedge_led).turn_on();
+                      call.perform();
+                   }  
+                 } else {
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                      auto call = id(vedge_led).turn_off();
+                      call.perform();
+                      ESP_LOGD("main", "ON time id after OFF time, in a 24hr Period, Turn Off");
+                   }
+                 }
+              } else {
+                if ((time >= on_time) && (time <= 24.00)){
+                  if (id(light_override).state){
+                  ESP_LOGD("main", "Light Override Is ON");
+                  } else {
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, Before Midingt, Turn On");
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                  }  
+                } else if ((time <= off_time) && (time >= 00.00)){
+                  if (id(light_override).state){
+                  ESP_LOGD("main", "Light Override Is ON");
+                  } else {
+                    ESP_LOGD("main", "ON time not after OFF time, Time not in a 24h Period, After Midnight, Turn On");
+                    auto call = id(vedge_led).turn_on();
+                    call.perform();
+                  }
+                } else {
+                   if (id(light_override).state){
+                   ESP_LOGD("main", "Light Override Is ON");
+                   } else {
+                   auto call = id(vedge_led).turn_off();
+                   call.perform();
+                   ESP_LOGD("main", "ON time not after OFF time, else statement, Turn Off");
+              }
+              }
+              }
+              }
+              
+              if (time == on_time){
+                if (id(light_override).state){
+                    id(light_override).turn_off();
+                    ESP_LOGD("main", "Light Overide Is On, Turn Off");
+                    
+              }}
+              if (time == off_time){
+                if (id(light_override).state){
+                    id(light_override).turn_off();
+                    ESP_LOGD("main", "Light Overide Is On, Turn Off");
+              }}
+              
+          
+globals:
+
+  - id: valid_int
+    type: int
+    restore_value: yes
+    
+  - id: fan_vedge_speed
+    type: int
+    restore_value: yes
+    initial_value: '45'
+    

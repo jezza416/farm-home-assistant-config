@@ -1,0 +1,1237 @@
+esphome:
+  name: clock-esp32
+  on_boot:
+    priority: 200
+    then:
+      - light.turn_on:
+          id: hours_lights
+          brightness: 95%
+          effect: "LED Time"
+      - light.turn_on:
+          id: minutes_lights
+          brightness: 95%
+          effect: "LED Time"
+
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+   
+
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "1355099447122cca30d09f9180c7e028"
+
+wifi:
+  networks:
+  - ssid: "JezzaRM"
+    password: "Zues5399"
+  - ssid: "hfpshed"
+    password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Clock-Esp32 Fallback Hotspot"
+    password: "nkmPPdUzVrnA"
+
+captive_portal:
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+  id: bus_a
+    
+    
+sensor:
+  - platform: sht3xd
+    temperature:
+      name: "Kids Clock Temperature"
+      id: temp
+      on_value:
+        then:
+          lambda: |-
+            id(int_temp) = x;
+            id(float_temp) = x;
+    humidity:
+      name: "Kids Clock Humidity"
+    address: 0x44
+    update_interval: 60s
+    
+  - platform: tsl2561
+    name: "Kids Ambient Light"
+    id: lux
+    address: 0x39
+    update_interval: 60s
+    
+switch:
+  - platform: template
+    name: "Display Temp In Clock"
+    id: temp_disp
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: temp_disp
+          state: ON
+    turn_off_action:
+      - switch.template.publish:
+          id: temp_disp
+          state: OFF
+        
+  - platform: template
+    name: "Countdown Run"
+    id: countdown_run
+    internal: true
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: countdown_run
+          state: ON
+      - lambda: |-
+           id(countdown_state) = ((id(countdown_min) * 60) + id(countdown_sec));
+      - rtttl.play: 'two short:d=4,o=5,b=100:16e6,16e6'
+    turn_off_action:
+      - switch.template.publish:
+          id: countdown_run
+          state: OFF
+      - rtttl.play: 'MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d'
+  
+  - platform: template
+    name: "Countdown Pause"
+    id: countdown_pause
+    internal: true
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: countdown_pause
+          state: ON
+      - rtttl.play: 'long:d=1,o=5,b=100:e6'
+    turn_off_action:
+      - switch.template.publish:
+          id: countdown_pause
+          state: OFF
+      - rtttl.play: 'two short:d=4,o=5,b=100:16e6,16e6'
+  
+  - platform: template
+    name: "Timer Run"
+    id: timer_run
+    internal: true
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: timer_run
+          state: ON
+      - lambda: |-
+           id(timer_state) = 0;
+      - rtttl.play: 'two short:d=4,o=5,b=100:16e6,16e6'
+    turn_off_action:
+      - switch.template.publish:
+          id: timer_run
+          state: OFF
+      - rtttl.play: 'MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d'
+  
+  
+  - platform: template
+    name: "Timer Pause"
+    id: time_pause
+    internal: true
+    restore_state: yes
+    turn_on_action:
+      - switch.template.publish:
+          id: time_pause
+          state: ON
+      - rtttl.play: 'long:d=1,o=5,b=100:e6'
+    turn_off_action:
+      - switch.template.publish:
+          id: time_pause
+          state: OFF
+      - rtttl.play: 'two short:d=4,o=5,b=100:16e6,16e6'
+  
+  - platform: template
+    name: "Night Light"
+    id: night_light
+    restore_state: yes
+    turn_on_action:
+      - lambda: |-
+          id(time_mode).publish_state(false);
+          if (id(game_mode).state){
+            id(game_mode).turn_off();
+          }
+          if (id(timer_mode).state){
+            id(timer_mode).turn_off();
+          }
+          if (id(countdown_mode).state){
+            id(countdown_mode).turn_off();
+          }
+      - switch.template.publish:
+          id: night_light
+          state: ON
+      - light.control:
+          id: hours_lights
+          state: on
+          brightness: 80%
+          red: !lambda |- 
+             return id(hours_red_night) / 255.0;
+          green: !lambda |-
+             return id(hours_green_night) / 255.0;
+          blue: !lambda |-
+             return id(hours_blue_night) / 255.0;
+      - light.control:
+          id: minutes_lights
+          state: on
+          brightness: 80%
+          red: !lambda |- 
+             return id(minutes_red_night) / 255.0;
+          green: !lambda |-
+             return id(minutes_green_night) / 255.0;
+          blue: !lambda |-
+             return id(minutes_blue_night) / 255.0;
+    turn_off_action:
+      - switch.template.publish:
+          id: night_light
+          state: OFF
+
+  - platform: template
+    name: "Game Mode"
+    id: game_mode
+    restore_state: yes
+    turn_on_action:
+      - lambda: |-
+          id(time_mode).publish_state(false);
+          if (id(night_light).state){
+            id(night_light).turn_off();
+          }
+          if (id(timer_mode).state){
+            id(timer_mode).turn_off();
+          }
+          if (id(countdown_mode).state){
+            id(countdown_mode).turn_off();
+          }
+      - switch.template.publish:
+          id: game_mode
+          state: ON
+      - light.control:
+          id: hours_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(home_red_value) / 255.0;
+          green: !lambda |-
+             return id(home_green_value) / 255.0;
+          blue: !lambda |-
+             return id(home_blue_value) / 255.0;
+      - light.control:
+          id: minutes_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(away_red_value) / 255.0;
+          green: !lambda |-
+             return id(away_green_value) / 255.0;
+          blue: !lambda |-
+             return id(away_blue_value) / 255.0;
+    turn_off_action:
+      - switch.template.publish:
+          id: game_mode
+          state: OFF
+          
+  - platform: template
+    name: "Timer Mode"
+    id: timer_mode
+    restore_state: yes
+    turn_on_action:
+      - lambda: |-
+          id(time_mode).publish_state(false);
+          if (id(night_light).state){
+            id(night_light).turn_off();
+          }
+          if (id(game_mode).state){
+            id(game_mode).turn_off();
+          }
+          if (id(countdown_mode).state){
+            id(countdown_mode).turn_off();
+          }
+      - switch.template.publish:
+          id: timer_mode
+          state: ON
+      - light.control:
+          id: hours_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(hours_red_timer) / 255.0;
+          green: !lambda |-
+             return id(hours_green_timer) / 255.0;
+          blue: !lambda |-
+             return id(hours_blue_timer) / 255.0;
+      - light.control:
+          id: minutes_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(minutes_red_timer) / 255.0;
+          green: !lambda |-
+             return id(minutes_green_timer) / 255.0;
+          blue: !lambda |-
+             return id(minutes_blue_timer) / 255.0;
+    turn_off_action:
+      - switch.template.publish:
+          id: timer_mode
+          state: OFF
+          
+  - platform: template
+    name: "Countdown Mode"
+    id: countdown_mode
+    restore_state: yes
+    turn_on_action:
+      - lambda: |-
+          id(time_mode).publish_state(false);
+          if (id(night_light).state){
+            id(night_light).turn_off();
+          }
+          if (id(game_mode).state){
+            id(game_mode).turn_off();
+          }
+          if (id(timer_mode).state){
+            id(timer_mode).turn_off();
+          }
+      - switch.template.publish:
+          id: countdown_mode
+          state: ON
+      - light.control:
+          id: hours_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(hours_red_countdown) / 255.0;
+          green: !lambda |-
+             return id(hours_green_countdown) / 255.0;
+          blue: !lambda |-
+             return id(hours_blue_countdown) / 255.0;
+      - light.control:
+          id: minutes_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(minutes_red_countdown) / 255.0;
+          green: !lambda |-
+             return id(minutes_green_countdown) / 255.0;
+          blue: !lambda |-
+             return id(minutes_blue_countdown) / 255.0;
+    turn_off_action:
+      - switch.template.publish:
+          id: countdown_mode
+          state: OFF
+      
+light:
+  - platform: rgb
+    name: "LED Hours"
+    id: hours_lights
+    red: hours_red_output
+    green: hours_green_output
+    blue: hours_blue_output
+    restore_mode: RESTORE_AND_ON
+    effects:
+    - lambda:
+        name: LED Time
+        lambda: |-
+            auto call = id(led_hours).turn_on();
+            call.set_effect("LED time effect");
+            call.perform();
+      
+  - platform: rgb
+    name: "LED Minutes"
+    id: minutes_lights
+    red: minutes_red_output
+    green: minutes_green_output
+    blue: minutes_blue_output
+    restore_mode: RESTORE_AND_ON
+    effects:
+    - lambda:
+        name: LED Time
+        lambda: |-
+            auto call = id(led_minutes).turn_on();
+            call.set_effect("LED time effect");
+            call.perform();
+          
+  - platform: neopixelbus
+    id: led_hours
+    name: "LED Strip Hours"
+    internal: True
+    pin: GPIO16
+    method:
+      type: esp32_rmt
+      channel: 0
+    num_leds: 14
+    variant: WS2812X
+    type: GRB
+    
+    effects:
+    - addressable_lambda:
+        name: "LED Time effect"
+        update_interval: 1000ms
+        lambda: |-
+          const int ledsInDigitCount = 7;
+          const int digitsCount = 2;
+          //static int temp = id(int_temp);
+          static int digit0 = 0;
+          static int digit1 = 0;
+          static int red = id(hours_red_value);
+          static int blue = id(hours_blue_value);
+          static int green = id(hours_green_value);
+          static int timerInsec = 0;
+          static int timerInmin = 0;
+          static int countdownInsec = 0;
+          static int countdownInmin = 0;
+
+          int digitsLeds[14][ledsInDigitCount] = {
+            {1,1,1,0,1,1,1},
+            {1,0,0,0,1,0,0},
+            {1,1,0,1,0,1,1},
+            {1,1,0,1,1,1,0},
+            {1,0,1,1,1,0,0},
+            {0,1,1,1,1,1,0},
+            {0,1,1,1,1,1,1},
+            {1,1,0,0,1,0,0},
+            {1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,0},
+            {0,0,0,0,0,0,0},
+            {0,0,0,1,0,0,0},
+            {0,0,0,1,1,1,1},
+            {1,1,0,1,0,0,0}
+          };
+
+          int ledOffsets[digitsCount] = {7, 0};
+
+          auto time = id(sntp_time).now();
+          
+          if (id(timer_mode).state){
+              red = id(hours_red_timer);
+              green = id(hours_green_timer);
+              blue = id(hours_blue_timer);
+                  // Timer Running....
+                  if (id(timer_run).state){
+                    // Timer Counting Down..... 
+                    timerInmin = id(timer_state) / 60;
+                    digit0 = timerInmin / 10;
+                    digit1 = timerInmin % 10;
+                    if (digit0 <= 0){
+                    digit0 = 10;
+                    }
+                    if (digit1 <= 0){
+                    digit1 = 10;
+                    }
+                  } else {
+                    // Timer @ 0... display timer start state
+                    digit0 = id(timer_state) / 10;
+                    digit1 = id(timer_state) % 10;
+                  }
+              ESP_LOGD("main", "Time Is Min: %i", timerInmin);
+  
+          } else {
+          
+          if (id(countdown_mode).state){
+              red = id(hours_red_countdown);
+              green = id(hours_green_countdown);
+              blue = id(hours_blue_countdown);
+                  // Timer Running....
+                  if (id(countdown_run).state){
+                    // Timer Counting Down..... 
+                    countdownInmin = id(countdown_state) / 60;
+                    digit0 = countdownInmin / 10;
+                    digit1 = countdownInmin % 10;
+                    if (digit0 <= 0){
+                    digit0 = 10;
+                    }
+                    if (digit1 <= 0){
+                    digit1 = 10;
+                    }
+                  } else {
+                    // Timer @ 0... display timer start state
+                    digit0 = id(countdown_min) / 10;
+                    digit1 = id(countdown_min) % 10;
+                  }
+              ESP_LOGD("main", "Time Is Min: %i", countdownInmin);
+  
+          } else {
+          
+          if (id(game_mode).state){
+            digit0 = id(home_value) / 10;
+            digit1 = id(home_value) % 10;
+              if (digit0 == 0){
+              digit0 = 10;
+              }
+              if (digit0 < 0){
+              digit0 = 11;
+              }
+            red = id(home_red_value);
+            green = id(home_green_value);
+            blue = id(home_blue_value);
+            
+          } else {
+          
+            if (id(night_light).state){
+                  red = id(hours_red_night);
+                  green = id(hours_green_night);
+                  blue = id(hours_blue_night);
+                } else {
+                  red = id(hours_red_value);
+                  green = id(hours_green_value);
+                  blue = id(hours_blue_value);
+                }
+            if (id(temp_disp).state){
+              if ((28 <= time.second) && (32 >= time.second)) {
+                  ESP_LOGD("main", "Int Temp: %i", id(int_temp));
+                  digit0 = id(int_temp) / 10;
+                  digit1 = id(int_temp) % 10;
+                  //if (digit0 <= 0){
+                  // digit0 = 10;
+                  //  }
+                } else {
+                  digit0 = ((time.hour % 12) / 10);
+                  digit1 = ((time.hour % 12) % 10);
+                  if (digit0 <= 0){
+                    if (digit1 <= 0){
+                      digit0 = 2;
+                      digit1 = 1;
+                    } else {
+                      digit0 = 10;
+                    }
+                  }
+                }
+              } else {
+                digit0 = ((time.hour % 12) / 10);
+                digit1 = ((time.hour % 12) % 10);
+                if (digit1 <= 0){
+                  digit0 = 2;
+                  digit1 = 1;
+                } else {
+                  digit0 = 10;
+                }
+              }
+          }
+          }
+          }
+          
+          ESP_LOGD("main", "Hour Digit 0: %i", digit0);
+          ESP_LOGD("main", "Hour Digit 1: %i", digit1);
+  
+          
+          int colors[4][3] = {
+            {red, green, blue},
+            {red, green, blue},
+          };
+          
+
+          int values[digitsCount] = {};
+          values[0] = digit0;
+          values[1] = digit1;
+          
+          
+        
+
+          it.all() = Color(0,0,0);
+
+          for (int valueI = 0; valueI < digitsCount; valueI++) {
+            int ledsOffset = ledOffsets[valueI];
+            int timeValue = values[valueI];
+            int *color = colors[valueI];
+            int *leds = digitsLeds[timeValue];
+
+            for (int ledI = 0; ledI < ledsInDigitCount; ledI++) {
+              if(leds[ledI] > 0) {
+                int ledIndex = ledI + ledsOffset;
+                it[ledIndex] = Color(color[0], color[1], color[2]);
+              }
+            }
+          }
+  
+  - platform:  neopixelbus
+    id: led_minutes
+    name: "LED Strip Minutes"
+    internal: True
+    pin: GPIO03
+    method:
+      type: esp32_rmt
+      channel: 1
+    num_leds: 14
+    variant: WS2812X
+    type: GRB
+    
+    effects:
+    - addressable_lambda:
+        name: "LED Time effect"
+        update_interval: 1000ms
+        lambda: |-
+          const int ledsInDigitCount = 7;
+          const int digitsCount = 2;
+          static int temp = 0;
+          static int digit0 = 0;
+          static int digit1 = 0;
+          static int red = id(minutes_red_value);
+          static int blue = id(minutes_blue_value);
+          static int green = id(minutes_green_value);
+          static float countdowncalc = 0.00;
+          static int countdownInsec = 0;
+          static int countdownInmin = 0;
+          static int timerInsec = 0;
+          static int timerInmin = 0;
+          
+          
+
+          int digitsLeds[14][ledsInDigitCount] = {
+            {1,1,1,0,1,1,1},
+            {0,0,1,0,0,0,1},
+            {1,1,0,1,0,1,1},
+            {0,1,1,1,0,1,1},
+            {0,0,1,1,1,0,1},
+            {0,1,1,1,1,1,0},
+            {1,1,1,1,1,1,0},
+            {0,0,1,0,0,1,1},
+            {1,1,1,1,1,1,1},
+            {0,1,1,1,1,1,1},
+            {0,0,0,0,0,0,0},
+            {0,0,0,1,0,0,0},
+            {0,0,0,1,1,1,1},
+            {1,1,0,1,0,0,0}
+          };
+          
+          int ledOffsets[digitsCount] = {7, 0};
+
+          auto time = id(sntp_time).now();
+          
+          
+          if (id(timer_mode).state){
+              red = id(minutes_red_timer);
+              green = id(minutes_green_timer);
+              blue = id(minutes_blue_timer);
+                  // Timer Running....
+                  if (id(timer_run).state){
+                    if (id(timer_state) >= 3600){
+                      id(timer_state) = 0;
+                    }
+                    // Timer Counting UP..... 
+                    timerInmin = id(timer_state) / 60;
+                    timerInsec = (id(timer_state) - (timerInmin * 60));
+                    digit0 = timerInsec % 10;
+                    digit1 = timerInsec / 10;
+                  } else {
+                    // Timer @ 0... display timer start state
+                    ESP_LOGD("main", "Display Setup Time");
+                    digit0 = id(timer_state) % 10;
+                    digit1 = id(timer_state) / 10;
+                  }
+              ESP_LOGD("main", "Time Is Sec: %i", timerInsec);
+              ESP_LOGD("main", "Timer State: %i", id(timer_state));
+              
+          } else {
+          
+          if (id(countdown_mode).state){
+              red = id(minutes_red_countdown);
+              green = id(minutes_green_countdown);
+              blue = id(minutes_blue_countdown);
+                  // Timer Running....
+                  if (id(countdown_run).state){
+                    if (id(countdown_state) < 0.00){
+                      id(countdown_run).turn_off();
+                    }
+                    // Timer Counting Down..... 
+                    countdownInmin = id(countdown_state) / 60;
+                    countdownInsec = (id(countdown_state) - (countdownInmin * 60));
+                    digit0 = countdownInsec % 10;
+                    digit1 = countdownInsec / 10;
+                  } else {
+                    // Timer @ 0... display timer start state
+                    ESP_LOGD("main", "Display Setup Time");
+                    digit0 = id(countdown_sec) % 10;
+                    digit1 = id(countdown_sec) / 10;
+                  }
+              ESP_LOGD("main", "Time Is Sec: %i", countdownInsec);
+              ESP_LOGD("main", "Timer State: %i", id(countdown_state));
+              
+          } else {
+          
+          
+          if (id(game_mode).state){
+            digit0 = id(away_value) % 10;
+            digit1 = id(away_value) / 10;
+            if (digit1 == 0){
+                digit1 = 10;
+            }
+            if (digit1 < 0){
+                digit1 = 11;
+            }
+            red = id(away_red_value);
+            green = id(away_green_value);
+            blue = id(away_blue_value);
+          } else {
+            if (id(night_light).state){
+                  red = id(minutes_red_night);
+                  green = id(minutes_green_night);
+                  blue = id(minutes_blue_night);
+                } else {
+                  red = id(minutes_red_value);
+                  green = id(minutes_green_value);
+                  blue = id(minutes_blue_value);
+                }
+            if (id(temp_disp).state){
+              if ((28 <= time.second) && (32 >= time.second)) {
+                temp = ((id(float_temp) - id(int_temp)) * 10);
+                ESP_LOGD("main", "Float Temp: %f", id(float_temp));
+                ESP_LOGD("main", "Minute Temp: %i", temp);
+                digit0 = 13;
+                digit1 = temp;
+                } else {
+                  digit0 = time.minute % 10;
+                  digit1 = time.minute / 10;
+                }
+              } else {
+                digit0 = time.minute % 10;
+                digit1 = time.minute / 10;
+              }
+          }
+          }
+          }
+          
+          int colors[4][3] = {
+            {red, green, blue},
+            {red, green, blue},
+          };
+
+          ESP_LOGD("main", "Minute Digit 0: %i", digit0);
+          ESP_LOGD("main", "Minute Digit 1: %i", digit1);
+          
+          int values[digitsCount] = {};
+          values[0] = digit0;
+          values[1] = digit1;
+
+
+          it.all() = Color(0,0,0);
+          
+          for (int valueI = 0; valueI < digitsCount; valueI++) {
+            int ledsOffset = ledOffsets[valueI];
+            int timeValue = values[valueI];
+            int *color = colors[valueI];
+            int *leds = digitsLeds[timeValue];
+
+            for (int ledI = 0; ledI < ledsInDigitCount; ledI++) {
+              if(leds[ledI] > 0) {
+                int ledIndex = ledI + ledsOffset;
+                it[ledIndex] = Color(color[0], color[1], color[2]);
+              }
+            }
+          }
+    
+binary_sensor:
+  - platform: template
+    name: "Time Mode"
+    id: time_mode
+    internal: false
+    filters:
+      - delayed_on: 1200ms
+    lambda: |-
+      if (id(game_mode).state) {
+         return false;
+      } else if (id(night_light).state){
+         return false;
+      } else if (id(timer_mode).state){
+         return false;
+      } else if (id(countdown_mode).state){
+         return false;
+      } else {   
+         return true;
+      }
+    on_state:
+      - light.control:
+          id: hours_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(hours_red_value) / 255.0;
+          green: !lambda |-
+             return id(hours_green_value) / 255.0;
+          blue: !lambda |-
+             return id(hours_blue_value) / 255.0;
+      - light.control:
+          id: minutes_lights
+          state: on
+          brightness: 100%
+          red: !lambda |- 
+             return id(minutes_red_value) / 255.0;
+          green: !lambda |-
+             return id(minutes_green_value) / 255.0;
+          blue: !lambda |-
+             return id(minutes_blue_value) / 255.0;
+        
+output:
+  #======== Hours ============
+  - platform: template
+    id: hours_red_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(hours_red_value) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(home_red_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(hours_red_night) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(hours_red_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(hours_red_countdown) = 255.0 * state;
+        } else {
+        }
+        
+  - platform: template
+    id: hours_green_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(hours_green_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(hours_green_night) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(home_green_value) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(hours_green_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(hours_green_countdown) = 255.0 * state;
+        } else {
+        }
+        
+  - platform: template
+    id: hours_blue_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(hours_blue_value) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(home_blue_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(hours_blue_night) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(hours_blue_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(hours_blue_countdown) = 255.0 * state;
+        } else {
+        }
+#========= Minutes ===========
+  - platform: template
+    id: minutes_red_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(minutes_red_value) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(away_red_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(minutes_red_night) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(minutes_red_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(minutes_red_countdown) = 255.0 * state;
+        } else {
+        }
+        
+  - platform: template
+    id: minutes_green_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(minutes_green_value) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(away_green_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(minutes_green_night) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(minutes_green_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(minutes_green_countdown) = 255.0 * state;
+        } else {
+        }
+        
+  - platform: template
+    id: minutes_blue_output
+    type: float
+    write_action:
+      lambda: |-
+        if (id(time_mode).state){
+          id(minutes_blue_value) = 255.0 * state;
+        } else if (id(game_mode).state){
+          id(away_blue_value) = 255.0 * state;
+        } else if (id(night_light).state){
+          id(minutes_blue_night) = 255.0 * state;
+        } else if (id(timer_mode).state){
+          id(minutes_blue_timer) = 255.0 * state;
+        } else if (id(countdown_mode).state){
+          id(minutes_blue_countdown) = 255.0 * state;
+        } else {
+        }
+        
+  - platform: ledc
+    pin: GPIO17
+    id: buzzer
+    
+rtttl:
+  output: buzzer
+    
+button:
+  - platform: template
+    name: "Start / Pause"
+    on_press:
+      - logger.log: Reset Button Pressed
+      - lambda: |-
+          if (id(countdown_mode).state){      
+            if (id(countdown_run).state) {
+               // Timer Running
+              if (id(countdown_pause).state){
+                // Timer Paused...
+                id(countdown_pause).turn_off();
+              } else {
+                // Timer not Paused..
+                id(countdown_pause).turn_on();
+              }
+            } else {
+              // Start Timer..
+              id(countdown_run).turn_on();
+            }  
+          }
+          if (id(timer_mode).state){      
+            if (id(timer_run).state) {
+               // Timer Running
+              if (id(time_pause).state){
+                // Timer Paused...
+                id(time_pause).turn_off();
+              } else {
+                // Timer not Paused..
+                id(time_pause).turn_on();
+              }
+            } else {
+              // Start Timer..
+              id(timer_run).turn_on();
+            }  
+          }
+      
+  - platform: template
+    name: "Stop / Reset"
+    on_press:
+      - logger.log: Reset Button Pressed
+      - lambda: |-
+          if (id(game_mode).state) {
+            id(home_value) = 0;
+            id(away_value) = 0;
+          }
+          if (id(countdown_mode).state) {
+              if (id(countdown_run).state){
+                id(countdown_run).turn_off();
+              } else {
+                id(countdown_min) = 0;
+                id(countdown_sec) = 0;
+              }  
+          }
+          if (id(timer_mode).state) {
+              if (id(timer_run).state){
+                id(timer_run).turn_off();
+              } else {
+                id(timer_state) = 0;
+              }  
+          }
+  - platform: template
+    name: "Home +"
+    on_press:
+      - logger.log: Home + Button Pressed
+      - lambda: |-
+          if (id(game_mode).state) {
+            id(home_value) += 1;
+          }
+          if (id(countdown_mode).state) { 
+            id(countdown_min) += 1;
+          }
+  - platform: template
+    name: "Home -"
+    on_press:
+      - logger.log: Home - Button Pressed
+      - lambda: |-
+          if (id(game_mode).state) {
+            id(home_value) -= 1;
+          }
+          if (id(countdown_mode).state) { 
+            id(countdown_min) -= 1;
+          }
+  - platform: template
+    name: "Away +"
+    on_press:
+      - logger.log: Away + Button Pressed
+      - lambda: |-
+          if (id(game_mode).state) {
+            id(away_value) += 1;
+          }
+          if (id(countdown_mode).state) { 
+            id(countdown_sec) += 1;
+          }
+  - platform: template
+    name: "Away -"
+    on_press:
+      - logger.log: Away - Button Pressed
+      - lambda: |-
+          if (id(game_mode).state) {
+            id(away_value) -= 1;
+          } 
+          if (id(countdown_mode).state) { 
+            id(countdown_sec) -= 1;
+          }
+time:
+  - platform: sntp
+    id: sntp_time
+    servers:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
+      - 2.pool.ntp.org      
+    on_time:
+      - seconds: '0-59'
+        then:
+          - lambda: |-
+              if (id(timer_mode).state){
+                if (id(timer_run).state){
+                   if(id(time_pause).state){
+                     // Timer Paused
+                   } else {
+                     // Timer Running....
+                     id(timer_state) += 1;
+                   }   
+                }
+              }  
+              if (id(countdown_mode).state){
+                if (id(countdown_run).state){
+                   if(id(countdown_pause).state){
+                     // Timer Paused
+                   } else {
+                     // Timer Running....
+                     id(countdown_state) -= 1;
+                   }   
+                }
+              }  
+          
+globals:
+  
+  - id: timer_state
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  
+  - id: lap_number
+    type: int
+    restore_value: yes
+    initial_value: '1'
+  
+  - id: timer_lap_1
+    type: int
+    restore_value: yes
+    initial_value: '1'
+    
+  - id: timer_lap_2
+    type: int
+    restore_value: yes
+    initial_value: '1'
+    
+  - id: timer_lap_3
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: countdown_state
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: countdown_min
+    type: int
+    restore_value: yes
+    initial_value: '1'
+    
+  - id: countdown_sec
+    type: int
+    restore_value: yes
+    initial_value: '1'
+
+  - id: int_temp
+    type: int
+    restore_value: no
+    initial_value: '0'
+    
+  - id: float_temp
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: home_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: away_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_red_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_green_value
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: hours_blue_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: minutes_red_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: minutes_green_value
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: minutes_blue_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+    
+  - id: home_red_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: home_green_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: home_blue_value
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: away_red_value
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: away_green_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: away_blue_value
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_red_night
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: hours_green_night
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_blue_night
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: minutes_red_night
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: minutes_green_night
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: minutes_blue_night
+    type: int
+    restore_value: yes
+    initial_value: '255'
+    
+  - id: hours_red_timer
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_green_timer
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: hours_blue_timer
+    type: int
+    restore_value: yes
+    initial_value: '255'
+
+  - id: minutes_red_timer
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: minutes_green_timer
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: minutes_blue_timer
+    type: int
+    restore_value: yes
+    initial_value: '255'
+    
+  - id: hours_red_countdown
+    type: int
+    restore_value: no
+    initial_value: '255'
+
+  - id: hours_green_countdown
+    type: int
+    restore_value: no
+    initial_value: '255'
+
+  - id: hours_blue_countdown
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: minutes_red_countdown
+    type: int
+    restore_value: no
+    initial_value: '255'
+
+  - id: minutes_green_countdown
+    type: int
+    restore_value: no
+    initial_value: '255'
+
+  - id: minutes_blue_countdown
+    type: int
+    restore_value: no
+    initial_value: '0'

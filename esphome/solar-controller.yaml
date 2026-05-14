@@ -1,0 +1,119 @@
+esphome:
+  name: solar-controller
+  platform: ESP32
+  board: esp32dev
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "a41fba3a1604bddbf0c8ded9d020eef6"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Solar-Controller"
+    password: "dR0VWerGRMob"
+
+captive_portal:
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+  id: bus_a
+
+ads1115:
+  - address: 0x48
+    continuous_mode: on
+  
+    
+sensor:
+
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    name: "Battery Voltage"
+    id: batt_volts
+    filters:
+#    - calibrate_linear:
+#      - 0.037 -> 0.0
+#      - 2.836 -> 12.648
+#       - 2.574 -> 13.12
+  
+    
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    name: "Battery Amps"
+    id: batt_amps
+    unit_of_measurement: "A"
+    update_interval: 10s 
+#    filters:
+#      - offset: -2.5
+#      - multiply: 1.2
+#    - lambda: |-
+#        ((x - 2.5) * 0.100);
+#        return (x);
+#      - calibrate_linear:
+#        - 2.406 -> -1.836
+#        - 2.475 -> -0.044
+#        - 2.491 -> 0
+#        - 2.512 -> 0.236
+#        - 2.666 -> 1.636
+#       - 5.00 -> 20.00
+# 2.267 = 0
+  
+  - platform: template
+    name: "Current Amps"
+    id: current_amps
+    
+  
+    update_interval: 60s 
+    
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    name: "Output Amps"
+    id: output_amps
+    unit_of_measurement: "A"
+#    lambda: |- 
+#      (2.486 - x) / 0.100;
+#      return (x);
+#    filters:
+#     - calibrate_linear:
+#       - 0.0 -> -20.0
+#       - 2.491 -> 0
+#       - 2.512 -> 0.236
+#       - 2.666 -> 1.636
+#       - 5.00 -> 20.00
+      
+      
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    gain: 6.144
+    name: "Output Voltage"
+    id: output_volts
+    filters:
+    - calibrate_linear:
+      - -0.037 -> 0.0
+      - 2.371 -> 12.55 
+      - 2.487 -> 12.648
+      
+  
+    
+#    - calibrate_polynomial:
+#      degree: 2
+#       datapoints:
+        # Map 0.0 (from sensor) to 0.0 (true value)
+#        - 0.0 -> 0.0
+#        - 0.06095 -> 5.07
+#        - 0.40667 -> 12.78
+#        - 0 46571 -> 14.21
+    

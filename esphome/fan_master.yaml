@@ -1,0 +1,101 @@
+esphome:
+  name: fan_master
+  platform: ESP8266
+  board: esp01_1m
+  
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  manual_ip:
+    static_ip: 192.168.1.190
+    gateway: 192.168.1.254
+    subnet: 255.255.255.0
+  
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+switch:
+#  - platform: gpio
+#    pin: GPIO12
+#    id: relay
+#    
+  - platform: template
+    name: "Fan Master Relay"
+    optimistic: true
+    id: fakebutton
+    turn_on_action:
+    - fan.turn_on: main_fan
+    - light.turn_on: led
+    
+    turn_off_action:
+    - fan.turn_off: main_fan
+    - light.turn_off: led
+    
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Fan Master Button"
+    on_press:
+      - switch.toggle: fakebutton
+  
+  - platform: template
+    name: "Storage Main Fan Off"
+    lambda: |-
+      if (id(main_fan).state) {
+        // Fan is Off.
+        return false;
+      } else {
+        // Fan Is On.
+        return true;
+      }
+  
+  - platform: template
+    name: "Storage Main Fan On"
+    lambda: |-
+      if (id(main_fan).state) {
+        // Fan is Off.
+        return true;
+      } else {
+        // Fan Is On.
+        return false;
+      }
+output:
+  - platform: esp8266_pwm
+    id: pow_green_led
+    pin:
+      number: GPIO13
+      inverted: True
+  
+  - platform: gpio
+    pin: GPIO12
+    id: fan_relay
+fan:
+  - platform: binary
+    id: main_fan
+    output: fan_relay
+    name: "Storage Main Fan"
+    
+light:
+  - platform: monochromatic
+    output: pow_green_led
+    id: led
+
+sensor:
+  - platform: dht
+    pin: GPIO14
+    model: AM2302
+    temperature:
+      name: "Fan Master Temperature"
+    humidity:
+      name: "Fan Master Humidity"
+    update_interval: 60s

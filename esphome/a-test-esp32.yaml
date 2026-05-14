@@ -1,0 +1,54 @@
+esphome:
+  name: a-test-esp32
+  friendly_name: a_test_esp32
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "Xro5LNl3DL/tBZw7I2ey+W7SoAknJGRc5SfnVJBxb0U="
+
+ota:
+  password: "c504751117191b5bd65b79ba07caff2e"
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "A-Test-Esp32 Fallback Hotspot"
+    password: "UHgvYFBOBvfT"
+
+captive_portal:
+    
+uart:
+  rx_pin:
+    number: GPIO16
+    mode: INPUT_PULLDOWN
+  baud_rate: 9600
+
+sensor:
+  - platform: sm300d2
+    co2:
+      name: "Kids Roorm CO2 Value"
+    formaldehyde:
+      name: "Kids Room Formaldehyde Value"
+    tvoc:
+      name: "Kids Room TVOC Value"
+    pm_2_5:
+      name: "kids Room PM2.5 Value"
+    pm_10_0:
+      name: "Kids Room PM10 Value"
+    temperature:
+      name: "Kids Room Temperature Value"
+    humidity:
+      name: "Kids Room Humidity Value"
+    update_interval: 30s

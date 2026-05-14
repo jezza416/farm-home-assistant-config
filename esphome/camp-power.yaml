@@ -1,0 +1,735 @@
+substitutions:
+  relay_active_low: "true"
+  name: camping-controller
+  friendly_name: Camping Controller
+
+  wifi_ssid: "hfpshed"
+  wifi_password: "hillview199@"
+  ap_password: "hillview199@"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: "vpGECKOcSw3LEiyZPrzsE4P4QksFIUjh62NzncqK7BE="
+
+ota:
+  - platform: esphome
+    password: "ec76da27a610c98268e7f8436edd7e95"
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: ${ap_password}
+    
+web_server:
+  port: 80
+  version: 3
+  local: True
+captive_portal:
+
+i2c:
+  - id: i2c_main
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+    frequency: 400kHz
+
+tca9548a:
+  - id: tca0
+    address: 0x70
+    i2c_id: i2c_main
+    channels:
+      - bus_id: tca_ch0
+        channel: 0
+      - bus_id: tca_ch1
+        channel: 1
+      - bus_id: tca_ch2
+        channel: 2
+
+mcp23017:
+  - id: mcp_hub
+    i2c_id: tca_ch0
+    address: 0x20
+
+#remote_receiver:
+#  pin:
+#    number: GPIO18
+#    mode:
+#      input: true
+#  dump: all
+
+globals:
+  - id: gullwing_is_opening
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: gullwing_is_closing
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: gullwing_target_position
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
+  - id: gullwing_closed_count
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+  - id: gullwing_open_count
+    type: float
+    restore_value: yes
+    initial_value: '10000.0'
+
+  - id: gullwing_last_avg_count
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
+  - id: gullwing_no_motion_cycles
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_low_current_cycles
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_high_current_cycles
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: gullwing_fault_latched
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+switch:
+  - platform: gpio
+    id: relay_gullwing_supply
+    name: "Gullwing Relay Supply"
+    restore_mode: ALWAYS_OFF
+    pin:
+      mcp23xxx: mcp_hub
+      number: 8
+      mode:
+        output: true
+      inverted: ${relay_active_low}
+
+  - platform: gpio
+    id: relay_charging_supply
+    name: "Charging Ports Power Supply"
+    restore_mode: ALWAYS_ON
+    pin:
+      mcp23xxx: mcp_hub
+      number: 9
+      mode:
+        output: true
+      inverted: False
+
+  - platform: gpio
+    id: relay_essential_supply
+    name: "Essential Ports Power Supply"
+    restore_mode: ALWAYS_ON
+    pin:
+      mcp23xxx: mcp_hub
+      number: 10
+      mode:
+        output: true
+      inverted: False
+
+output:
+  - platform: ledc
+    id: hbridge1_rpwm
+    pin: GPIO25
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge1_lpwm
+    pin: GPIO23
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge2_rpwm
+    pin: GPIO27
+    frequency: 1000 Hz
+
+  - platform: ledc
+    id: hbridge2_lpwm
+    pin: GPIO17
+    frequency: 1000 Hz
+
+sensor:
+  - platform: ina260
+    i2c_id: tca_ch1
+    address: 0x40
+    current:
+      name: "Gullwing Actuator 1 Current"
+      id: ina260_1_current
+      accuracy_decimals: 2
+    power:
+      name: "Gullwing Actuator 1 Power"
+      id: ina260_1_power
+      accuracy_decimals: 1
+    bus_voltage:
+      name: "Gullwing Actuator 1 Bus Voltage"
+      id: ina260_1_voltage
+      accuracy_decimals: 2
+    update_interval: 250ms
+
+  - platform: ina260
+    i2c_id: tca_ch2
+    address: 0x40
+    current:
+      name: "Gullwing Actuator 2 Current"
+      id: ina260_2_current
+      accuracy_decimals: 2
+    power:
+      name: "Gullwing Actuator 2 Power"
+      id: ina260_2_power
+      accuracy_decimals: 1
+    bus_voltage:
+      name: "Gullwing Actuator 2 Bus Voltage"
+      id: ina260_2_voltage
+      accuracy_decimals: 2
+    update_interval: 250ms
+
+  - platform: pulse_counter
+    pin:
+      number: GPIO4
+      mode:
+        input: true
+    id: actuator_1_hall_rate
+    internal: true
+    update_interval: 250ms
+    count_mode:
+      rising_edge: INCREMENT
+      falling_edge: DISABLE
+    total:
+      id: actuator_1_hall_total
+      internal: true
+
+  - platform: pulse_counter
+    pin:
+      number: GPIO5
+      mode:
+        input: true
+    id: actuator_2_hall_rate
+    internal: true
+    update_interval: 250ms
+    count_mode:
+      rising_edge: INCREMENT
+      falling_edge: DISABLE
+    total:
+      id: actuator_2_hall_total
+      internal: true
+
+  - platform: template
+    name: "Gullwing Hall Difference"
+    id: gullwing_hall_difference
+    update_interval: 250ms
+    lambda: |-
+      return id(actuator_1_hall_total).state - id(actuator_2_hall_total).state;
+
+  - platform: template
+    name: "Gullwing Hall Average"
+    id: gullwing_hall_average
+    update_interval: 250ms
+    lambda: |-
+      return (id(actuator_1_hall_total).state + id(actuator_2_hall_total).state) / 2.0f;
+
+  - platform: template
+    name: "Gullwing Position Percent"
+    id: gullwing_position_percent
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 250ms
+    lambda: |-
+      const float span = id(gullwing_open_count) - id(gullwing_closed_count);
+      if (span <= 0.0f) return 0.0f;
+
+      float pos = (id(gullwing_hall_average).state - id(gullwing_closed_count)) / span;
+      if (pos < 0.0f) pos = 0.0f;
+      if (pos > 1.0f) pos = 1.0f;
+      return pos * 100.0f;
+
+  - platform: template
+    name: "Gullwing Combined Current"
+    id: gullwing_combined_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 2
+    update_interval: 250ms
+    lambda: |-
+      return id(ina260_1_current).state + id(ina260_2_current).state;
+
+  - platform: template
+    name: "Actuator 1 Hall Total Count"
+    accuracy_decimals: 0
+    update_interval: 250ms
+    lambda: |-
+      return id(actuator_1_hall_total).state;
+
+  - platform: template
+    name: "Actuator 2 Hall Total Count"
+    accuracy_decimals: 0
+    update_interval: 250ms
+    lambda: |-
+      return id(actuator_2_hall_total).state;
+
+  - platform: template
+    name: "Actuator 1 Counts Per mm"
+    id: actuator_1_counts_per_mm
+    unit_of_measurement: "counts/mm"
+    accuracy_decimals: 3
+    update_interval: 250ms
+    lambda: |-
+      const float stroke_mm = id(actuator_1_stroke_length_mm).state;
+      const float full_counts = id(actuator_1_full_stroke_pulses).state;
+
+      if (stroke_mm <= 0.0f) return 0.0f;
+      return full_counts / stroke_mm;
+
+  - platform: template
+    name: "Actuator 1 Stroke mm"
+    id: actuator_1_stroke_mm
+    unit_of_measurement: "mm"
+    accuracy_decimals: 1
+    update_interval: 250ms
+    lambda: |-
+      const float full_counts = id(actuator_1_full_stroke_pulses).state;
+      const float stroke_mm = id(actuator_1_stroke_length_mm).state;
+      const float current_counts = id(actuator_1_hall_total).state;
+
+      if (full_counts <= 0.0f) return 0.0f;
+
+      float mm = (current_counts / full_counts) * stroke_mm;
+
+      if (mm < 0.0f) mm = 0.0f;
+      if (mm > stroke_mm) mm = stroke_mm;
+
+      return mm;
+
+  - platform: template
+    name: "Actuator 1 Stroke Percent"
+    id: actuator_1_stroke_percent
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 250ms
+    lambda: |-
+      const float full_counts = id(actuator_1_full_stroke_pulses).state;
+      const float current_counts = id(actuator_1_hall_total).state;
+
+      if (full_counts <= 0.0f) return 0.0f;
+
+      float pct = (current_counts / full_counts) * 100.0f;
+
+      if (pct < 0.0f) pct = 0.0f;
+      if (pct > 100.0f) pct = 100.0f;
+
+      return pct;
+
+  - platform: template
+    name: "Actuator 2 Counts Per mm"
+    id: actuator_2_counts_per_mm
+    unit_of_measurement: "counts/mm"
+    accuracy_decimals: 3
+    update_interval: 250ms
+    lambda: |-
+      const float stroke_mm = id(actuator_2_stroke_length_mm).state;
+      const float full_counts = id(actuator_2_full_stroke_pulses).state;
+
+      if (stroke_mm <= 0.0f) return 0.0f;
+      return full_counts / stroke_mm;
+
+  - platform: template
+    name: "Actuator 2 Stroke mm"
+    id: actuator_2_stroke_mm
+    unit_of_measurement: "mm"
+    accuracy_decimals: 1
+    update_interval: 250ms
+    lambda: |-
+      const float full_counts = id(actuator_2_full_stroke_pulses).state;
+      const float stroke_mm = id(actuator_2_stroke_length_mm).state;
+      const float current_counts = id(actuator_2_hall_total).state;
+
+      if (full_counts <= 0.0f) return 0.0f;
+
+      float mm = (current_counts / full_counts) * stroke_mm;
+
+      if (mm < 0.0f) mm = 0.0f;
+      if (mm > stroke_mm) mm = stroke_mm;
+
+      return mm;
+
+  - platform: template
+    name: "Actuator 2 Stroke Percent"
+    id: actuator_2_stroke_percent
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 250ms
+    lambda: |-
+      const float full_counts = id(actuator_2_full_stroke_pulses).state;
+      const float current_counts = id(actuator_2_hall_total).state;
+
+      if (full_counts <= 0.0f) return 0.0f;
+
+      float pct = (current_counts / full_counts) * 100.0f;
+
+      if (pct < 0.0f) pct = 0.0f;
+      if (pct > 100.0f) pct = 100.0f;
+
+      return pct;
+
+
+select:
+  - platform: template
+    name: "Gullwing Mode"
+    id: gullwing_mode
+    optimistic: true
+    restore_value: true
+    options:
+      - Normal
+      - Sync Off
+      - Actuator 1 Only
+      - Actuator 2 Only
+    initial_option: Normal
+
+number:
+  - platform: template
+    name: "Gullwing PWM"
+    id: gullwing_pwm
+    optimistic: true
+    restore_value: true
+    min_value: 0.20
+    max_value: 1.00
+    step: 0.05
+    initial_value: 0.75
+
+  - platform: template
+    name: "Gullwing Sync Trim"
+    id: gullwing_sync_trim
+    optimistic: true
+    restore_value: true
+    min_value: 0.00
+    max_value: 0.40
+    step: 0.01
+    initial_value: 0.12
+
+  - platform: template
+    name: "Gullwing Hall Deadband"
+    id: gullwing_hall_deadband
+    optimistic: true
+    restore_value: true
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 10
+
+  - platform: template
+    name: "Gullwing Current Limit"
+    id: gullwing_current_limit
+    optimistic: true
+    restore_value: true
+    min_value: 1.0
+    max_value: 20.0
+    step: 0.1
+    initial_value: 8.0
+
+  - platform: template
+    name: "Gullwing End Stop Current"
+    id: gullwing_end_stop_current
+    optimistic: true
+    restore_value: true
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.1
+    initial_value: 0.4
+
+  - platform: template
+    name: "Gullwing Obstacle Current"
+    id: gullwing_obstacle_current
+    optimistic: true
+    restore_value: true
+    min_value: 1.0
+    max_value: 25.0
+    step: 0.1
+    initial_value: 10.0
+
+  - platform: template
+    name: "Gullwing Position Stop Band"
+    id: gullwing_position_stop_band
+    optimistic: true
+    restore_value: true
+    min_value: 0.005
+    max_value: 0.10
+    step: 0.005
+    initial_value: 0.02
+
+  - platform: template
+    name: "Gullwing Rollback Percent"
+    id: gullwing_rollback_percent
+    optimistic: true
+    restore_value: true
+    min_value: 0.02
+    max_value: 0.20
+    step: 0.01
+    initial_value: 0.08
+  
+  - platform: template
+    name: "Actuator 1 Stroke Length mm"
+    id: actuator_1_stroke_length_mm
+    optimistic: true
+    restore_value: true
+    min_value: 100
+    max_value: 1000
+    step: 1
+    initial_value: 500
+
+  - platform: template
+    name: "Actuator 1 Full Stroke Pulse Count"
+    id: actuator_1_full_stroke_pulses
+    optimistic: true
+    restore_value: true
+    min_value: 1
+    max_value: 50000
+    step: 1
+    initial_value: 5000
+  
+  - platform: template
+    name: "Actuator 2 Stroke Length mm"
+    id: actuator_2_stroke_length_mm
+    optimistic: true
+    restore_value: true
+    min_value: 100
+    max_value: 1000
+    step: 1
+    initial_value: 500
+
+  - platform: template
+    name: "Actuator 2 Full Stroke Pulse Count"
+    id: actuator_2_full_stroke_pulses
+    optimistic: true
+    restore_value: true
+    min_value: 1
+    max_value: 50000
+    step: 1
+    initial_value: 5000
+
+button:
+  - platform: template
+    name: "Gullwing Open"
+    on_press:
+      - script.execute: gullwing_open
+
+  - platform: template
+    name: "Gullwing Close"
+    on_press:
+      - script.execute: gullwing_close
+
+  - platform: template
+    name: "Gullwing Stop"
+    on_press:
+      - script.execute: gullwing_stop
+
+  - platform: template
+    name: "Gullwing Set Current As Closed"
+    on_press:
+      - lambda: |-
+          id(gullwing_closed_count) = id(gullwing_hall_average).state;
+          ESP_LOGI("gullwing", "Closed count set to %.1f", id(gullwing_closed_count));
+
+  - platform: template
+    name: "Gullwing Set Current As Open"
+    on_press:
+      - lambda: |-
+          id(gullwing_open_count) = id(gullwing_hall_average).state;
+          ESP_LOGI("gullwing", "Open count set to %.1f", id(gullwing_open_count));
+
+  - platform: template
+    name: "Gullwing Clear Fault"
+    on_press:
+      - lambda: |-
+          id(gullwing_fault_latched) = false;
+          id(gullwing_no_motion_cycles) = 0;
+          id(gullwing_low_current_cycles) = 0;
+          id(gullwing_high_current_cycles) = 0;
+          ESP_LOGI("gullwing", "Fault cleared");
+  
+  - platform: template
+    name: "Reset Both Actuator Hall Counts"
+    on_press:
+      - pulse_counter.set_total_pulses:
+          id: actuator_1_hall_rate
+          value: 0
+      - pulse_counter.set_total_pulses:
+          id: actuator_2_hall_rate
+          value: 0
+
+  - platform: template
+    name: "Log Gullwing Counts"
+    on_press:
+      - lambda: |-
+          ESP_LOGI("gullwing", "Actuator 1 total: %.0f", id(actuator_1_hall_total).state);
+          ESP_LOGI("gullwing", "Actuator 2 total: %.0f", id(actuator_2_hall_total).state);
+          ESP_LOGI("gullwing", "Average total: %.1f", id(gullwing_hall_average).state);
+
+binary_sensor:
+  - platform: template
+    name: "Gullwing Overcurrent"
+    lambda: |-
+      return (id(ina260_1_current).state > id(gullwing_current_limit).state) ||
+             (id(ina260_2_current).state > id(gullwing_current_limit).state);
+
+  - platform: template
+    name: "Gullwing Fault Latched"
+    lambda: |-
+      return id(gullwing_fault_latched);
+
+script:
+  - id: gullwing_stop
+    mode: restart
+    then:
+      - lambda: |-
+          id(gullwing_is_opening) = false;
+          id(gullwing_is_closing) = false;
+          id(gullwing_no_motion_cycles) = 0;
+          id(gullwing_low_current_cycles) = 0;
+          id(gullwing_high_current_cycles) = 0;
+      - output.set_level:
+          id: hbridge1_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge1_lpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge2_rpwm
+          level: 0%
+      - output.set_level:
+          id: hbridge2_lpwm
+          level: 0%
+      - delay: 200ms
+      - switch.turn_off: relay_gullwing_supply
+
+  - id: gullwing_open
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(gullwing_fault_latched);'
+          then:
+            - logger.log: "Gullwing fault latched - open blocked"
+          else:
+            - lambda: |-
+                id(gullwing_is_opening) = true;
+                id(gullwing_is_closing) = false;
+                id(gullwing_no_motion_cycles) = 0;
+                id(gullwing_low_current_cycles) = 0;
+                id(gullwing_high_current_cycles) = 0;
+                id(gullwing_last_avg_count) = id(gullwing_hall_average).state;
+            - switch.turn_on: relay_gullwing_supply
+            - delay: 200ms
+
+  - id: gullwing_close
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(gullwing_fault_latched);'
+          then:
+            - logger.log: "Gullwing fault latched - close blocked"
+          else:
+            - lambda: |-
+                id(gullwing_is_opening) = false;
+                id(gullwing_is_closing) = true;
+                id(gullwing_no_motion_cycles) = 0;
+                id(gullwing_low_current_cycles) = 0;
+                id(gullwing_high_current_cycles) = 0;
+                id(gullwing_last_avg_count) = id(gullwing_hall_average).state;
+            - switch.turn_on: relay_gullwing_supply
+            - delay: 200ms
+
+  - id: gullwing_rollback
+    mode: restart
+    then:
+      - script.execute: gullwing_stop
+      - delay: 300ms
+      - lambda: |-
+          const float span = id(gullwing_open_count) - id(gullwing_closed_count);
+          float current_pos = 0.0f;
+          if (span > 0.0f) {
+            current_pos = (id(gullwing_hall_average).state - id(gullwing_closed_count)) / span;
+          }
+          if (current_pos < 0.0f) current_pos = 0.0f;
+          if (current_pos > 1.0f) current_pos = 1.0f;
+
+          id(gullwing_target_position) = current_pos + id(gullwing_rollback_percent).state;
+          if (id(gullwing_target_position) > 1.0f) id(gullwing_target_position) = 1.0f;
+      - script.execute: gullwing_open
+
+cover:
+  - platform: template
+    name: "Gullwing"
+    id: gullwing_cover
+    device_class: door
+    has_position: true
+    assumed_state: false
+
+    lambda: |-
+      const float span = id(gullwing_open_count) - id(gullwing_closed_count);
+      if (span <= 0.0f) return {};
+      float pos = (id(gullwing_hall_average).state - id(gullwing_closed_count)) / span;
+      if (pos < 0.0f) pos = 0.0f;
+      if (pos > 1.0f) pos = 1.0f;
+      return pos;
+
+    open_action:
+      - lambda: |-
+          id(gullwing_target_position) = 1.0f;
+      - script.execute: gullwing_open
+
+    close_action:
+      - lambda: |-
+          id(gullwing_target_position) = 0.0f;
+      - script.execute: gullwing_close
+
+    stop_action:
+      - script.execute: gullwing_stop
+
+    position_action:
+      - lambda: |-
+          id(gullwing_target_position) = pos;
+
+          const float span = id(gullwing_open_count) - id(gullwing_closed_count);
+          if (span <= 0.0f) return;
+
+          float current_pos = (id(gullwing_hall_average).state - id(gullwing_closed_count)) / span;
+          if (current_pos < 0.0f) current_pos = 0.0f;
+          if (current_pos > 1.0f) current_pos = 1.0f;
+
+          const float band = id(gullwing_position_stop_band).state;
+
+          if (id(gullwing_target_position) > current_pos + band) {
+            id(gullwing_open).execute();
+          } else if (id(gullwing_target_position) < current_pos - band) {
+            id(gullwing_close).execute();
+          } else {
+            id(gullwing_stop).execute();
+          }

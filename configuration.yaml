@@ -1,0 +1,998 @@
+default_config:
+mobile_app:
+
+cloud:
+ios:
+
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+frontend:
+  themes: !include_dir_merge_named themes
+  extra_module_url:
+    -  /hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524421
+wake_on_lan:
+media_source:
+
+homeassistant:
+  media_dirs:
+    local: /media
+
+logger:
+  default: error
+  logs:
+    rflink: debug
+
+browser:
+
+alarm_control_panel:
+  - platform: manual
+    name: Shed Alarm
+    arming_time: 5
+    delay_time: 5
+    trigger_time: 4
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      arming_time: 0
+      delay_time: 0
+
+cover:
+  - platform: template
+    covers:
+      garage_door:
+        device_class: garage
+        friendly_name: Shed Yard
+        value_template: "{{ is_state('light.truck_yard', 'on') }}"
+        open_cover:
+          service: light.turn_on
+          target:
+            entity_id: light.truck_yard
+        close_cover:
+          service: light.turn_off
+          target:
+            entity_id: light.truck_yard
+
+
+camera:
+  - platform: ffmpeg
+    name: Sdrive Sub
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.113:554/h264Preview_01_sub
+
+  - platform: ffmpeg
+    name: SDrive Main
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.113:554/
+
+  - platform: ffmpeg
+    name: STyard Sub
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.89:554/h264Preview_01_sub
+
+  - platform: ffmpeg
+    name: STyard Main
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.89:554/h264Preview_01_main
+
+  - platform: ffmpeg
+    name: HDrive Sub
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.93:554/h264Preview_01_sub
+
+  - platform: ffmpeg
+    name: Hdrive Main
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.93:554/h264Preview_01_main
+
+  - platform: ffmpeg
+    name: FDoor Sub
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.112:554/h264Preview_01_sub
+
+  - platform: ffmpeg
+    name: FDoor Main
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.112:554/h264Preview_01_main
+
+  - platform: ffmpeg
+    name: SEntry Sub
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.107:554/h264Preview_01_sub
+
+  - platform: ffmpeg
+    name: SEntry Main
+    input: >-
+      -rtsp_transport tcp -i
+      rtsp://!secret camera_user:!secret camera_password@192.168.1.107:554/h264Preview_01_main
+
+#spotcast:
+#  sp_dc: !secret spotcast_sp_dc
+#  sp_key: !secret spotcast_sp_key
+
+notify:
+  - platform: file
+    name: stock
+    filename: stock.csv
+    timestamp: true
+
+  - platform: file
+    name: STOCK_DATA
+    filename: /config/www/stock_data.txt
+
+  - platform: file
+    name: STOCK_SCALE_DATA
+    filename: /config/www/stock-scale-data.txt
+
+  - platform: group
+    name: Owners
+    services:
+      - action: mobile_app_jezza_iphone_13
+      - action: mobile_app_sm_g780g
+
+  
+template:
+
+  - binary_sensor:
+    #################################################
+    # Standard Template
+    #################################################
+
+    #- name: "Issue Fence Should Be Running"
+    #  unique_id: issue_fence_should_be_running
+    #  state: >
+    #    {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+    #  attributes:
+    #    area: "Farm"
+    #    severity: "Warning"
+    #    issue: "Fence should be running"
+    #    cause: "Fence relay is on but no power draw is detected"
+    #    fix: 
+    #    fix_service: "switch.turn_on"
+    #    fix_script:
+
+    #################################################
+    # WATER ISSUES
+    #################################################
+
+    ####----- WATER OUTGOING -------###
+    
+    - name: "Issue Water Retic Pump Off"
+      unique_id: issue_water_retic_pump_off
+      state: > 
+        {{ is_state('switch.retic_pump', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Retic Pump is off"
+        cause: "Pump relay switch is off"
+        fix: "Turn Pump Power ON"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.retic_pump"
+        # fix_script:
+    
+    - name: "Issue Water Farm Valve Off"
+      unique_id: issue_water_farm_valve_off
+      state: >
+        {{ is_state('valve.water_retic_control_farm_valve', 'closed') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Farm Valve Off"
+        cause: "Farm Valve was Tuned off"
+        fix: "Turn Farm Valve Back ON"
+        fix_service: "valve.open_valve"
+        fix_entity: "valve.water_retic_control_farm_valve"
+        # fix_script: 
+
+    - name: "Issue Water House Valve Off"
+      unique_id: issue_water_house_valve_off
+      state: >
+          {{ is_state('valve.water_retic_control_house_valve', 'closed') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "House Valve Off"
+        cause: "House Valve was Tuned off"
+        fix: "Turn House Valve Back ON"
+        fix_service: "valve.open_valve"
+        fix_entity: "valve.water_retic_control_house_valve"
+        # fix_script: 
+    
+    - name: "Issue Water Retic Valve Off"
+      unique_id: issue_water_retic_valve_off
+      state: >
+          {{ is_state('valve.water_retic_control_retic_valve', 'closed') }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Retic Valve Off"
+        cause: "Retic Valve was Tuned off"
+        fix: "Turn Retic Valve Back ON"
+        fix_service: "valve.open_valve"
+        fix_entity: "valve.water_retic_control_retic_valve"
+        # fix_script: 
+    
+    #################################################
+    # WATER ISOLATION ISSUES
+    #################################################
+
+    - name: "Issue Water Farm Isolated By Outgoing Amount"
+      unique_id: issue_water_farm_isolated_by_outgoing_amount
+      state: >
+        {{ is_state('valve.water_retic_control_farm_valve', 'closed')
+        and states('sensor.water_retic_control_retic_last_60_farm') | float(0)
+          > states('input_number.farm_hourly_water_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Farm water isolated"
+        cause: >
+          Farm has been isolated because outgoing water reached
+          {{ states('sensor.water_retic_control_retic_last_60_farm') | float(0) | round(0) }} L
+          in the last 60 minutes.
+        fix: "Reset last 60 meter and reopen Farm valve"
+        fix_script: "script.water_fix_volume_farm"
+
+
+    - name: "Issue Water House Isolated By Outgoing Amount"
+      unique_id: issue_water_house_isolated_by_outgoing_amount
+      state: >
+        {{ is_state('valve.water_retic_control_house_valve', 'closed')
+        and states('sensor.water_retic_control_retic_last_60_house') | float(0)
+          > states('input_number.house_hourly_water_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "House water isolated"
+        cause: >
+          House has been isolated because outgoing water reached
+          {{ states('sensor.water_retic_control_retic_last_60_house') | float(0) | round(0) }} L
+          in the last 60 minutes.
+        fix: "Reset last 60 meter and reopen House valve"
+        fix_script: "script.water_fix_volume_house"
+
+
+    - name: "Issue Water Retic Isolated By Outgoing Amount"
+      unique_id: issue_water_retic_isolated_by_outgoing_amount
+      state: >
+        {{ is_state('valve.water_retic_control_retic_valve', 'closed')
+        and states('sensor.water_retic_control_retic_last_60_retic') | float(0)
+          > states('input_number.pump_hourly_water_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Retic water isolated"
+        cause: >
+          Retic has been isolated because outgoing water reached
+          {{ states('sensor.water_retic_control_retic_last_60_retic') | float(0) | round(0) }} L
+          in the last 60 minutes.
+        fix: "Reset last 60 meter and reopen Retic valve"
+        fix_script: "script.water_fix_volume_retic"
+
+
+    - name: "Issue Water Retic Pump Isolated By Flow"
+      unique_id: issue_water_retic_pump_isolated_by_flow
+      state: >
+        {{ is_state('switch.retic_pump', 'off')
+        and states('sensor.water_retic_control_retic_flow_rate_2') | float(0)
+          > states('input_number.retic_pump_flow_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Retic pump isolated"
+        cause: >
+          Retic pump has been turned off because flow stayed above
+          {{ states('input_number.retic_pump_flow_cutoff') | float(0) | round(1) }} L/min
+          after the Retic valve was shut.
+        fix: "Reset last 60 meter and restart Retic pump"
+        fix_script: "script.water_fix_volume_stand"
+
+
+    #################################################
+    # WATER PUMP RUNTIME ISSUES
+    #################################################
+
+    - name: "Issue Water Farm Isolated By Pump Runtime"
+      unique_id: issue_water_farm_isolated_by_pump_runtime
+      state: >
+        {{ is_state('valve.water_retic_control_farm_valve', 'closed')
+        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+          >= states('input_number.pump_farm_runtime_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Farm water isolated by pump runtime"
+        cause: >
+          Farm valve has been closed because pump runtime reached
+          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+        fix: "Reset stage runtime and reopen Farm valve"
+        fix_script: "script.water_fix_runtime_farm"
+
+
+    - name: "Issue Water House Isolated By Pump Runtime"
+      unique_id: issue_water_house_isolated_by_pump_runtime
+      state: >
+        {{ is_state('valve.water_retic_control_house_valve', 'closed')
+        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+          >= states('input_number.pump_house_runtime_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "House water isolated by pump runtime"
+        cause: >
+          House valve has been closed because pump runtime reached
+          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+        fix: "Reset stage runtime and reopen House valve"
+        fix_script: "script.water_fix_runtime_house"
+
+
+    - name: "Issue Water Retic Isolated By Pump Runtime"
+      unique_id: issue_water_retic_isolated_by_pump_runtime
+      state: >
+        {{ is_state('valve.water_retic_control_retic_valve', 'closed')
+        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+          >= states('input_number.pump_shed_runtime_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Retic water isolated by pump runtime"
+        cause: >
+          Retic valve has been closed because pump runtime reached
+          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+        fix: "Reset stage runtime and reopen Retic valve"
+        fix_script: "script.water_fix_runtime_retic"
+
+
+    - name: "Issue Water Retic Pump Off By Stand Runtime"
+      unique_id: issue_water_retic_pump_off_by_stand_runtime
+      state: >
+        {{ is_state('switch.retic_pump', 'off')
+        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+          >= states('input_number.pump_stand_runtime_cutoff') | float(999999) }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Retic pump stopped by stand runtime"
+        cause: >
+          Retic pump has been turned off because stand runtime reached
+          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+        fix: "Reset stage runtime and restart Retic pump"
+        fix_script: "script.water_fix_runtime_stand"
+    
+    ####----- TANK / RESIVOIR -------###
+    # Bore Pump Off for two LOng
+    - name: "Issue Bore Pump Off Too Long"
+      unique_id: issue_bore_pump_off_too_long
+      state: >
+        {% set max_hours = states('input_number.bore_max_off_hours') | float(0) %}
+        {% set last_changed = states.switch.bore_pump.last_changed %}
+        {% set hours_off = (as_timestamp(now()) - as_timestamp(last_changed)) / 3600 %}
+
+        {{ is_state('switch.bore_pump', 'off') and hours_off > max_hours }}
+      attributes:
+        area: "Water"
+        severity: "Warning"
+        issue: "Bore pump has been off too long"
+        cause: "Bore pump has exceeded the max off time"
+        fix: "Try turn on Bore Pump"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.bore_pump"
+        # fix_script:
+
+
+    # Tank Level Low
+    - name: "Issue Water Reservoir Low"
+      unique_id: issue_water_reservoir_low
+      state: >
+        {{ states('sensor.water_retic_control_tank_level_percent_2') | float(0) < states('input_number.bore_turn_on_level') | float(0) }}
+      attributes:
+        area: "Water"
+        severity: "Critical"
+        issue: "Reservoir is low"
+        cause: "Reservoir level is below the bore turn-on level"
+        fix: "Check bore pump and incoming water supply"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.bore_pump"
+        # fix_script: 
+
+    #################################################
+    # WATER AUTOMATION STATUS ISSUES
+    #################################################
+
+    - name: "Issue Water Automation Reservoir Protection Off"
+      unique_id: issue_water_automation_reservoir_protection_off
+      state: >
+        {{ is_state('automation.farm_water_reservoir_protection_v2026', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Reservoir protection automation is off"
+        cause: "The reservoir protection automation is currently disabled."
+        fix: "Turn reservoir protection automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_reservoir_protection_v2026"
+
+
+    - name: "Issue Water Automation Reservoir Monitoring Off"
+      unique_id: issue_water_automation_reservoir_monitoring_off
+      state: >
+        {{ is_state('automation.farm_water_resivoir_monitoring', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Reservoir monitoring automation is off"
+        cause: "The reservoir monitoring automation is currently disabled."
+        fix: "Turn reservoir monitoring automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_resivoir_monitoring"
+
+
+    - name: "Issue Water Automation Progressive Isolation Off"
+      unique_id: issue_water_automation_progressive_isolation_off
+      state: >
+        {{ is_state('automation.farm_water_progressive_isolation_v2026', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Progressive isolation automation is off"
+        cause: "The water progressive isolation automation is currently disabled."
+        fix: "Turn progressive isolation automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_progressive_isolation_v2026"
+
+
+    - name: "Issue Water Automation Retic Reset Meters Off"
+      unique_id: issue_water_automation_retic_reset_meters_off
+      state: >
+        {{ is_state('automation.retic_reset_meters_v2026', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Retic meter reset automation is off"
+        cause: "The automatic retic meter reset automation is currently disabled."
+        fix: "Turn retic meter reset automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.retic_reset_meters_v2026"
+
+
+    - name: "Issue Water Automation Retic Pump Use Off"
+      unique_id: issue_water_automation_retic_pump_use_off
+      state: >
+        {{ is_state('automation.farm_water_retic_pump_use', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Retic pump use automation is off"
+        cause: "The retic pump use automation is currently disabled."
+        fix: "Turn retic pump use automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_retic_pump_use"
+
+
+    - name: "Issue Water Automation Output Guard Off"
+      unique_id: issue_water_automation_output_guard_off
+      state: >
+        {{ is_state('automation.farm_water_output_guard', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Water output guard automation is off"
+        cause: "The water output guard automation is currently disabled."
+        fix: "Turn water output guard automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_output_guard"
+
+
+    - name: "Issue Water Automation Notification Reset Action Off"
+      unique_id: issue_water_automation_notification_reset_action_off
+      state: >
+        {{ is_state('automation.farm_water_notification_reset_action', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Notification reset action automation is off"
+        cause: "The mobile notification reset action automation is currently disabled."
+        fix: "Turn notification reset action automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_notification_reset_action"
+
+
+    - name: "Issue Water Automation Reservoir Leak Control Off"
+      unique_id: issue_water_automation_reservoir_leak_control_off
+      state: >
+        {{ is_state('automation.farm_water_resiviour_control_leak_device_or_run_meter', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Reservoir leak control automation is off"
+        cause: "The reservoir leak device or run meter automation is currently disabled."
+        fix: "Turn reservoir leak control automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_resiviour_control_leak_device_or_run_meter"
+
+
+    - name: "Issue Water Automation Bore Max Off Time Off"
+      unique_id: issue_water_automation_bore_max_off_time_off
+      state: >
+        {{ is_state('automation.farm_water_bore_max_off_time_v2026', 'off') }}
+      attributes:
+        area: "Water"
+        severity: "Info"
+        issue: "Bore max off time automation is off"
+        cause: "The bore max off time automation is currently disabled."
+        fix: "Turn bore max off time automation back on"
+        fix_service: "automation.turn_on"
+        fix_entity: "automation.farm_water_bore_max_off_time_v2026"
+
+    #################################################
+    # FARM ISSUES
+    #################################################
+
+    - name: "Issue Fence Main Unit Looks Off At Unit"
+      unique_id: issue_fence_main_unit_looks_off_at_unit
+      state: >
+        {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+      delay_on:
+        seconds: 30
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Fence should be running"
+        cause: "Main Unit is ON but no power draw is detected"
+        fix: "Turn On Main Unit Manually or with Remote"
+        # fix_service: 
+        # fix_entity: 
+        # fix_script:
+      
+    - name: "Issue Fence Main Unit NOT connected to Wifi"
+      unique_id: issue_fence_main_unit_not_connected
+      state: >
+        {{ is_state('binary_sensor.fence_unit_status', 'on') }}
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Main Fence Wifi should be Connected"
+        cause: "Main Unit NOT connected to Wifi"
+        fix: "Check Main Unit Power supply or Try Power Cylce unit"
+        # fix_service: 
+        # fix_entity: 
+        # fix_script:
+
+    - name: "Issue Fence 257 Unit Looks Off At Unit"
+      unique_id: issue_fence_257_unit_looks_off_at_unit
+      state: >
+        {{ is_state('switch.257_fence_unit_257_fence_unit_relay', 'on') and is_state('binary_sensor.257_fence_unit_257_fence_unit_running', 'off') }}
+      delay_on:
+        seconds: 30
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "Fence should be running"
+        cause: "257 Unit is ON but no power draw is detected"
+        fix: "Turn On 257 Unit Manually or with Remote"
+        # fix_service: 
+        # fix_entity: 
+        # fix_script:
+    
+    - name: "Issue Fence 257 Unit NOT connected to Wifi"
+      unique_id: issue_fence_257_unit_not_connected
+      state: >
+        {{ is_state('binary_sensor.257_fence_unit_mums_fence_unit_status', 'on') }}
+      attributes:
+        area: "Farm Fence"
+        severity: "Warning"
+        issue: "257 Unit Wifi should be Connected"
+        cause: "257 Unit Not connected to Wifi"
+        fix: "Check 257 Unit Power supply or Try Power Cylce unit"
+        # fix_service:
+        # fix_entity:
+        # fix_script:
+    
+
+    #################################################
+    # Light ISSUES
+    #################################################
+
+    - name: "Issue Dairy Light Left ON"
+      unique_id: issue_dairy_light_left_on
+      state: >
+        {{ is_state('light.mancave_dairy', 'on') }}
+      attributes:
+        area: "Shed"
+        severity: "Info"
+        issue: "Dairy Light Left on"
+        cause: "Some Muppet didnt turn iit"
+        fix: "fire muppet"
+        fix_service: "light.turn_off"
+        fix_entity: "light.mancave_dairy"
+        #fix_script:
+      
+    - name: "Issue Mancave Yard Light Left ON"
+      unique_id: issue_mancave_yard_light_left_on
+      state: >
+        {{ is_state('light.mancave_yard', 'on') }}
+      attributes:
+        area: "Shed"
+        severity: "Info"
+        issue: "Mancave Yard Light Left on"
+        cause: "Its not Dark Please Turn Off"
+        fix: "Turn Off Light"
+        fix_service: "light.turn_off"
+        fix_entity: "light.mancave_yard"
+        #fix_script:
+      
+    - name: "Issue Storage Kitchen Light Left ON"
+      unique_id: issue_storage_kitchen_light_left_on
+      state: >
+        {{ is_state('light.storage_multi_switch_storage_kitchen', 'on') }}
+      attributes:
+        area: "Storage"
+        severity: "Info"
+        issue: "Kitchen Light in Storage Light Left on"
+        cause: "Some Retard didnt turn it off"
+        fix: "Lets Help this Retard"
+        fix_service: "light.turn_off"
+        fix_entity: "light.storage_multi_switch_storage_kitchen"
+        #fix_script:
+      
+    - name: "Issue Outside Storage Light Left ON"
+      unique_id: issue_outside_storage_light_left_on
+      state: >
+        {{ is_state('light.storage_multi_switch_storage_outside', 'on') }}
+      attributes:
+        area: "Shed"
+        severity: "Info"
+        issue: "The Outside Light was Not turned off"
+        cause: "Lasyness"
+        fix: "Either Send them back of give them a chance"
+        fix_service: "light.turn_off"
+        fix_entity: "light.storage_multi_switch_storage_outside"
+        #fix_script:
+    
+    #################################################
+    # POWER ISSUES
+    #################################################
+
+    - name: "Issue Power Mancave Mains Grid Off"
+      unique_id: issue_power_mancave_mains_grid_off
+      state: >
+        {{ is_state('switch.mancave_mains_grid_mancave_mains_grid', 'off') }}
+      attributes:
+        area: "Cave"
+        severity: "Critical"
+        issue: "Mains in Mancave is Off"
+        cause: "Possible Power Cut"
+        fix: "Turn On Mancave Grid"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.mancave_mains_grid_mancave_mains_grid"
+        #fix_script:
+      
+    - name: "Issue Power Mancave Bar Grid Off"
+      unique_id: issue_power_mancave_bar_grid_off
+      state: >
+        {{ is_state('switch.switch.mancave_mains_ha', 'off') }}
+      attributes:
+        area: "Cave"
+        severity: "Critical"
+        issue: "Mains in Mancave Bar Area is Off"
+        cause: "Possible Power Cut"
+        fix: "Turn On Mancave Bar Area"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.switch.mancave_mains_ha"
+        #fix_script:
+      
+    - name: "Issue Power Barn Lean-to Off"
+      unique_id: issue_power_barn_lean_to_grid_off
+      state: >
+        {{ is_state('switch.barn_lean_to', 'off') }}
+      attributes:
+        area: "Barn"
+        severity: "Critical"
+        issue: "Mains in Barn Area is Off"
+        cause: "Possible Power Cut"
+        fix: "Turn On Mancave Grid or Check Fuse Box"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.barn_lean_to"
+        #fix_script:
+      
+    - name: "Issue Power Bar Heater Off"
+      unique_id: issue_power_bar_heater_off
+      state: >
+        {{ is_state('switch.heater_bar', 'off') }}
+      attributes:
+        area: "Cave"
+        severity: "Warning"
+        issue: "Mains for Heater in Bar is Off"
+        cause: "Possible Power Cut"
+        fix: "Turn On Mancave Bar Heater"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.heater_bar"
+        #fix_script:
+      
+    - name: "Issue Power Fixed Heater Off"
+      unique_id: issue_power_fixed_heater_off
+      state: >
+        {{ is_state('switch.heater_fixed', 'off') }}
+      attributes:
+        area: "Cave"
+        severity: "Warning"
+        issue: "Mains for Fixed Heater is Off"
+        cause: "Possible Power Cut" 
+        fix: "Turn On Mancave Fixed Heater"
+        fix_service: "switch.turn_on"
+        fix_entity: "switch.heater_fixed"
+        #fix_script:
+            
+  - button:
+      - unique_id: matrix_power
+        name: Matrix Switch Power
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BWojcxE6AuAXAQGJBuAVA8AB4AMnQAFAD0ABQAdAA+ADAcAPC4kGOgJsnGojxwg6Ag=="}
+
+      - unique_id: matrix_1
+        name: Matrix Switch 1
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BVYjjxE4AuAXAQGVBuAZA0ABQCdAAeAHB0AB4AcT4AMPD3GcViPACDgC//9WI8AIOAI="}
+
+      - unique_id: matrix_2
+        name: Matrix Switch 2
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BXMjexE5AuAXAQGQBuAZA0ABQCdAAcAH4AMBwBPgAwdACwuQBjkCbZxzI6gIOQI="}
+
+      - unique_id: matrix_3
+        name: Matrix Switch 3
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BUYjoxE3AuAXAQGVBuAZA0AB4AMnQAFAD8AB4AMLQAHADwuVBjcCe5xGI7sINwI="}
+
+      - unique_id: matrix_4
+        name: Matrix Switch 4
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BVMjphE4AuAXAQGPBuAVA8AB4AMn4AMBwBfgAwHAE0AHD5OcUyPMCDgC//9TI8wIOAI="}
+          
+          
+  - sensor:
+  
+      - unique_id: rain_rate_5min_hr
+        name: Current Rain Rate
+        unit_of_measurement: mm/hr
+        state: "{{ (states('sensor.rain_rate_5min_window') | float(0) * 12) | round(1) }}"
+
+      - unique_id: weather_wind_dir_3hr
+        name: Wind Direction 3hr Average
+        state: >-
+          {% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %}
+          {% set degree = states('sensor.wind_bearing_3hr_average') | float(0) %}
+          {{ direction[((degree + 11.25) / 22.5) | int] }}
+
+      - unique_id: weather_wind_dir
+        name: Wind Direction
+        state: >-
+          {% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %}
+          {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction') | float(0) %}
+          {{ direction[((degree + 11.25) / 22.5) | int] }}
+
+      - unique_id: count_lights_on
+        name: "# Lights on"
+        state: "{{ states.light | selectattr('state', 'eq', 'on') | list | count }}"
+
+
+      - unique_id: bore_cost_per_m3
+        name: Bore Cost Per M3
+        unit_of_measurement: "$"
+        state: >-
+          {% set litres = states('sensor.bore_monthly') | float(0) %}
+          {% if litres > 0 %}
+            {{ ((states('sensor.bore_pump_monthly_kwh') | float(0) * 0.2483) / (litres / 1000)) | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - unique_id: bore_monthly_cost_total
+        name: Bore Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.bore_cost_per_m3') | float(0) *
+              (states('sensor.bore_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: retic_cost_per_m3
+        name: Retic Cost Per M3
+        unit_of_measurement: "$"
+        state: >-
+          {% set litres = states('sensor.retic_monthly') | float(0) %}
+          {% if litres > 0 %}
+            {{ ((states('sensor.retic_pump_monthly_kwh') | float(0) * 0.2493) / (litres / 1000)) | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - unique_id: retic_monthly_cost_total
+        name: Retic Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.retic_cost_per_m3') | float(0) *
+              (states('sensor.retic_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: water_monthly_savings
+        name: Water Monthly Savings
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.bore_cost_per_m3') | float(0) *
+              (states('sensor.tank_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: water_monthly_cost
+        name: Water Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.retic_monthly_cost_total') | float(0) +
+              states('sensor.bore_monthly_cost_total') | float(0)) | round(2) }}
+
+      - unique_id: retic_check_min
+        name: Retic Hourly 24hr Min
+        unit_of_measurement: Liters
+        state: "{{ state_attr('sensor.water_hourly_stats', 'min_value') | float(0) }}"
+
+      - unique_id: estimated_daily_loss
+        name: Estimated Daily Loss
+        unit_of_measurement: Liters
+        state: "{{ (state_attr('sensor.water_hourly_stats', 'min_value') | float(0) * 24) | round(2) }}"
+
+      - unique_id: water_usage_daily_warning
+        name: Excessive Daily Water Loss
+        state: "{{ states('sensor.water_retic_control_retic_last_5_min') | float(0) >= 83.3 }}"
+        icon: >-
+          {% if is_state('sensor.water_usage_daily_warning', 'true') %}
+            mdi:alarm-light
+          {% else %}
+            mdi:alarm-light-outline
+          {% endif %}
+
+      - unique_id: water_usage_hourly_warning
+        name: Excessive Hourly Water Usage
+        state: "{{ states('sensor.water_retic_control_retic_current_hour_2') | float(0) >= 600 }}"
+        icon: >-
+          {% if is_state('sensor.water_usage_hourly_warning', 'true') %}
+            mdi:alarm-light
+          {% else %}
+            mdi:alarm-light-outline
+          {% endif %}
+
+sensor:
+  - platform: files
+    folder: /media/shed_driveway
+    filter: "**/*.jpg"
+    name: Shed Drive Photos
+    sort: date
+    recursive: true
+
+  - platform: files
+    folder: /media/house_front_door
+    filter: "**/*.jpg"
+    name: House Front Door Photos
+    sort: date
+    recursive: false
+
+  - platform: files
+    folder: /media/house_driveway
+    filter: "**/*.jpg"
+    name: House Driveway Photos
+    sort: date
+    recursive: true
+
+  - platform: files
+    folder: /media/shed_mancave
+    filter: "**/*.jpg"
+    name: Shed Mancave Photos
+    sort: date
+    recursive: true
+
+  - platform: files
+    folder: /media/shed_truckyard
+    filter: "**/*.jpg"
+    name: Shed Truckyard Photos
+    sort: date
+    recursive: true
+
+  - platform: statistics
+    name: Wind Bearing 3hr Average
+    entity_id: sensor.gw2000c_v2_1_8_wind_direction
+    state_characteristic: mean
+    sampling_size: 30
+    max_age:
+      hours: 3
+
+  - platform: statistics
+    name: Wind Speed 3hr Average
+    entity_id: sensor.gw2000c_v2_1_8_wind_speed
+    state_characteristic: mean
+    sampling_size: 30
+    max_age:
+      hours: 3
+
+  - platform: statistics
+    name: Rain Rate 5min Window
+    entity_id: sensor.gw2000c_v2_1_8_yearly_rain_rate_piezo
+    state_characteristic: change
+    max_age:
+      minutes: 5
+    sampling_size: 5
+    precision: 1
+
+  - platform: statistics
+    name: Daily Power Cost Stats
+    entity_id: sensor.current_daily_power_cost
+    state_characteristic: mean
+    sampling_size: 24
+    max_age:
+      hours: 24
+
+  - platform: statistics
+    name: Water Hourly Stats
+    entity_id: sensor.water_retic_control_retic_current_hour_2
+    state_characteristic: mean
+    sampling_size: 24
+    max_age:
+      hours: 24
+
+  - platform: time_date
+    display_options:
+      - date
+
+  
+utility_meter:
+  retic_monthly:
+    source: sensor.water_retic_control_retic_current_hour_2
+    cycle: monthly
+    offset:
+      days: 20
+

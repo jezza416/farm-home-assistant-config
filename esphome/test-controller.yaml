@@ -1,0 +1,58 @@
+esphome:
+  name: test-controller
+  platform: ESP32
+  board: esp32dev
+  includes:
+    - uart_read_line_sensor.h
+#    - tag_reader_custom_component.h
+  
+# Enable logging
+logger:
+  level: VERBOSE
+  baud_rate: 0
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "b69aae89094ae1f222dc31fb8fda61d5"
+
+wifi:
+  networks:
+  - ssid: "hfpshed"
+    password: "hillview199@"
+  - ssid: "JezzaRM"
+    password: "Zues5399"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test controller Fallback Hotspot"
+    password: "rUyFHwyv1fE3"
+      
+
+#      it.printf(0, 2, "T= %s", id(tag0).state.c_str());
+
+
+  id: uart_bus
+#  tx_pin: GPIO  #RX from RFID chip Green Wire
+  rx_pin: GPIO16 #TX from RFID chip White wire
+  baud_rate: 9600
+  
+text_sensor:
+
+  - platform: custom
+    lambda: |-
+      auto my_custom_sensor = new UartReadLineSensor(id(uart_bus));
+      App.register_component(my_custom_sensor);
+      return {my_custom_sensor};
+    text_sensors:
+      id: "uart_readline"
+      on_value:
+        then:
+        - lambda: |-
+            id(tag0).publish_state(x);
+
+  - platform: template
+    name: "Testing Tag ID"
+    id: tag0
+    
+ 

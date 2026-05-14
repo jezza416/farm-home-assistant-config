@@ -1,0 +1,64 @@
+esphome:
+  name: farm-scales
+  platform: ESP32
+  board: esp32dev
+  includes:
+    - uart_read_line_sensor.h 
+
+  on_boot:
+    priority: -10
+    then:
+    - wait_until:
+        api.connected:
+    - logger.log: API is connected!
+  
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+ 
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Farm-Scales Fallback Hotspot"
+    password: "bwdhT9BG2z8H"
+
+captive_portal:
+
+
+uart:
+  id: uart_bus
+#  tx_pin: GPIO  #RX from RFID chip Green Wire
+  rx_pin: GPIO05 #TX from RFID chip White wire
+  baud_rate: 9600
+  
+text_sensor:
+
+  - platform: custom
+    lambda: |-
+      auto my_custom_sensor = new UartReadLineSensor(id(uart_bus));
+      App.register_component(my_custom_sensor);
+      return {my_custom_sensor};
+    text_sensors:
+      id: "uart_readline"
+      on_value:
+        then:
+        
+        - lambda: |-
+            id(tag0).publish_state(x);
+           
+
+  - platform: template
+    name: "custom Tag ID"
+    id: tag0
+
+
+
+  

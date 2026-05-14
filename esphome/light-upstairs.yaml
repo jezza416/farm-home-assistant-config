@@ -1,0 +1,123 @@
+esphome:
+  name: "light-upstairs"
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Light Upstairs Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_300: 300s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            light.is_on: upstairs_room
+          then:
+            - component.update: upstairs_room_watts
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: upstairs_room_touch
+    on_press:
+     - light.toggle: upstairs_room
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: upstairs_room_remote
+    on_press:
+        - light.toggle: upstairs_room_remote
+
+output:
+  
+  - platform: gpio
+    pin: GPIO12
+    id: relay1
+    
+  - platform: gpio
+    pin: GPIO5
+    id: relay2
+  # Register the blue LED as a dimmable output ....
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+
+light:
+  
+  - platform: binary
+    name: Upstairs Room
+    id: upstairs_room
+    output: relay2
+
+  - platform: binary
+    name: Upstairs Room Remote
+    id: upstairs_room_remote
+    output: relay1
+    
+  # ... and then make a light out of it.
+  - platform: monochromatic
+    id: light_upstairs_led
+    output: blue_led
+
+sensor:
+  
+  - platform: template
+    name: "Upstairs Room Watts"
+    id: upstairs_room_watts
+    update_interval: ${update_interval_300}
+    unit_of_measurement: "Watts"
+    lambda: |-
+      if (id(upstairs_room).current_values.is_on()){
+        id(light_power) += 0.025;
+        return id(light_power);
+      } else {
+        return {};
+      }
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(light_power) = 0;
+          id(upstairs_room_watts).publish_state(0);
+          
+          
+globals:
+  
+  - id: light_power
+    type: float
+    restore_value: no
+    initial_value: '0'
+

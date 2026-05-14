@@ -1,0 +1,800 @@
+esphome:
+  name: water-retic-control
+  friendly_name: water-retic-control
+  on_boot:
+    priority: -10
+    then:
+      - lambda: |-
+          id(rolling_bucket_index) = 0;
+          id(retic_last_60_min_float) = 0;
+          id(retic_last_60_farm_float) = 0;
+          id(retic_last_60_house_float) = 0;
+          id(retic_last_60_retic_float) = 0;
+
+          for (int i = 0; i < 60; i++) {
+            id(main_last_60_buckets)[i] = 0;
+            id(farm_stage_buckets)[i] = 0;
+            id(house_stage_buckets)[i] = 0;
+            id(retic_stage_buckets)[i] = 0;
+          }
+          
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.0"
+      sram1_as_iram: true
+
+logger:
+  level: INFO
+  # ESP32 only
+  task_log_buffer_size: 1024
+
+api:
+  reboot_timeout: 30min
+  max_send_queue: 16
+  encryption:
+    key: "/eiKdK4mT2WdorIQjsSQ6ID3Nj7mLsG+KW0EhtqYA0I="
+
+ota:
+  platform: esphome
+  password: "8d76da76f75ce196f7433ccece28054d"
+
+wifi:
+  ssid: hfpshed
+  password: hillview199@
+  power_save_mode: none
+  ap:
+    ssid: "Water-Retic-Control"
+    password: Hillview199@
+
+captive_portal:
+
+substitutions:
+  update_interval_pressure_normal: 10s
+  update_interval_flow_normal: 10s
+  # was 27.0
+  flow_pulses_per_litre: "22.53"
+  # was 0.037037037
+  litres_per_pulse: "0.04077"
+  pressure_divider_multiplier: "1.5"
+  tank_level_voltage_high: "3.00"
+  tank_level_voltage_low: "0.50"
+  tank_level_height_low_cm: "5.0"
+  tank_level_height_high_cm: "157.0"
+
+valve:
+  - platform: template
+    id: retic_valve
+    name: "Retic Valve"
+    device_class: water
+    optimistic: true
+    assumed_state: false
+    restore_mode: RESTORE
+    open_action:
+      - valve.template.publish:
+          id: retic_valve
+          current_operation: OPENING
+      - switch.turn_on: retic_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: retic_valve
+          state: OPEN
+          current_operation: IDLE
+    close_action:
+      - valve.template.publish:
+          id: retic_valve
+          current_operation: CLOSING
+      - switch.turn_off: retic_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: retic_valve
+          state: CLOSED
+          current_operation: IDLE
+
+  - platform: template
+    id: farm_valve
+    name: "Farm Valve"
+    device_class: water
+    optimistic: true
+    assumed_state: false
+    restore_mode: RESTORE
+    open_action:
+      - valve.template.publish:
+          id: farm_valve
+          current_operation: OPENING
+      - switch.turn_on: farm_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: farm_valve
+          state: OPEN
+          current_operation: IDLE
+    close_action:
+      - valve.template.publish:
+          id: farm_valve
+          current_operation: CLOSING
+      - switch.turn_off: farm_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: farm_valve
+          state: CLOSED
+          current_operation: IDLE
+
+  - platform: template
+    id: house_valve
+    name: "House Valve"
+    device_class: water
+    optimistic: true
+    assumed_state: false
+    restore_mode: RESTORE
+    open_action:
+      - valve.template.publish:
+          id: house_valve
+          current_operation: OPENING
+      - switch.turn_on: house_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: house_valve
+          state: OPEN
+          current_operation: IDLE
+    close_action:
+      - valve.template.publish:
+          id: house_valve
+          current_operation: CLOSING
+      - switch.turn_off: house_valve_relay
+      - delay: 10s
+      - valve.template.publish:
+          id: house_valve
+          state: CLOSED
+          current_operation: IDLE
+
+switch:
+  - platform: gpio
+    pin: GPIO16
+    id: retic_valve_relay
+    internal: true
+    inverted: yes
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: gpio
+    pin: GPIO17
+    id: farm_valve_relay
+    internal: true
+    inverted: no
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: gpio
+    pin: GPIO25
+    id: house_valve_relay
+    internal: true
+    inverted: no
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: template
+    name: "Retic Reset Pulse Total"
+    id: reset_retic_pulse_total
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_pulse_total
+          state: ON
+      - delay: 1s
+      - pulse_counter.set_total_pulses:
+          id: retic_meter_pulses
+          value: 0
+      - lambda: |-
+          id(retic_total_last_seen_pulses) = 0;
+      - switch.template.publish:
+          id: reset_retic_pulse_total
+          state: OFF
+
+  - platform: template
+    name: "Retic Reset Meter Run"
+    id: reset_retic_meter_run
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_meter_run
+          state: ON
+      - delay: 1s
+      - lambda: |-
+          id(retic_last_run_float) = id(retic_total_float);
+          id(retic_meter_last_run).publish_state(id(retic_last_run_float));
+          id(retic_total_float) = 0;
+          id(retic_meter_current_run).publish_state(0);
+          id(retic_total_last_seen_pulses) = id(retic_total_pulses).state;
+      - switch.template.publish:
+          id: reset_retic_meter_run
+          state: OFF
+
+  - platform: template
+    name: "Retic Hour Reset"
+    id: retic_hour_reset
+    turn_on_action:
+      - switch.template.publish:
+          id: retic_hour_reset
+          state: ON
+      - delay: 1s
+      - lambda: |-
+          id(retic_last_hour_float) = id(retic_hour_float);
+          id(retic_last_hour).publish_state(id(retic_last_hour_float));
+          id(retic_hour_float) = 0;
+          id(retic_current_hour).publish_state(0);
+      - switch.template.publish:
+          id: retic_hour_reset
+          state: OFF
+
+  - platform: template
+    name: "Retic Minute Reset"
+    id: reset_retic_minute
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_minute
+          state: ON
+      - delay: 1s
+      - lambda: |-
+          id(retic_last_5min_float) = id(retic_minute_float);
+          id(retic_last_5min).publish_state(id(retic_last_5min_float));
+          id(retic_minute_float) = 0;
+          id(retic_current_5min).publish_state(0);
+      - switch.template.publish:
+          id: reset_retic_minute
+          state: OFF
+
+  - platform: template
+    name: "Retic Daily Reset"
+    id: retic_daily_reset
+    turn_on_action:
+      - switch.template.publish:
+          id: retic_daily_reset
+          state: ON
+      - delay: 1s
+      - lambda: |-
+          id(retic_yesterday_float) = id(retic_daily_float);
+          id(retic_yesterday).publish_state(id(retic_yesterday_float));
+          id(retic_daily_float) = 0;
+          id(retic_today).publish_state(0);
+      - switch.template.publish:
+          id: retic_daily_reset
+          state: OFF
+
+  - platform: template
+    name: "Retic Last 60 Reset"
+    id: reset_retic_last_60
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_last_60
+          state: ON
+      - delay: 1s
+      - lambda: |-
+          id(retic_last_60_min_float) = 0;
+          id(retic_last_60_farm_float) = 0;
+          id(retic_last_60_house_float) = 0;
+          id(retic_last_60_retic_float) = 0;
+
+          id(rolling_bucket_index) = 0;
+
+          for (int i = 0; i < 60; i++) {
+            id(main_last_60_buckets)[i] = 0;
+            id(farm_stage_buckets)[i] = 0;
+            id(house_stage_buckets)[i] = 0;
+            id(retic_stage_buckets)[i] = 0;
+          }
+
+          id(retic_last_60_min).publish_state(0);
+          id(retic_last_60_farm).publish_state(0);
+          id(retic_last_60_house).publish_state(0);
+          id(retic_last_60_retic).publish_state(0);
+      - switch.template.publish:
+          id: reset_retic_last_60
+          state: OFF
+
+  - platform: restart
+    name: "Water Chip Restart"
+
+sensor:
+  - platform: uptime
+    name: "Uptime Water Control Sensor"
+
+  - platform: adc
+    id: tank_level_voltage
+    pin: GPIO39
+    name: "Tank Level Voltage"
+    attenuation: 12db
+    update_interval: 30s
+    accuracy_decimals: 3
+    samples: 10
+    filters:
+      - median:
+          window_size: 7
+          send_every: 3
+          send_first_at: 1
+
+  - platform: template
+    id: tank_level_percent
+    name: "Tank Level Percent"
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      float v = id(tank_level_voltage).state;
+
+      float low_point = ${tank_level_voltage_low};
+      float high_point = ${tank_level_voltage_high};
+
+      if (isnan(v)) return NAN;
+      if (high_point <= low_point) return NAN;
+
+      float pct = ((v - low_point) / (high_point - low_point)) * 100.0;
+      return pct;
+
+  - platform: template
+    id: tank_level_distnce
+    name: "Tank Level Height"
+    unit_of_measurement: "cm"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      float v = id(tank_level_voltage).state;
+
+      float low_point = ${tank_level_voltage_low};
+      float high_point = ${tank_level_voltage_high};
+      float low_height = ${tank_level_height_low_cm};
+      float high_height = ${tank_level_height_high_cm};
+
+      if (isnan(v)) return NAN;
+      if (high_point <= low_point) return NAN;
+
+      float h = low_height + ((v - low_point) / (high_point - low_point)) * (high_height - low_height);
+      return h;
+    filters:
+      - exponential_moving_average:
+          alpha: 0.1
+          send_every: 1
+
+  - platform: adc
+    id: pressure_voltage
+    pin: GPIO35
+    name: "Pressure Sensor Voltage"
+    attenuation: 12db
+    update_interval: 10s
+    samples: 10
+    filters:
+      - multiply: 1.5
+
+  - platform: template
+    id: pressure_mpa
+    name: "Pressure"
+    unit_of_measurement: "MPa"
+    accuracy_decimals: 3
+    update_interval: ${update_interval_pressure_normal}
+    lambda: |-
+      float v = id(pressure_voltage).state;
+      if (isnan(v)) return NAN;
+      if (v < 0.5) v = 0.5;
+      return (v - 0.5) * 0.17225;
+
+  - platform: template
+    id: pressure_psi
+    name: "Retic PSI"
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      static float filtered = NAN;
+
+      float v = id(pressure_voltage).state;
+      if (isnan(v)) return NAN;
+      if (v < 0.5) v = 0.5;
+
+      float raw = (v - 0.5) * 25.0;
+
+      if (isnan(filtered)) {
+        filtered = raw;
+        return filtered;
+      }
+
+      float diff = fabs(raw - filtered);
+      float alpha;
+
+      if (diff > 5.0) {
+        alpha = 0.7;
+      } else if (diff > 2.0) {
+        alpha = 0.35;
+      } else {
+        alpha = 0.12;
+      }
+
+      filtered = filtered + alpha * (raw - filtered);
+      return filtered;
+    filters:
+      - delta: 0.3
+
+  # pulse_meter left running for side by side testing only
+  - platform: pulse_meter
+    pin:
+      number: GPIO36
+      allow_other_uses: true
+      mode:
+        input: true
+    name: "Retic Flow Rate"
+    id: retic_flow_rate
+    unit_of_measurement: "L/min"
+    accuracy_decimals: 2
+    timeout: 2s
+    filters:
+      - lambda: |-
+          return x / 27.0;
+    total:
+      name: "Retic Total Litres"
+      id: retic_total_litres
+      unit_of_measurement: "L"
+      accuracy_decimals: 1
+      filters:
+        - multiply: ${litres_per_pulse}
+
+  # pulse_counter is the source of truth for accumulators for now
+  - platform: pulse_counter
+    pin:
+      number: GPIO36
+      mode:
+        input: true
+      allow_other_uses: true
+    name: "Retic Meter Pulses"
+    id: retic_meter_pulses
+    update_interval: 10s
+    total:
+      name: "Retic Total Pulses"
+      id: retic_total_pulses
+      accuracy_decimals: 1
+      unit_of_measurement: "Pulses"
+
+  - platform: template
+    name: "Retic Meter Current Run"
+    id: retic_meter_current_run
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_total_float);
+
+  - platform: template
+    name: "Retic Current 5min"
+    id: retic_current_5min
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_minute_float);
+
+  - platform: template
+    name: "Retic Current Hour"
+    id: retic_current_hour
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_hour_float);
+
+  - platform: template
+    name: "Retic Today"
+    id: retic_today
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_daily_float);
+
+  - platform: template
+    name: "Set Litres"
+    id: set_litres_sensor
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return 0;
+
+  - platform: template
+    name: "Retic Meter Last Run"
+    id: retic_meter_last_run
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_run_float);
+
+  - platform: template
+    name: "Retic Last 5 Min"
+    id: retic_last_5min
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_5min_float);
+
+  - platform: template
+    name: "Retic Last Hour"
+    id: retic_last_hour
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_hour_float);
+
+  - platform: template
+    name: "Retic Last 60 Min"
+    id: retic_last_60_min
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_60_min_float);
+
+  - platform: template
+    name: "Retic Yesterday"
+    id: retic_yesterday
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_yesterday_float);
+
+  - platform: template
+    name: "Retic Last 60 Farm"
+    id: retic_last_60_farm
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_60_farm_float);
+
+  - platform: template
+    name: "Retic Last 60 House"
+    id: retic_last_60_house
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_60_house_float);
+
+  - platform: template
+    name: "Retic Last 60 Retic"
+    id: retic_last_60_retic
+    unit_of_measurement: "L"
+    accuracy_decimals: 1
+    update_interval: never
+    lambda: |-
+      return id(retic_last_60_retic_float);
+
+binary_sensor:
+  - platform: status
+    name: "Water Control Status"
+
+  - platform: template
+    id: retic_status
+    name: "Retic Water Status"
+    lambda: |-
+      return id(retic_flow_rate).state >= 0.01;
+
+  - platform: template
+    id: retic_status_delay
+    name: "Retic Water Status Delay"
+    lambda: |-
+      return id(retic_flow_rate).state >= 0.01;
+    filters:
+      - delayed_off: 60s
+
+globals:
+  - id: retic_total_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_minute_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_hour_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_daily_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_last_run_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_last_5min_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_last_hour_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_last_60_min_float
+    type: float
+    restore_value: no
+    initial_value: "0"
+
+  - id: retic_yesterday_float
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: retic_total_last_seen_pulses
+    type: float
+    restore_value: yes
+    initial_value: "0"
+
+  - id: rolling_bucket_index
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+  - id: retic_last_60_farm_float
+    type: float
+    restore_value: no
+    initial_value: "0"
+
+  - id: retic_last_60_house_float
+    type: float
+    restore_value: no
+    initial_value: "0"
+
+  - id: retic_last_60_retic_float
+    type: float
+    restore_value: no
+    initial_value: "0"
+
+  - id: main_last_60_buckets
+    type: float[60]
+    restore_value: no
+    
+  - id: farm_stage_buckets
+    type: float[60]
+    restore_value: no
+    
+  - id: house_stage_buckets
+    type: float[60]
+    restore_value: no
+    
+  - id: retic_stage_buckets
+    type: float[60]
+    restore_value: no
+    
+
+interval:
+  # Fast accumulator update for Current 5min and running totals
+  - interval: 10s
+    then:
+      - lambda: |-
+          float total_pulses = id(retic_total_pulses).state;
+
+          if (isnan(total_pulses)) {
+            return;
+          }
+
+          float delta_pulses = total_pulses - id(retic_total_last_seen_pulses);
+
+          if (delta_pulses < 0) {
+            id(retic_total_last_seen_pulses) = total_pulses;
+            return;
+          }
+
+          float delta_litres = delta_pulses / ${flow_pulses_per_litre};
+
+          if (delta_litres > 0) {
+            id(retic_total_float) += delta_litres;
+            id(retic_minute_float) += delta_litres;
+            id(retic_hour_float) += delta_litres;
+            id(retic_daily_float) += delta_litres;
+
+            // Main rolling 60 min
+            id(main_last_60_buckets)[id(rolling_bucket_index)] += delta_litres;
+
+            // Stage 1 - Farm
+            // farm open, retic open, house can be open or shut
+            if (id(farm_valve).position > 0.5f &&
+                id(retic_valve).position > 0.5f) {
+              id(farm_stage_buckets)[id(rolling_bucket_index)] += delta_litres;
+            }
+
+            // Stage 2 - House
+            // farm shut, house open, retic open
+            if (id(farm_valve).position < 0.5f &&
+                id(house_valve).position > 0.5f &&
+                id(retic_valve).position > 0.5f) {
+              id(house_stage_buckets)[id(rolling_bucket_index)] += delta_litres;
+            }
+
+            // Stage 3 - Retic
+            // farm shut, house shut, retic open
+            if (id(farm_valve).position < 0.5f &&
+                id(house_valve).position < 0.5f &&
+                id(retic_valve).position > 0.5f) {
+              id(retic_stage_buckets)[id(rolling_bucket_index)] += delta_litres;
+            }
+
+            id(retic_current_5min).publish_state(id(retic_minute_float));
+          }
+
+          id(retic_total_last_seen_pulses) = total_pulses;
+
+  # Slower publish update for hour, run, daily, rolling 60 min
+  - interval: 60s
+    then:
+      - lambda: |-
+          id(retic_meter_current_run).publish_state(id(retic_total_float));
+          id(retic_current_hour).publish_state(id(retic_hour_float));
+          id(retic_today).publish_state(id(retic_daily_float));
+
+          // Advance shared rolling bucket
+          id(rolling_bucket_index)++;
+          if (id(rolling_bucket_index) >= 60) {
+            id(rolling_bucket_index) = 0;
+          }
+
+          // Clear the new current bucket for all rolling arrays
+          id(main_last_60_buckets)[id(rolling_bucket_index)] = 0;
+          id(farm_stage_buckets)[id(rolling_bucket_index)] = 0;
+          id(house_stage_buckets)[id(rolling_bucket_index)] = 0;
+          id(retic_stage_buckets)[id(rolling_bucket_index)] = 0;
+
+          float rolling_sum = 0;
+          float farm_stage_sum = 0;
+          float house_stage_sum = 0;
+          float retic_stage_sum = 0;
+
+          for (int i = 0; i < 60; i++) {
+            rolling_sum += id(main_last_60_buckets)[i];
+            farm_stage_sum += id(farm_stage_buckets)[i];
+            house_stage_sum += id(house_stage_buckets)[i];
+            retic_stage_sum += id(retic_stage_buckets)[i];
+          }
+
+          id(retic_last_60_min_float) = rolling_sum;
+          id(retic_last_60_farm_float) = farm_stage_sum;
+          id(retic_last_60_house_float) = house_stage_sum;
+          id(retic_last_60_retic_float) = retic_stage_sum;
+
+          id(retic_last_60_min).publish_state(id(retic_last_60_min_float));
+          id(retic_last_60_farm).publish_state(id(retic_last_60_farm_float));
+          id(retic_last_60_house).publish_state(id(retic_last_60_house_float));
+          id(retic_last_60_retic).publish_state(id(retic_last_60_retic_float));
+
+# Button placeholders for later
+#
+#  - platform: gpio
+#    pin:
+#      number: GPIO12
+#      mode: INPUT_PULLUP
+#      inverted: true
+#    id: valve_control
+#    name: "Valve Control Button"
+#    on_press:
+#      - if:
+#          condition:
+#            switch.is_on: retic_valve
+#          then:
+#            - switch.turn_off: retic_valve
+#          else:
+#            - switch.turn_on: retic_valve
+#
+# Light placeholders for later
+#
+# output:
+#   - platform: gpio
+#     pin: GPIO16
+#     id: status_light_1
+#
+#   - platform: gpio
+#     pin: GPIO17
+#     id: status_light_2

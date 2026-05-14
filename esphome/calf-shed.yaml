@@ -1,0 +1,395 @@
+esphome:
+  name: calf-shed
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "BcdU0ZnqDAte0kUc/u0KktDjHIrbwLwWmoX2xBaz3fI="
+ota:
+  password: "c6d8f9d1a1fc24f4316db27aaacf2eda"
+  platform: esphome
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  power_save_mode: none
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Calf-Shed Fallback Hotspot"
+    password: "7lHPmtJ1uiLG"
+
+captive_portal:
+    
+    
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO26
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Long Drop Button"
+    id: long_drop_but
+    filters:
+      - delayed_on_off: 50ms
+    on_click: 
+      - min_length: 50ms
+        max_length: 400ms
+        then:
+          if:
+            condition:
+              light.is_off: long_drop_led
+            then:
+              - script.execute: long_drop_timer
+              - logger.log: Short Press, Long Drop Light Turned ON
+            else: 
+              - light.turn_off: long_drop_led
+              - logger.log: Short Press, Long Drop light Turned OFF
+              - if:
+                  condition:
+                    script.is_running: long_drop_timer
+                  then:
+                    - script.stop: long_drop_timer
+                    - logger.log: Long Drop Timer STOPPED
+      - min_length: 500ms
+        max_length: 1500ms
+        then:
+          - if:
+              condition:
+                script.is_running: long_drop_timer
+              then: 
+                - script.stop: long_drop_timer
+                - logger.log: Long Press, Stopped Long Drop TIMER
+          - if:
+              condition:
+                light.is_off: long_drop_led
+              then:
+                - light.turn_on: long_drop_led
+                - delay: 1500ms
+                - light.turn_off: long_drop_led
+                - delay: 1500ms
+                - light.turn_on: long_drop_led
+                - logger.log: Long Press, Long Drop Light Turned ON
+              else: 
+                - light.turn_off: long_drop_led
+                - logger.log: Long Press, Long Drop Light Turned 
+      
+#   on_press:
+#      - logger.log: "Long Drop Button Pressed"
+#      - light.toggle: long_drop_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Storage Area Button"
+    id: storage_area_but
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Storage Area Button Pressed"
+      - light.toggle: storage_area_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO03
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Storage Cabnet Button"
+    id: storage_cab_but
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Storage Cabnet Button Pressed"
+      - light.toggle: storage_cab_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Implement Yard Button"
+    id: imp_yard_but
+    filters:
+      - delayed_on_off: 50ms
+    on_click: 
+      - min_length: 50ms
+        max_length: 400ms
+        then:
+          if:
+            condition:
+              light.is_off: imp_yard_led
+            then:
+              - script.execute: imp_yard_timer
+              - logger.log: Short Press, Imp Yard Light Turned ON
+            else: 
+              - light.turn_off: imp_yard_led
+              - logger.log: Short Press, Imp Yard light Turned OFF
+              - if:
+                  condition:
+                    script.is_running: imp_yard_timer
+                  then:
+                    - script.stop: imp_yard_timer
+                    - logger.log: Imp yard Timer STOPPED
+      - min_length: 500ms
+        max_length: 1500ms
+        then:
+          - if:
+              condition:
+                script.is_running: imp_yard_timer
+              then: 
+                - script.stop: imp_yard_timer
+                - logger.log: Long Press, Stop TIMER
+          - if:
+              condition:
+                light.is_off: imp_yard_led
+              then:
+                - light.turn_on: imp_yard_led
+                - delay: 1500ms
+                - light.turn_off: imp_yard_led
+                - delay: 1500ms
+                - light.turn_on: imp_yard_led
+                - logger.log: Long Press, Imp Yard Light Turned ON
+              else: 
+                - light.turn_off: imp_yard_led
+                - logger.log: Long Press, Imp Yard Light Turned OFF
+      - min_length: 2000ms
+        max_length: 5000ms
+        then:
+          - logger.log: LONG PRESS, turn OFF all LIGHTS 
+          - if:
+              condition:
+                light.is_on: storage_area_led
+              then:
+                - light.turn_off: storage_area_led
+          - if:
+              condition:
+                light.is_on: storage_cab_led
+              then:
+                - light.turn_off: storage_cab_led
+          - if:
+              condition:
+                light.is_on: imp_yard_led
+              then:
+                - light.turn_off: imp_yard_led
+          - if:
+              condition:
+                light.is_on: calf_shed_nth_led
+              then:
+                - light.turn_off: calf_shed_nth_led
+          - if:
+              condition:
+                light.is_on: calf_shed_sth_led
+              then:
+                - light.turn_off: calf_shed_sth_led
+          - if:
+              condition:
+                light.is_on: calf_area_nth_led
+              then:
+                - light.turn_off: calf_area_nth_led
+          - if:
+              condition:
+                light.is_on: calf_area_sth_led
+              then:
+                - light.turn_off: calf_area_sth_led
+        
+#    on_press:
+#      - logger.log: "Implement Yard Button Pressed"
+#      - light.toggle: imp_yard_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO22
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Calf Shed South Button"
+    id: calf_shed_sth_but
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Calf Shed South Button Pressed"
+      - light.toggle: calf_shed_sth_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO27
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Calf Shed North Button"
+    id: calf_shed_nth_but
+    filters: 
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Calf Shed North Button Pressed"
+      - light.toggle: calf_shed_nth_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Calf Area South Button"
+    id: calf_area_sth_but
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Calf Area South Button Pressed"
+      - light.toggle: calf_area_sth_led
+      
+  - platform: gpio
+    pin:
+      number: GPIO21
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Calf Area North Button"
+    id: calf_area_nth_but
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log: "Calf Area North Button Pressed"
+      - light.toggle: calf_area_nth_led
+      
+light:
+  - platform: binary
+    name: Long Drop
+    id: long_drop_led
+    output: relay1
+    
+    
+  - platform: binary
+    name: Storage Area
+    id: storage_area_led
+    output: relay2
+  
+  - platform: binary
+    name: Storage Cabnet
+    id: storage_cab_led
+    output: relay3
+    
+  - platform: binary
+    name: Implement Yard
+    id: imp_yard_led
+    output: relay4
+    
+  - platform: binary
+    name: Calf Shed South
+    id: calf_shed_sth_led
+    output: relay5
+    restore_mode: RESTORE_AND_OFF
+    
+  - platform: binary
+    name: Calf Shed North
+    id: calf_shed_nth_led
+    output: relay6
+    
+  - platform: binary
+    name: Calf Area South
+    id: calf_area_sth_led
+    output: relay7
+    
+  - platform: binary
+    name: Calf Area North
+    id: calf_area_nth_led
+    output: relay8
+    restore_mode: RESTORE_AND_OFF
+    
+output:
+  - platform: gpio
+    pin:
+      number: GPIO17
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay1
+    
+  - platform: gpio
+    pin:
+      number: GPIO18
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay2
+    
+  - platform: gpio
+    pin:
+      number: GPIO19
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay3
+  
+  - platform: gpio
+    pin:
+      number: GPIO23
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay4
+  
+  - platform: gpio
+    pin:
+      number: GPIO05
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay5
+    
+  - platform: gpio
+    pin:
+      number: GPIO16
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay6
+    
+  - platform: gpio
+    pin:
+      number: GPIO33      
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay7
+    
+  - platform: gpio
+    pin:
+      number: GPIO25
+      inverted: true
+      mode:
+        output: true
+        open_drain: true 
+    id: relay8
+    
+script:
+  - id: imp_yard_timer
+    then:
+      - logger.log: Imp Yard Timer STARTED
+      - light.turn_on: imp_yard_led
+      - delay: 15min
+      - light.turn_off: imp_yard_led
+  
+  - id: long_drop_timer
+    then:
+      - light.turn_on: long_drop_led
+      - delay: 15min
+      - light.turn_off: long_drop_led
+    
+sensor:
+  - platform: wifi_signal
+    name: "Calf Shed WiFi Signal"
+    update_interval: 60s
+
+    

@@ -1,0 +1,58 @@
+esphome:
+  name: mancave_sensor
+  platform: ESP8266
+  board: d1_mini
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+    
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Sensor Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+#remote_receiver:
+#  pin: 
+#    number: D5
+#    inverted: true
+#    mode: INPUT_PULLUP
+#  dump: all
+
+#remote_transmitter:
+#  - pin: D6
+#    carrier_duty_percent: 50%
+#    id: one  
+  
+binary_sensor:
+  - platform: gpio
+    pin: D0
+    name: "Vibration Sensor"
+    filters:
+      - delayed_off: 100ms
+
+  - platform: gpio
+    pin: 
+      number: D5
+      inverted: True
+    name: "Distance Sensor"
+    filters:
+      - delayed_off: 100ms
+      
+light:
+  - platform: fastled_clockless
+    chipset: WS2812
+    pin: D3
+    num_leds: 60
+    rgb_order: BRG
+    name: "FastLED WS2811 Light"

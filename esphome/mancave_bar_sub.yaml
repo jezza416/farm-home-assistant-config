@@ -1,0 +1,55 @@
+esphome:
+  name: mancave_bar_sub
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Bar Sub Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: bar_sub_button
+    on_press:
+      - switch.toggle: relay
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: bar_sub_switch
+    on_press:
+    - switch.toggle: relay
+    on_release:
+    - switch.toggle: relay
+    
+switch:
+  - platform: gpio
+    name: "Mancave Bar Sub"
+    pin: GPIO12
+    id: relay
+    icon: 'mdi:speaker'
+    
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes

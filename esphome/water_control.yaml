@@ -1,0 +1,946 @@
+#esphome:
+#  name: water-control
+
+#esp32:
+#  board: wemos_d1_mini32
+#  framework:
+#    type: arduino
+
+# Enable logging
+#logger:
+
+# Enable Home Assistant API
+#api:
+#  encryption:
+#    key: "+nWgnQnbxV/gvUMfT89PIGlIQQ/1CJHFqtlgsv2AsDo="
+
+#ota:
+#  password: "b767d954ed302c837e1fcda9992527ef"
+
+#wifi:
+#  ssid: "hfpshed"
+#  password: "hillview199@"
+#  manual_ip:
+#    static_ip: 192.168.1.201
+#    subnet: 255.255.255.0
+#    gateway: 192.168.1.254
+
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+#  ap:
+#    ssid: "Water-Control"
+#    password: "hillview199@"
+
+#captive_portal:
+
+
+
+esphome:
+  name: water-control
+  platform: ESP32
+  board: wemos_d1_mini32
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  manual_ip:
+    static_ip: 192.168.1.182
+    subnet: 255.255.255.0
+    gateway: 192.168.1.254
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Water Control Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  #encryption:
+  #  key: "+nWgnQnbxV/gvUMfT89PIGlIQQ/1CJHFqtlgsv2AsDo="
+ota:
+  password: "b767d954ed302c837e1fcda9992527ef"
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: True
+
+ads1115:
+  - address: 0x48
+  
+substitutions:
+  update_interval_1: 1s
+  update_interval_10: 10s
+  update_interval_60: 60s
+  update_interval_120: 120s
+  update_interval_300: 300s
+  update_interval_600: 600s
+
+interval:
+  - interval: ${update_interval_1}
+    then:
+      - if:   
+          condition:
+            switch.is_on: leak_tap
+          then:
+            - component.update: count_leak_meter
+            - component.update: count_leak_time   
+            - component.update: leak_meter
+      - if:
+          condition:
+            binary_sensor.is_on: retic_status
+          then:
+            - component.update: intermidate_retic_time
+            - component.update: count_retic_time
+            
+  - interval: ${update_interval_10}  
+    then:
+      - if:
+          condition:
+            switch.is_on: retic_tap
+          then:
+            - component.update: retic_meter_current_run
+            - component.update: retic_meter
+    
+  - interval: ${update_interval_120}  
+    then:
+      - if:
+          condition:
+            or:
+            - binary_sensor.is_on: primary_level_high
+            - binary_sensor.is_on: primary_level_meduim
+          then:
+            - component.update: resivior_primary_level
+  
+              
+switch:   
+
+  - platform: gpio
+    pin: GPIO15
+    id: retic_tap
+    name: "Retic Tap"
+    icon: "mdi:water"
+    inverted: yes
+    interlock: [leak_tap]
+    restore_mode: ALWAYS_ON
+    on_turn_on:
+    - light.turn_on:
+        id: retic_led
+        brightness: 50%
+        red: 0%
+        green: 100%
+        blue: 0%
+    - if:
+        condition:
+          switch.is_on: red_alarm
+        then:
+          - switch.turn_off: red_alarm
+          - text_sensor.template.publish:
+              id: text_status_1
+              state: "Pump Room Valves are OFF"
+    on_turn_off:
+    - light.turn_on:
+        id: retic_led
+        brightness: 50%
+        red: 100%
+        green: 0%
+        blue: 0%
+    - if:
+        condition:
+          switch.is_off: leak_tap
+        then:
+          - switch.turn_on: red_alarm
+          - text_sensor.template.publish:
+              id: text_status_1
+              state: "Pump Room Valves are ON"
+    
+  - platform: gpio
+    pin: GPIO16
+    id: leak_tap
+    name: "Leak Tap"
+    icon: "mdi:water"
+    inverted: yes
+    interlock: [retic_tap] 
+    on_turn_on:
+    - light.turn_on:
+        id: leak_led
+        brightness: 50%
+        red: 0%
+        green: 100%
+        blue: 0%
+    - if:
+        condition:
+          switch.is_on: red_alarm
+        then:
+          - switch.turn_off: red_alarm
+          - text_sensor.template.publish:
+              id: text_status_1
+              state: "Pump Room Valves are ON"
+    on_turn_off:
+    - light.turn_on:
+        id: leak_led
+        brightness: 50%
+        red: 100%
+        green: 0%
+        blue: 0%
+    - if:
+        condition:
+          switch.is_off: retic_tap
+        then:
+          - switch.turn_on: red_alarm
+          - text_sensor.template.publish:
+              id: text_status_1
+              state: "Pump Room Valves are OFF"   
+    
+  - platform: gpio
+    pin: GPIO17
+    name: "Amber Alarm"                         
+    id: amber_alarm
+    on_turn_on:
+    - light.turn_on:
+        id: status_led
+        brightness: 50%
+        red: 0%
+        green: 0%
+        blue: 100%
+        
+  - platform: gpio
+    pin: GPIO25
+    name: "Red Alarm"                         
+    id: red_alarm
+    on_turn_on:
+    - light.turn_on:
+        id: status_led
+        brightness: 50%
+        red: 100%
+        green: 0%
+        blue: 100%
+            
+  - platform: template   
+    name: "Water Set Value"
+    id: water_set_value
+    turn_on_action:
+    - switch.template.publish:
+        id: water_set_value
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: water_set_value
+        state: OFF
+          
+  - platform: template   
+    name: "Water Free"
+    id: water_free
+    turn_on_action:
+    - switch.template.publish:
+        id: water_free
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: water_free
+        state: OFF
+        
+  - platform: template   
+    name: "Alarm Stage 1"
+    id: alarm_stage_1
+    turn_on_action:
+    - switch.template.publish:
+        id: alarm_stage_1
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: alarm_stage_1
+        state: OFF
+
+    
+  - platform: template   
+    name: "Alarm Stage 2"
+    id: alarm_stage_2 
+    turn_on_action:
+    - switch.template.publish:
+        id: alarm_stage_2
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: alarm_stage_2
+        state: OFF
+          
+  - platform: template
+    name: "Reset Hourly"
+    id: reset_hourly
+    turn_on_action:
+    - switch.template.publish:
+        id: reset_hourly
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: reset_hourly
+        state: OFF
+    
+  - platform: gpio
+    pin: GPIO2
+    id: farm_valve
+    name: "Farm Valve"
+    on_turn_on:
+    - if:
+        condition:
+          switch.is_off: house_valve
+        then:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "House Valve Is OFF"
+        else:
+          - switch.turn_off: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "All Valves Open"
+    on_turn_off:
+    - if:
+        condition:
+          switch.is_off: house_valve
+        then:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "House & Farm Valve Is OFF"
+        else:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "Farm Valve Is OFF"
+    
+  - platform: gpio
+    id: house_valve
+    pin: GPIO0
+    name: "House Valve"
+    on_turn_on:
+    - if:
+        condition:
+          switch.is_off: farm_valve
+        then:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "Farm Valve Is OFF"
+        else:
+          - switch.turn_off: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "All Valves Open"
+    on_turn_off:
+    - if:
+        condition:
+          switch.is_off: farm_valve
+        then:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "House & Farm Valve Is OFF"
+        else:
+          - switch.turn_on: amber_alarm
+          - text_sensor.template.publish:
+              id: text_status_2
+              state: "House Valve Is OFF"
+          
+          
+  - platform: template
+    name: "Retic Reset Meter Run"
+    id: reset_retic_meter_run
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_meter_run
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(retic_meter_last_run).publish_state(id(retic_meter_current_run).state);
+          id(retic_result_time).publish_state(id(count_retic_time).state);
+          id(retic_test_results).publish_state(id(retic_meter_last_run).state / (id(retic_result_time).state / 60));
+          id(count_retic_time).publish_state(0);
+          id(retic_meter_current_run).publish_state(0);
+          id(retic_float) = 0;
+          id(retic_time) = 0;
+      - switch.template.publish:
+          id: reset_retic_meter_run
+          state: OFF        
+  
+  - platform: template
+    name: "Retic Hour Reset"
+    id: retic_hour_reset
+    turn_on_action:
+      - switch.template.publish:
+          id: retic_hour_reset
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(retic_last_hour).publish_state(id(retic_current_hour).state);
+          id(retic_current_hour).publish_state(0);
+          id(retic_hour_float) = 0;
+      - switch.template.publish:
+          id: retic_hour_reset
+          state: OFF
+    turn_off_action:
+      - if:
+          condition:
+            switch.is_on: reset_hourly
+          then:
+             - delay: 60min
+             - switch.turn_on: retic_hour_reset
+  
+  - platform: template
+    name: "Retic Minute Reset"
+    id: reset_retic_minute
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_retic_minute
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(retic_last_5min).publish_state(id(retic_current_5min).state);
+          id(retic_current_5min).publish_state(0);
+          id(retic_minute_float) = 0;
+      - switch.template.publish:
+          id: reset_retic_minute
+          state: OFF
+    
+          
+             
+  - platform: template
+    name: "Retic Daily Reset"
+    id: retic_daily_reset
+    turn_on_action:
+      - switch.template.publish:
+          id: retic_daily_reset
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(retic_yesterday).publish_state(id(retic_today).state);
+          id(retic_today).publish_state(0);
+          id(retic_daily_float) = 0;
+      - switch.template.publish:
+          id: retic_daily_reset
+          state: OFF
+      
+  - platform: template
+    name: "Leak Data Reset"
+    id: reset_leak_meter
+    turn_on_action:
+      - switch.template.publish:
+          id: reset_leak_meter
+          state: ON
+      - delay: 10s
+      - lambda: |-
+          id(leak_result_litres).publish_state(id(count_leak_meter).state);
+          id(leak_result_time).publish_state(id(count_leak_time).state);
+          id(leak_test_results).publish_state(id(leak_result_litres).state / (id(leak_result_time).state / 60));
+          id(count_leak_time).publish_state(0);
+          id(count_leak_meter).publish_state(0);
+          id(leak_float) = 0;
+      - switch.template.publish:
+          id: reset_leak_meter
+          state: OFF    
+          
+  - platform: template   
+    name: "Resivior Run To 70%"
+    id: resivior_run_to_70
+    turn_on_action:
+    - switch.template.publish:
+        id: resivior_run_to_70
+        state: ON
+    turn_off_action:
+    - switch.template.publish:
+        id: resivior_run_to_70
+        state: OFF
+        
+text_sensor:
+  - platform: template
+    name: "Status Text 1"
+    id: text_status_1
+  
+  - platform: template
+    name: "Status Text 2"
+    id: text_status_2
+    
+  - platform: template
+    name: "Status Text 3"
+    id: text_status_3
+    
+  - platform: template
+    name: "Status Text 4"
+    id: text_status_4  
+
+sensor:
+  - platform: uptime
+    name: Uptime Water Control Sensor
+    
+  - platform: ads1115
+    multiplexer: A0_GND
+    gain: 6.144
+    name: "ADS1115 pressure"
+    update_interval: 10s
+    filters:
+      - offset: -0.5
+      - lambda: |-
+          id(psi_float) = x / 0.04;
+          id(retic_psi).publish_state(id(psi_float));
+          return id(psi_float);
+          
+#Tank Level Sensor 1
+    
+  - platform: ultrasonic
+    trigger_pin: GPIO5
+    echo_pin: GPIO23
+    unit_of_measurement: "%"
+    icon: "mdi:water-percent"
+    accuracy_decimals: 0
+    update_interval: ${update_interval_300}
+    name: "Water storage"
+    id: resivior_primary_level
+    filters:
+      - lambda: return ((1.57 - (x - 0.26)) / 1.57) *100;
+      - filter_out: nan   
+      - sliding_window_moving_average:
+            window_size: 6
+            send_every: 6
+
+  - platform: ultrasonic
+    trigger_pin: GPIO5
+    echo_pin: GPIO23
+    update_interval: ${update_interval_120}
+    name: "Resivor Raw Distance"
+    id: resivior_raw_distance
+            
+# Retic Meter
+
+  - platform: pulse_counter
+    name: "Retic Flow Rate"
+    id: retic_meter
+    pin: GPIO34
+    update_interval: ${update_interval_60}
+    unit_of_measurement: "L/Min"
+    filters:
+      - lambda: return x / 21.23;
+
+## Retic Litre Count ## 
+# Total Retic liters from retic pump
+# Reset By Retic Data Reeset Switch  
+
+  - platform: pulse_counter
+    name: "Retic Meter Current Run"
+    pin: GPIO34
+    update_interval: ${update_interval_60}
+    id: retic_meter_current_run
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(retic_float) += x / 21.23;
+          return id(retic_float);
+  
+  - platform: pulse_counter
+    name: "Retic Current 5min"
+    pin: GPIO34
+    update_interval: ${update_interval_60}
+    id: retic_current_5min
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(retic_minute_float) += x / 21.23;
+          return id(retic_minute_float);
+
+  - platform: pulse_counter
+    name: "Retic Current Hour"
+    pin: GPIO34
+    update_interval: ${update_interval_60}
+    id: retic_current_hour
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(retic_hour_float) += x / 21.23;
+          return id(retic_hour_float);
+          
+  - platform: pulse_counter
+    name: "Retic Today"
+    pin: GPIO34
+    update_interval: ${update_interval_60}
+    id: retic_today
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(retic_daily_float) += x / 21.23;
+          return id(retic_daily_float);
+          
+## Retic Time Count ## 
+# Total Retic Runtime of retic pump
+# Controled From Binary Sensor - retic_status
+# Reset By Retic Data Reset Switch
+  - platform: template
+    name: "Retic Time Count"
+    id: count_retic_time
+    update_interval: ${update_interval_60}
+    unit_of_measurement: "Seconds"
+    lambda: |-
+      if (id(retic_status).state){
+      id(retic_time) += 1;
+      return id(retic_time);
+      } else {
+      return {};
+      }
+
+## Retic Runtime ##
+
+# Current runtime of pump with delay of x seconds...
+# - will not count druring delay, only when meter is ticking over. 
+# - so runtime x seconds, then delay, if statred within delay time runtime continues to count, then delay starts again
+# ref - Binary Sensor - Retic Status Delay " - delayed_off: "
+  - platform: template
+    name: "Retic Current Runtime"
+    id: intermidate_retic_time
+    update_interval: ${update_interval_60}
+    unit_of_measurement: "Seconds"
+    lambda: |-
+        if (id(retic_status).state){
+        id(retic_time_inter) += 1;
+        return id(retic_time_inter);
+        } else {
+        if (id(retic_status_delay).state){
+        return {};
+        } else {
+        id(retic_total_on).publish_state(id(retic_time_inter));
+        id(retic_time_inter) == 0;
+        }}
+# Leak Meter
+      
+  - platform: pulse_counter
+    name: "Leak Flow Rate"
+    id: leak_meter
+    pin: GPIO33
+    update_interval: ${update_interval_60}
+    unit_of_measurement: "L/Min"
+    filters:
+      - lambda: return x / 1111;
+      
+  - platform: pulse_counter
+    name: "Leak Litre Count"
+    pin: GPIO33
+    update_interval: ${update_interval_60}
+    id: count_leak_meter
+    unit_of_measurement: "Litres"
+    filters:
+      - lambda: |-
+          id(leak_float) += x / 1111;
+          return id(leak_float);
+          
+  - platform: template
+    name: "Leak Time Count"
+    id: count_leak_time
+    update_interval: ${update_interval_60}
+    unit_of_measurement: "Seconds"
+    lambda: |-
+      if (id(leak_meter).state){
+      id(leak_time) += 1;
+      return id(leak_time);
+      } else {
+      return {};
+      }
+
+  - platform: template
+    name: "Retic Psi"
+    id: retic_psi
+    unit_of_measurement: "PSI"
+  
+  - platform: template
+    name: "Set Litres"
+    id: set_litres_sensor
+    unit_of_measurement: "Litres"
+    
+  - platform: template
+    name: "Retic Meter Last Run"
+    id: retic_meter_last_run
+    unit_of_measurement: "Litres"
+    
+  - platform: template
+    name: "Retic Last 5 Min"
+    id: retic_last_5min
+    unit_of_measurement: "Liters"
+    
+  - platform: template
+    name: "Retic Last Hour"
+    id: retic_last_hour
+    unit_of_measurement: "Liters"
+    
+  - platform: template
+    name: "Retic Yesterday"
+    id: retic_yesterday
+    unit_of_measurement: "Liters"
+    
+  - platform: template
+    name: "Leak Result Litres"
+    id: leak_result_litres
+    unit_of_measurement: "Litres"
+    
+  - platform: template
+    name: "Retic Result Time"
+    id: retic_result_time
+    unit_of_measurement: "Seconds"  
+  
+  - platform: template
+    name: "Leak Result Time"
+    id: leak_result_time
+    unit_of_measurement: "Seconds" 
+    
+  - platform: template
+    name: "Retic Test Results"
+    id: retic_test_results
+    unit_of_measurement: "L/min"
+    
+  - platform: template
+    name: "Leak Test Results"
+    id: leak_test_results
+    unit_of_measurement: "L/min"  
+    
+  - platform: template
+    name: "Retic Total Runtime"
+    id: retic_total_on
+  
+globals:
+  - id: psi_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: retic_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: retic_minute_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: retic_hour_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+  
+  - id: retic_daily_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: retic_time
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: retic_time_inter
+    type: float
+    restore_value: no
+    initial_value: '0'  
+    
+  - id: leak_float
+    type: float
+    restore_value: no
+    initial_value: '0'  
+    
+  - id: leak_time
+    type: float
+    restore_value: no
+    initial_value: '0'
+    
+  - id: stop_meter
+    type: float
+    restore_value: yes
+    initial_value: '0'
+
+binary_sensor:
+  - platform: status
+    name: "Water Control Status"
+
+##Alarm Sensors
+##Pump Runtime
+  - platform: template
+    id: runtime_normal
+    name: "Runtime Normal"
+    lambda: |-
+      if  (id(intermidate_retic_time).state <= 200){
+      return true;
+      } else {
+      return false;
+      }
+
+  - platform: template
+    id: runtime_stage_1
+    name: "Runtime Stage 1"
+    lambda: |-
+      if (id(intermidate_retic_time).state >= 299){
+      return false;
+      } else {
+      if (id(intermidate_retic_time).state >= 201){
+      return true;
+      } else {
+      return false;
+      }}
+   
+  - platform: template
+    id: runtime_stage_2
+    name: "Runtime Stage 2"
+    lambda: |-
+      if  (id(intermidate_retic_time).state >= 300){
+      return true;
+      } else {
+      return false;
+      }
+   
+## Tank Level
+## Tank Level Primary
+  - platform: template
+    id: primary_level_overflow
+    name: "Primary Tank Overflow"
+    lambda: |-
+      if (id(resivior_primary_level).state >= 101){
+      return true;
+      } else {
+      return false;
+      }
+
+  - platform: template
+    id: primary_level_high
+    name: "Primary Tank Level High"
+    lambda: |-
+      if (id(resivior_primary_level).state >= 96){
+      return true;
+      } else {
+      return false;
+      }
+
+  - platform: template
+    id: primary_level_normal
+    name: "Primary Tank Level Normal"
+    lambda: |-
+      if (id(resivior_primary_level).state >= 85){
+      return true;
+      } else {
+      return false;
+      }
+    
+  - platform: template
+    id: primary_level_meduim
+    name: "Primary Tank Level Meduim"
+    lambda: |-
+      if (id(resivior_primary_level).state <= 80){
+      return false;
+      } else {
+      if (id(resivior_primary_level).state <= 84){
+      return true;
+      } else {
+      return false;
+      }}
+    
+  - platform: template
+    id: primary_level_low
+    name: "Primary Tank Level Low"
+    lambda: |-
+      if (id(resivior_primary_level).state <= 79){
+      return true;
+      } else {
+      return false;
+      }
+    
+  - platform: template
+    id: retic_status
+    name: "Retic Water Status"
+    lambda: |-
+      if (id(retic_meter).state >= 0.01){
+      return true;
+      } else {
+      return false;
+      }
+  
+  - platform: template
+    id: retic_status_delay
+    lambda: |-
+      if (id(retic_meter).state >= 0.01){
+      return true;
+      } else {
+      return false;
+      }
+    filters:
+    - delayed_off: 60s
+      
+  - platform: template
+    name: "Leak Water Status"
+    id: leak_status
+    lambda: |-
+      if (id(leak_meter).state >= 0.01){
+      return true;
+      } else {
+      return false;
+      }
+    
+  - platform: template
+    id: leak_test_running
+    lambda: |-
+      if (id(count_leak_meter).state >= id(stop_meter)){
+      return true;
+      } else {
+      return false;
+      }
+
+# Control Box Buttons
+
+  - platform: gpio
+    pin:
+      number: GPIO12
+      mode: INPUT_PULLUP
+      inverted: True
+    id: valve_control
+    on_press:
+      if:
+        condition:
+          switch.is_on: retic_tap
+        then:
+        - switch.turn_on: leak_tap
+        else:
+        - switch.turn_on: retic_tap
+    
+  
+light:
+  - platform: neopixelbus
+    type: RGB
+    variant: APA106
+    pin: GPIO4
+    num_leds: 3
+    id: leds
+    name: "NeoPixel Light"
+
+  #- platform: fastled_clockless
+  #  chipset: APA106
+  #  pin: GPIO4
+  #  num_leds: 3
+  #  rgb_order: RGB
+  #  id: leds
+    
+  - platform: partition
+    id: status_led
+    segments:
+      - id: leds
+        from: 0
+        to: 0
+  - platform: partition
+    id: retic_led
+    segments:
+      - id: leds
+        from: 1
+        to: 1
+  - platform: partition
+    id: leak_led
+    segments:
+      - id: leds
+        from: 2
+        to: 2 

@@ -1,0 +1,94 @@
+esphome:
+  name: mancave-3gang2
+  platform: ESP8266
+  board: esp01_1m
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+  #use_address: 192.168.1.212
+  #manual_ip:
+   #   static_ip: 192.168.1.212
+  #    gateway: 192.168.1.254
+   #   subnet: 255.255.255.0
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave 3Gang2 Fallback Hotspot"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: mancaveyard_fake_touch
+    on_press:
+     - light.toggle: mancaveyard_fake
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    name: bbyard_fake_touch
+    on_press:
+        - light.toggle: bbyard_fake
+  - platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: True
+    name: truckyard_fake_touch
+    on_press:
+        - light.toggle: truckyard_fake
+
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay1
+    
+  - platform: gpio
+    pin: GPIO5
+    id: relay2
+    
+  - platform: gpio
+    pin: GPIO4
+    id: relay3
+    
+  - platform: esp8266_pwm
+    id: blue_led
+    pin: GPIO13
+    inverted: True
+
+light:
+  - platform: binary
+    name: Mancave Yard Fake
+    id: mancaveyard_fake
+    output: relay1
+
+  - platform: binary
+    name: BB Yard Fake
+    id: bbyard_fake
+    output: relay2
+    
+  - platform: binary
+    name: Truck Yard Fake 
+    id: truckyard_fake
+    output: relay3
+    
+  - platform: monochromatic
+    id: mancave_3gang2_led
+    output: blue_led
+
+

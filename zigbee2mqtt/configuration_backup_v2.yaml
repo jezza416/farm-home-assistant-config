@@ -1,0 +1,43 @@
+homeassistant: true
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: addons
+  password: oo1nozuxae7Aduja0ceeth5pi9Ka6Eije0EmeeY9nee8mietaebohliyingoe2ee
+serial:
+  port: /dev/ttyUSB0
+  adapter: ezsp
+frontend:
+  port: 8099
+advanced:
+  homeassistant_legacy_entity_attributes: false
+  legacy_api: false
+  legacy_availability_payload: false
+  log_level: info
+device_options:
+  legacy: false
+devices:
+  '0x70ac08fffeadca8f':
+    friendly_name: IR_ZB1
+  '0x84ba20fffe0122b6':
+    friendly_name: '0x84ba20fffe0122b6'
+  '0xa4c138ce76e8352c':
+    friendly_name: '0xa4c138ce76e8352c'
+  '0xa4c1380eb553c9f9':
+    friendly_name: Asus TV Plug
+  '0x8cf681fffefb934c':
+    friendly_name: '0x8cf681fffefb934c'
+  '0xa4c138dd92759666':
+    friendly_name: Calf Shed 4Gang Sth
+    state_action: true
+  '0xa4c1381ead970074':
+    friendly_name: Calf Shed 4Gang Nth
+    homeassistant:
+      name: Calf Shed Zigbee South
+    optimistic: true
+  '0xa4c138d99d2e150d':
+    friendly_name: High Level Leak Sensor
+  '0xa4c138a3b07e3123':
+    friendly_name: Low Level Leak Sensor
+  '0xa4c138c3d91bd22e':
+    friendly_name: PIR_MC
+    illuminance_calibration: 0

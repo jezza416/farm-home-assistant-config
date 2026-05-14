@@ -1,0 +1,166 @@
+esphome:
+  name: "mancave-heater-bar"
+  platform: ESP8266
+  board: esp01_1m
+  board_flash_mode: dout
+
+wifi:
+  ssid: "hfpshed"
+  password: "hillview199@"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mancave Heater Bar"
+    password: "hillview199@"
+
+captive_portal:
+
+# Enable logging
+logger:
+  baud_rate: 0
+  
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  
+# Enable Home Assistant API
+api:
+
+ota:
+
+substitutions:
+  update_interval_5: 5s
+  update_interval_10: 10s
+  update_interval_30: 30s
+
+interval:
+  - interval: ${update_interval_5}
+    then:
+      - if:   
+          condition:
+            binary_sensor.is_on: running
+          then:
+            - component.update: heater_setting
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    id: mancave_heater_bar_button
+    on_press:
+      - switch.toggle: fakebutton
+  - platform: template
+    name: "Heater Bar Running"
+    id: running
+    lambda: |-
+      if (isnan(id(power).state)) {
+        return {};
+      } else if (id(power).state > 0.2) {
+        // Running
+        return true;
+      } else {
+        // Not running
+        return false;
+      }
+switch:
+  - platform: template
+    name: "Heater Bar"
+    optimistic: true
+    id: fakebutton
+    turn_on_action:
+    - switch.turn_on: relay
+    - light.turn_on: led
+    turn_off_action:
+    - switch.turn_off: relay
+    - light.turn_off: led
+  - platform: gpio
+    id: relay
+    pin: GPIO12
+    restore_mode: ALWAYS_ON
+
+output:
+  - platform: esp8266_pwm
+    id: pow_blue_led
+    pin:
+      number: GPIO13
+      inverted: True
+
+light:
+  - platform: monochromatic
+    output: pow_blue_led
+    id: led
+
+sensor:
+  - platform: cse7766
+    update_interval: 15s
+    current:
+      name: "Heater Bar Current"
+    voltage:
+      name: "Heater Bar Voltage"
+    power:
+      name: "Heater Bar Power"
+      id: power
+      unit_of_measurement: 'kW'
+      filters:
+      - multiply: 0.001
+      on_value_range:
+        - above: 0.004
+          then:
+            - light.turn_on: led
+        - below: 0.003
+          then:
+            - light.turn_off: led
+            
+  - platform: template
+    name: "Heater Bar Watts"
+    id: watts  
+    update_interval: 2s
+    lambda: |-
+      id(watt_float) = (id(power).state * 1000);
+      return id(watt_float);
+    
+  - platform: total_daily_energy
+    name: "Heater Bar Daily kWh"
+    id: daily_kw
+    power_id: power
+    
+  - platform: template
+    name: "Bar Heating Setting"
+    id: heater_setting
+    update_interval: ${update_interval_30}
+    lambda: |- 
+      if (isnan(id(watts).state)) {
+        return {};
+      } else if (id(watts).state > 1700) {
+        return (4);
+      } else if (id(watts).state > 1300) {
+        return (3);
+      } else if (id(watts).state > 900) {
+        return (2);
+      } else if (id(watts).state > 500) {
+        return (1);
+      } else {
+        return (0);
+      }
+      
+    
+globals:
+
+  - id: watt_float
+    type: float
+    restore_value: no
+    initial_value: '0'
+
+time:
+  - platform: sntp
+    id: my_time
+    on_time:
+      seconds: 0
+      minutes: 0
+      hours: 0
+      then:
+        lambda: |-
+          id(daily_kw).publish_state(0);
+          

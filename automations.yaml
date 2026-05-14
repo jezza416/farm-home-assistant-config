@@ -1,0 +1,1320 @@
+- id: '1609034696181'
+  alias: Farm Water Estimimated Daily Water Loss Warning V2021.12
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:00:00
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.estimated_daily_loss
+    above: '2500'
+  action:
+  - service: notify.owners
+    data:
+      message: Daily Water Loss above 2500 litres
+      title: Farm Water
+  - service: persistent_notification.create
+    data:
+      message: Daily Water Loss above 2500 liters
+      title: Farm Water
+  mode: single
+- id: '1609035055990'
+  alias: Farm Water - Bore Max Off Time V2026
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: /5
+  conditions:
+  - condition: state
+    entity_id: switch.bore_pump
+    state: 'off'
+  - condition: template
+    value_template: "{% set last_valid_off = as_timestamp(states('input_datetime.bore_last_valid_off_time'),
+      0) %}\n{% set max_off_hours = states('input_number.bore_max_off_hours') | float(999)
+      %}\n\n{{\n  is_state('switch.bore_pump', 'off')\n  and last_valid_off > 0\n
+      \ and ((as_timestamp(now()) - last_valid_off) / 3600) >= max_off_hours\n}}"
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.bore_pump
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.bore_last_on_time
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+  - action: notify.mobile_app_jezza_iphone
+    data:
+      title: Farm Water
+      message: Bore started. It had been off for {{ ((as_timestamp(now()) - as_timestamp(states.switch.bore_pump.last_changed))
+        / 3600) | round(1) }} hours, over the max off time of {{ states('input_number.bore_max_off_hours')
+        | float(0) | round(0) }} hours.
+  - action: notify.mobile_app_sm_s731b
+    data:
+      title: Farm Water
+      message: Bore started. It had been off for {{ ((as_timestamp(now()) - as_timestamp(states.switch.bore_pump.last_changed))
+        / 3600) | round(1) }} hours, over the max off time of {{ states('input_number.bore_max_off_hours')
+        | float(0) | round(0) }} hours.
+  mode: single
+- id: '1609035777108'
+  alias: Farm Water - Reservoir Protection V2026
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: sensor.water_retic_control_tank_level_percent_2
+  - trigger: time_pattern
+    minutes: /1
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        below: input_number.reservoir_critical_level
+      - condition: state
+        entity_id: input_boolean.reservoir_critical_latched
+        state: 'off'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_farm_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_farm_valve
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_house_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_house_valve
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_retic_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_retic_valve
+      - if:
+        - condition: state
+          entity_id: switch.retic_pump
+          state: 'on'
+        then:
+        - action: switch.turn_off
+          target:
+            entity_id: switch.retic_pump
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.reservior_critical_latched
+        data: {}
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Critical reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Farm, House, Retic valve and Retic pump have
+            been shut down.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Critical reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Farm, House, Retic valve and Retic pump have
+            been shut down.
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.resevior_allow_to_run_to_critical
+        state: 'off'
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        below: input_number.reservior_low_low_level
+      - condition: state
+        entity_id: input_boolean.reservoir_low_low_latched
+        state: 'off'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_house_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_house_valve
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_retic_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_retic_valve
+      - if:
+        - condition: state
+          entity_id: switch.retic_pump
+          state: 'on'
+        then:
+        - action: switch.turn_off
+          target:
+            entity_id: switch.retic_pump
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.reservior_critical_latched
+        data: {}
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Low low reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. House and Shed supply have been shut down.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Low low reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. House and Shed supply have been shut down.
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.resevior_allow_to_run_to_critical
+        state: 'off'
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        below: input_number.reservoir_low_level
+      - condition: state
+        entity_id: input_boolean.reservoir_low_latched
+        state: 'off'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: valve.water_retic_control_farm_valve
+          state: open
+        then:
+        - action: valve.close_valve
+          target:
+            entity_id: valve.water_retic_control_farm_valve
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.reservior_low_latched
+        data: {}
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Low reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Farm supply has been shut down.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Low reservoir level reached at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Farm supply has been shut down.
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.resevior_allow_to_run_to_critical
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        below: input_number.reservoir_low_level
+      - condition: state
+        entity_id: input_boolean.reservoir_low_latched
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.reservior_low_latched
+        data: {}
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Reservoir is below low level at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Run to critical is enabled, so supply is being
+            maintained.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Reservoir is below low level at {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%. Run to critical is enabled, so supply is being
+            maintained.
+    - conditions:
+      - condition: template
+        value_template: "{{\n  states('sensor.water_retic_control_tank_level_percent_2')
+          | float(0)\n  >\n  (states('input_number.reservoir_low_level') | float(0)
+          + 2)\n}}"
+      - condition: state
+        entity_id: input_boolean.reservoir_low_latched
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+          - input_boolean.reservior_low_latched
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: "{{\n  states('sensor.water_retic_control_tank_level_percent_2')
+          | float(0)\n  >\n  (states('input_number.reservior_low_low_level') | float(0)
+          + 2)\n}}"
+      - condition: state
+        entity_id: input_boolean.reservoir_low_low_latched
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+          - input_boolean.reservior_low_low_latched
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: "{{\n  states('sensor.water_retic_control_tank_level_percent_2')
+          | float(0)\n  >\n  (states('input_number.reservoir_critical_level') | float(0)
+          + 5)\n}}"
+      - condition: state
+        entity_id: input_boolean.reservoir_critical_latched
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+          - input_boolean.reservior_low_low_latched
+        data: {}
+  mode: single
+- id: '1609037447872'
+  alias: Farm Water - Bore Control V2026
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: sensor.water_retic_control_tank_level_percent_2
+  - trigger: time_pattern
+    minutes: /1
+  - trigger: state
+    entity_id:
+    - switch.bore_pump
+    from:
+    - 'off'
+    - 'on'
+    id: bore started
+  - trigger: state
+    entity_id:
+    - switch.bore_pump
+    id: bore stopped
+    from:
+    - 'on'
+    - 'off'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        below: input_number.bore_turn_on_level
+      - condition: state
+        entity_id: switch.bore_pump
+        state: 'off'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.bore_pump
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.bore_last_on_time
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Bore started. Reservoir level is {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%, below start level of {{ states('input_number.bore_turn_on_level')
+            | float(0) | round(1) }}%.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Bore started. Reservoir level is {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%, below start level of {{ states('input_number.bore_turn_on_level')
+            | float(0) | round(1) }}%.
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_tank_level_percent_2
+        above: input_number.bore_turn_off_level
+      - condition: state
+        entity_id: switch.bore_pump
+        state: 'on'
+      sequence:
+      - action: switch.turn_on
+        metadata: {}
+        target:
+          entity_id: switch.water_retic_control_retic_reset_meter_run_2
+        data: {}
+      - type: turn_on
+        device_id: e233e7f9aa40689298cb1334006d4a44
+        entity_id: 9df6bafef78c0e119726e03f5e24d8c3
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
+      - action: switch.turn_off
+        target:
+          entity_id: switch.bore_pump
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Bore stopped. Reservoir level is {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%, above stop level of {{ states('input_number.bore_turn_off_level')
+            | float(0) | round(1) }}%.
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Bore stopped. Reservoir level is {{ states('sensor.water_retic_control_tank_level_percent_2')
+            | float(0) | round(1) }}%, above stop level of {{ states('input_number.bore_turn_off_level')
+            | float(0) | round(1) }}%.
+      - condition: template
+        value_template: "{% set started = as_timestamp(states('input_datetime.bore_last_on_time'),
+          0) %} {% set runtime_minutes = ((as_timestamp(now()) - started) / 60) if
+          started > 0 else 0 %} {% set tank_level = states('sensor.water_retic_control_tank_level_percent_2')
+          | float(0) %} {% set overflow_active = is_state('binary_sensor.0xa4c138d99d2e150d_water_leak',
+          'on') %}\n{{ runtime_minutes >= 90\n   or tank_level >= 99\n   or overflow_active
+          }}"
+      - variables:
+          started: '{{ as_timestamp(states(''input_datetime.bore_last_on_time''),
+            0) }}'
+          runtime_minutes: "{% if started | float(0) > 0 %}\n  {{ ((as_timestamp(now())
+            - started | float(0)) / 60) | round(0) }}\n{% else %}\n  0\n{% endif %}\n"
+          tank_level: '{{ states(''sensor.water_retic_control_tank_level_percent_2'')
+            | float(0) }}'
+          overflow_active: '{{ is_state(''binary_sensor.0xa4c138d99d2e150d_water_leak'',
+            ''on'') }}'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.bore_last_valid_off_time
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.bore_last_off_reason
+        data:
+          value: "{% if overflow_active %}\n  Bore stopped because overflow sensor
+            was active.\n{% elif tank_level >= 99 %}\n  Bore stopped because reservoir
+            reached {{ tank_level | round(1) }}%.\n{% elif runtime_minutes | float(0)
+            >= 90 %}\n  Bore stopped after running for {{ runtime_minutes }} minutes.\n{%
+            else %}\n  Bore stopped by valid control logic.\n{% endif %}"
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: bore_started
+      sequence:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.bore_last_on_time
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    - conditions:
+      - condition: trigger
+        id: bore_stopped
+      - condition: template
+        value_template: "{% set started = as_timestamp(states('input_datetime.bore_last_on_time'),
+          0) %} {% set runtime_minutes = ((as_timestamp(now()) - started) / 60) if
+          started > 0 else 0 %} {% set tank_level = states('sensor.water_retic_control_tank_level_percent_2')
+          | float(0) %} {% set overflow_active = is_state('binary_sensor.0xa4c138d99d2e150d_water_leak',
+          'on') %}\n{{ runtime_minutes >= 90\n   or tank_level >= 99\n   or overflow_active
+          }}\n"
+      sequence:
+      - variables:
+          started: '{{ as_timestamp(states(''input_datetime.bore_last_on_time''),
+            0) }}'
+          runtime_minutes: "{% if started | float(0) > 0 %}\n  {{ ((as_timestamp(now())
+            - started | float(0)) / 60) | round(0) }}\n{% else %}\n  0\n{% endif %}\n"
+          tank_level: '{{ states(''sensor.water_retic_control_tank_level_percent_2'')
+            | float(0) }}'
+          overflow_active: '{{ is_state(''binary_sensor.0xa4c138d99d2e150d_water_leak'',
+            ''on'') }}'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.bore_last_valid_off_time
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.bore_last_off_reason
+        data:
+          value: "{% if overflow_active %}\n  Bore stopped because overflow sensor
+            was active.\n{% elif tank_level >= 99 %}\n  Bore stopped because reservoir
+            reached {{ tank_level | round(1) }}%.\n{% elif runtime_minutes | float(0)
+            >= 90 %}\n  Bore stopped after running for {{ runtime_minutes }} minutes.\n{%
+            else %}\n  Bore stopped by valid control logic.\n{% endif %}"
+  mode: single
+- id: '1609039624887'
+  alias: Farm Water Usage Notify 700L
+  description: ''
+  triggers:
+  - type: value
+    device_id: e233e7f9aa40689298cb1334006d4a44
+    entity_id: 8d2f605051ae3ca4f14437cf50157713
+    domain: sensor
+    trigger: device
+    above: 700
+  conditions: []
+  actions:
+  - action: notify.mobile_app_jezza_iphone
+    data:
+      title: Farm Water
+      message: Farm has used 700L this hour
+  - action: notify.mobile_app_martin
+    data:
+      message: Has used 700L this hour - Warning no Action
+      title: Farm Water
+  - data:
+      message: Excessive Water Flow 700 liters
+      title: Farm Water
+    action: persistent_notification.create
+  mode: single
+- id: '1609042035372'
+  alias: Notify Stock File
+  description: Upload Data from weigh scale
+  trigger:
+  - type: turned_on
+    platform: device
+    device_id: bd31304c223049fc958440bf15decb59
+    entity_id: binary_sensor.upload_button
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: notify.mobile_app_jezza_iphone
+    data:
+      message: 'Weight: {{ states.sensor.hx711_value.state }} Tag Number: {{ states.sensor.ear_tag.state
+        }}'
+      title: Stock test
+  - service: notify.stock
+    data:
+      message: 'Scale Weight: {{ states.sensor.hx711_value.state }} Tag Number: {{
+        states.sensor.ear_tag.state }}'
+  mode: single
+- id: '1638650164804'
+  alias: Farm Fence On Check V2021.12
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:00:00'
+  condition: []
+  action:
+  - condition: device
+    type: is_off
+    device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+    entity_id: switch.fence_unit_relay
+    domain: switch
+  - condition: device
+    type: is_off
+    device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+    entity_id: switch.fence_countdown_timer
+    domain: switch
+  - choose:
+    - conditions:
+      - condition: device
+        type: is_on
+        device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+        entity_id: switch.fence_unit_relay
+        domain: switch
+      sequence:
+      - service: notify.owners
+        data:
+          message: Fence is In Standby Mode.. Please Turn On Manually
+          title: Farm Fence
+    - conditions:
+      - condition: device
+        type: is_off
+        device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+        entity_id: switch.fence_unit_relay
+        domain: switch
+      sequence:
+      - type: turn_on
+        device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+        entity_id: switch.fence_unit_relay
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 20
+          milliseconds: 0
+      - choose:
+        - conditions:
+          - type: is_on
+            condition: device
+            device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+            entity_id: binary_sensor.fence_unit_running
+            domain: binary_sensor
+          sequence:
+          - service: persistent_notification.create
+            data:
+              message: Farm Fence Turnned ON "On Check" Automation
+              title: Farm Fence
+              notification_id: farm_fence
+        - conditions:
+          - type: is_off
+            condition: device
+            device_id: 4ebaca412871b3cb0a39d304c3d8c25e
+            entity_id: binary_sensor.fence_unit_running
+            domain: binary_sensor
+          sequence:
+          - service: notify.owners
+            data:
+              message: Fence is In Standby Mode.. Please Turn On Manually
+              title: Farm Fence
+        default: []
+    default: []
+  mode: single
+- id: '1638656674149'
+  alias: Farm Water Reservoir Controls V2021.12
+  description: ''
+  trigger:
+  - type: value
+    platform: device
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: sensor.water_storage
+    domain: sensor
+    above: 99
+    id: level_100
+  - type: value
+    platform: device
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: sensor.water_storage
+    domain: sensor
+    id: level_95
+    above: 94
+    below: 95
+  - type: value
+    platform: device
+    device_id: 8a22887632e0d34806c97eb563457699
+    entity_id: sensor.water_storage
+    domain: sensor
+    id: level_95
+    above: 94
+    below: 95
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: level_100
+      sequence:
+      - service: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Bore Filling Rate {{ ((as_timestamp(now()) -     as_timestamp(states.switch.bore_pump.last_changed
+            | default(0)) | float ) /     60) / (states('sensor.water_retic_control_retic_meter_current_run'))
+            | float     }}
+      - type: turn_off
+        device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+        entity_id: switch.bore_pump
+        domain: switch
+    default: []
+  mode: single
+- id: '1644292609806'
+  alias: Delete Snapshot Images to Keep 3days
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:05:00
+  condition: []
+  action:
+  - service: delete.files_in_folder
+    data:
+      folder: /media/shed_driveway
+      time: 259200
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - service: delete.files_in_folder
+    data:
+      folder: /media/shed_mancave
+      time: 259200
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - service: delete.files_in_folder
+    data:
+      folder: /media/shed_truckyard
+      time: 259200
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - service: delete.files_in_folder
+    data:
+      folder: /media/house_driveway
+      time: 259200
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - service: delete.files_in_folder
+    data:
+      folder: /media/house_front_door
+      time: 259200
+  mode: single
+- id: '1709240020390'
+  alias: Farm Water Output Guard
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: sensor.water_retic_control_retic_meter_current_run_2
+  conditions:
+  - condition: template
+    value_template: "{{ states('sensor.water_retic_control_retic_meter_current_run_2')
+      | float(0)\n   > states('input_number.water_tank_outflow_protecton') | float(999999)
+      }}\n"
+  - condition: state
+    entity_id: binary_sensor.bore_pump_running
+    state: 'off'
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.bore_pump
+  - action: notify.mobile_app_jezza_iphone
+    metadata: {}
+    data:
+      title: Farm Water
+      message: Bore started. Current run reached {{ states('sensor.water_retic_control_retic_meter_current_run_2')
+        | float(0) | round(0) }} L, over the safeguard cutoff of {{ states('input_number.water_tank_outflow_protecton')
+        | float(0) | round(0) }} L.
+  - action: notify.mobile_app_sm_s731b
+    metadata: {}
+    data:
+      title: Farm Water
+      message: Bore started. Current run reached {{ states('sensor.water_retic_control_retic_meter_current_run_2')
+        | float(0) | round(0) }} L, over the safeguard cutoff of {{ states('input_number.water_tank_outflow_protecton')
+        | float(0) | round(0) }} L.
+  mode: single
+- id: '1728446162945'
+  alias: Farm Water Resiviour control - leak device or run Bore Turn Off
+  description: ''
+  triggers:
+  - type: moist
+    device_id: cdd45c7d5bc37c98bebb53570c159dfa
+    entity_id: 2fd29a708dc5047d851139308374d507
+    domain: binary_sensor
+    id: Leak High Level
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: timer.bore_on_timer
+        state: active
+      sequence:
+      - action: timer.finish
+        metadata: {}
+        data: {}
+        target:
+          entity_id: timer.bore_on_timer
+    - conditions:
+      - condition: device
+        type: is_on
+        device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+        entity_id: 3c9c9a9572a2aa8e94d022dd5c4d1c06
+        domain: switch
+      sequence:
+      - type: turn_off
+        device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+        entity_id: 3c9c9a9572a2aa8e94d022dd5c4d1c06
+        domain: switch
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id: switch.water_retic_control_retic_reset_meter_run_2
+    data: {}
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id: switch.water_retic_control_retic_reset_pulse_total_2
+    data: {}
+  - action: notify.mobile_app_jezza_iphone
+    metadata: {}
+    data:
+      message: Bore Turned OFF by HIGH Level Leak Sensor
+      title: Farm Water
+  - action: notify.mobile_app_sm_s731b
+    metadata: {}
+    data:
+      message: Bore Turned OFF by HIGH Level Leak Sensor
+      title: Farm Water
+  mode: single
+- id: '1751093893055'
+  alias: 'Bore Automation: Turn bore on time or float'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.bore_pump
+    to: 'off'
+    for:
+      hours: 24
+      minutes: 0
+      seconds: 0
+    id: time
+  - type: problem
+    device_id: 06fa76dd93e8104a42110bb0713ddfd2
+    entity_id: 1a3a710fddfe852f4a7b68e8cbd60bac
+    domain: binary_sensor
+    trigger: device
+    id: ball
+    enabled: false
+  - type: value
+    device_id: e233e7f9aa40689298cb1334006d4a44
+    entity_id: cb267461b399e68ab7767486d5338438
+    domain: sensor
+    trigger: device
+    above: 6000
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 23dfb36a3cd5c85dae5a2e8e9bbcd30e
+    entity_id: 3c9c9a9572a2aa8e94d022dd5c4d1c06
+    domain: switch
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - time
+      sequence:
+      - action: notify.mobile_app_jezza_iphone
+        metadata: {}
+        data:
+          message: Bore turned on as has been off for 24hrs
+          title: Farm Water
+      - action: notify.mobile_app_sm_s731b
+        metadata: {}
+        data:
+          message: Bore turned on as has been off for 24hrs
+          title: Farm Water
+    - conditions:
+      - condition: trigger
+        id:
+        - ball
+      sequence:
+      - action: notify.mobile_app_jezza_iphone
+        metadata: {}
+        data:
+          title: Farm Water
+          message: Bore has been turned on by ball float
+      - action: notify.mobile_app_sm_s731b
+        metadata: {}
+        data:
+          message: Bore has been turned on by ball float
+          title: Farm Water
+    - conditions:
+      - condition: trigger
+        id:
+        - Meter output
+      sequence:
+      - action: notify.mobile_app_jezza_iphone
+        metadata: {}
+        data:
+          title: Farm Water
+          message: Bore has been turned on by Meter output Above 6000L
+      - action: notify.mobile_app_sm_s731b
+        metadata: {}
+        data:
+          message: Bore has been turned on by Meter output Above 6000L
+          title: Farm Water
+  mode: single
+- id: '1755381072844'
+  alias: Fence Control
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - timer.257_fence_unit_timer
+  conditions: []
+  actions:
+  - if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: timer.257_fence_unit_timer
+        state: active
+    then:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.257_fence_unit
+    else:
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.257_fence_unit
+  mode: single
+- id: '1771632385960'
+  alias: Farm Water - Retic Pump Continuous Run Protection
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: /1
+  - trigger: state
+    entity_id:
+    - binary_sensor.retic_pump_running
+    - valve.water_retic_control_farm_valve
+    - valve.water_retic_control_house_valve
+    - valve.water_retic_control_retic_valve
+    - switch.retic_pump
+    - sensor.retic_pump_2_retic_pump_stage_runtime
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.retic_pump_running
+    state: 'on'
+  - condition: state
+    entity_id: automation.farm_water_retic_pump_use
+    state: 'on'
+  actions:
+  - variables:
+      run_minutes: '{{ states(''sensor.retic_pump_2_retic_pump_stage_runtime'') |
+        float(0) }}'
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.farm_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: open
+      - condition: template
+        value_template: '{{ run_minutes >= states(''input_number.pump_farm_runtime_cutoff'')
+          | float(9999) }}'
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_farm_valve
+      - delay: 00:00:12
+      - action: switch.turn_on
+        target:
+          entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Farm valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_FARM
+              title: Reset Farm
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Farm valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_FARM
+              title: Reset Farm
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.house_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_house_valve
+        state: open
+      - condition: template
+        value_template: '{{ run_minutes >= states(''input_number.pump_house_runtime_cutoff'')
+          | float(9999) }}'
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_house_valve
+      - delay: 00:00:12
+      - action: switch.turn_on
+        target:
+          entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: House valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_HOUSE
+              title: Reset House
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: House valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_HOUSE
+              title: Reset House
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.pump_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_house_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: open
+      - condition: template
+        value_template: '{{ run_minutes >= states(''input_number.pump_shed_runtime_cutoff'')
+          | float(9999) }}'
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_retic_valve
+      - delay: 00:00:12
+      - action: switch.turn_on
+        target:
+          entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Retic valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_SHED
+              title: Reset Shed
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Retic valve closed. Pump runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_SHED
+              title: Reset Shed
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.pump_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: closed
+      - condition: state
+        entity_id: switch.retic_pump
+        state: 'on'
+      - condition: template
+        value_template: '{{ run_minutes >= states(''input_number.pump_stand_runtime_cutoff'')
+          | float(9999) }}'
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.retic_pump
+      - action: switch.turn_on
+        target:
+          entity_id: switch.retic_pump_2_retic_pump_runtime_reset
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Retic pump turned off. Stand runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_STAND
+              title: Reset Stand
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Retic pump turned off. Stand runtime reached {{ run_minutes | round(0)
+            }} min.
+          data:
+            actions:
+            - action: RESET_RUNTIME_STAND
+              title: Reset Stand
+  mode: single
+- id: '1776965906378'
+  alias: Farm Water Retic Reset Meters V2026
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: /5
+    id: five_min
+  - trigger: time_pattern
+    minutes: '0'
+    id: hourly
+  - trigger: time
+    at: 00:00:00
+    id: daily
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: five_min
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.water_retic_control_retic_minute_reset_2
+    - conditions:
+      - condition: trigger
+        id: hourly
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.water_retic_control_retic_hour_reset_2
+    - conditions:
+      - condition: trigger
+        id: daily
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.water_retic_control_retic_daily_reset_2
+        data: {}
+  mode: queued
+  max: 10
+- id: '1777013967447'
+  alias: Farm Water Progressive Isolation V2026
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.water_retic_control_retic_last_60_farm
+    above: input_number.farm_hourly_water_cutoff
+    id: farm_monitor
+  - trigger: numeric_state
+    entity_id: sensor.water_retic_control_retic_last_60_house
+    above: input_number.house_hourly_water_cutoff
+    id: house_monitor
+  - trigger: numeric_state
+    entity_id: sensor.water_retic_control_retic_last_60_retic
+    above: input_number.pump_hourly_water_cutoff
+    id: retic_monitor
+  - trigger: numeric_state
+    entity_id: sensor.water_retic_control_retic_flow_rate_2
+    above: input_number.retic_pump_flow_cutoff
+    id: pump_monitor
+  conditions:
+  - condition: state
+    entity_id: automation.farm_water_progressive_isolation_v2026
+    state: 'on'
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.farm_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: open
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: open
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_retic_last_60_farm
+        above: input_number.farm_hourly_water_cutoff
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_farm_valve
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Farm has been isolated because outgoing water reached {{ states('sensor.water_retic_control_retic_last_60_farm')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset Farm to reset
+            the meter and reopen the Farm valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_FARM
+              title: Reset Farm
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Farm has been isolated because outgoing water reached {{ states('sensor.water_retic_control_retic_last_60_farm')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset Farm to reset
+            the meter and reopen the Farm valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_FARM
+              title: Reset Farm
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.house_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_house_valve
+        state: open
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: open
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_retic_last_60_house
+        above: input_number.house_hourly_water_cutoff
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_house_valve
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: House has been isolated because outgoing water reached {{states('sensor.water_retic_control_retic_last_60_house')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset House to
+            reset the meter and reopen the House valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_HOUSE
+              title: Reset House
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: House has been isolated because outgoing water reached {{states('sensor.water_retic_control_retic_last_60_house')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset House to
+            reset the meter and reopen the House valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_HOUSE
+              title: Reset House
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.pump_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_farm_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_house_valve
+        state: closed
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: open
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_retic_last_60_retic
+        above: input_number.pump_hourly_water_cutoff
+      sequence:
+      - action: valve.close_valve
+        target:
+          entity_id: valve.water_retic_control_retic_valve
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Retic has been isolated because outgoing water reached {{ states('sensor.water_retic_control_retic_last_60_retic')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset Shed to reset
+            the meter and reopen the Retic valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_SHED
+              title: Reset Shed
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Retic has been isolated because outgoing water reached {{ states('sensor.water_retic_control_retic_last_60_retic')
+            | float(0) | round(0) }} L in the last 60 minutes. Use Reset Shed to reset
+            the meter and reopen the Retic valve.
+          data:
+            actions:
+            - action: RESET_VOLUME_SHED
+              title: Reset Shed
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.pump_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: closed
+      - condition: state
+        entity_id: switch.retic_pump
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_retic_flow_rate_2
+        above: input_number.retic_pump_flow_cutoff
+      sequence:
+      - delay: 00:00:20
+      - condition: state
+        entity_id: input_boolean.pump_actions_snoozed
+        state: 'off'
+      - condition: state
+        entity_id: valve.water_retic_control_retic_valve
+        state: closed
+      - condition: state
+        entity_id: switch.retic_pump
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.water_retic_control_retic_flow_rate_2
+        above: input_number.retic_pump_flow_cutoff
+      - action: switch.turn_off
+        target:
+          entity_id: switch.retic_pump
+      - action: notify.mobile_app_jezza_iphone
+        data:
+          title: Farm Water
+          message: Retic pump has been isolated because flow stayed at {{ states('sensor.water_retic_control_retic_flow_rate_2')
+            | float(0) | round(1) }} L/min after the Retic valve was shut. Use Reset
+            Stand to reset the meter and restart the Retic pump.
+          data:
+            actions:
+            - action: RESET_VOLUME_STAND
+              title: Reset Stand
+      - action: notify.mobile_app_sm_s731b
+        data:
+          title: Farm Water
+          message: Retic pump has been isolated because flow stayed at {{ states('sensor.water_retic_control_retic_flow_rate_2')
+            | float(0) | round(1) }} L/min after the Retic valve was shut. Use Reset
+            Stand to reset the meter and restart the Retic pump.
+          data:
+            actions:
+            - action: RESET_VOLUME_STAND
+              title: Reset Stand
+  mode: single
+- id: '1777096417415'
+  alias: Farm Water - Notification Reset Actions
+  description: ''
+  triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_RUNTIME_FARM'' }}'
+      sequence:
+      - action: script.water_fix_runtime_farm
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_RUNTIME_HOUSE'' }}'
+      sequence:
+      - action: script.water_fix_runtime_house
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_RUNTIME_SHED'' }}'
+      sequence:
+      - action: script.water_fix_runtime_retic
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_RUNTIME_STAND'' }}'
+      sequence:
+      - action: script.water_fix_runtime_stand
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_VOLUME_FARM'' }}'
+      sequence:
+      - action: script.water_fix_volume_farm
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_VOLUME_HOUSE'' }}'
+      sequence:
+      - action: script.water_fix_volume_house
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_VOLUME_SHED'' }}'
+      sequence:
+      - action: script.water_fix_volume_retic
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''RESET_VOLUME_STAND'' }}'
+      sequence:
+      - action: script.water_fix_volume_stand
+  mode: queued
+  max: 20
