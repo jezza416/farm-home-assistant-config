@@ -14,7 +14,7 @@
     },
     "0xa4c1380eb553c9f9": {
         "energy": 126.5,
-        "voltage": 239,
+        "voltage": 238,
         "state": "ON",
         "countdown": 0,
         "power_outage_memory": "on",
@@ -97,7 +97,7 @@
         "linkquality": 120
     },
     "0x8cf681fffefb934c": {
-        "linkquality": 96
+        "linkquality": 92
     },
     "0xa4c138dd92759666": {
         "state_l1": "OFF",

@@ -1,0 +1,167 @@
+  - button:
+      - unique_id: matrix_power
+        name: Matrix Switch Power
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BWojcxE6AuAXAQGJBuAVA8AB4AMnQAFAD0ABQAdAA+ADAcAPC4kGOgJsnGojxwg6Ag=="}
+
+      - unique_id: matrix_1
+        name: Matrix Switch 1
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BVYjjxE4AuAXAQGVBuAZA0ABQCdAAeAHB0AB4AcT4AMPD3GcViPACDgC//9WI8AIOAI="}
+
+      - unique_id: matrix_2
+        name: Matrix Switch 2
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BXMjexE5AuAXAQGQBuAZA0ABQCdAAcAH4AMBwBPgAwdACwuQBjkCbZxzI6gIOQI="}
+
+      - unique_id: matrix_3
+        name: Matrix Switch 3
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BUYjoxE3AuAXAQGVBuAZA0AB4AMnQAFAD8AB4AMLQAHADwuVBjcCe5xGI7sINwI="}
+
+      - unique_id: matrix_4
+        name: Matrix Switch 4
+        press:
+          action: mqtt.publish
+          data:
+            qos: 0
+            retain: false
+            topic: zigbee2mqtt/IR_ZB1/set
+            payload: >-
+              {"ir_code_to_send":
+              "BVMjphE4AuAXAQGPBuAVA8AB4AMn4AMBwBfgAwHAE0AHD5OcUyPMCDgC//9TI8wIOAI="}
+          
+          
+  - sensor:
+  
+      - unique_id: rain_rate_5min_hr
+        name: Current Rain Rate
+        unit_of_measurement: mm/hr
+        state: "{{ (states('sensor.rain_rate_5min_window') | float(0) * 12) | round(1) }}"
+
+      - unique_id: weather_wind_dir_3hr
+        name: Wind Direction 3hr Average
+        state: >-
+          {% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %}
+          {% set degree = states('sensor.wind_bearing_3hr_average') | float(0) %}
+          {{ direction[((degree + 11.25) / 22.5) | int] }}
+
+      - unique_id: weather_wind_dir
+        name: Wind Direction
+        state: >-
+          {% set direction = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'] %}
+          {% set degree = states('sensor.gw2000c_v2_1_8_wind_direction') | float(0) %}
+          {{ direction[((degree + 11.25) / 22.5) | int] }}
+
+      - unique_id: count_lights_on
+        name: "# Lights on"
+        state: "{{ states.light | selectattr('state', 'eq', 'on') | list | count }}"
+
+
+      - unique_id: bore_cost_per_m3
+        name: Bore Cost Per M3
+        unit_of_measurement: "$"
+        state: >-
+          {% set litres = states('sensor.bore_monthly') | float(0) %}
+          {% if litres > 0 %}
+            {{ ((states('sensor.bore_pump_monthly_kwh') | float(0) * 0.2483) / (litres / 1000)) | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - unique_id: bore_monthly_cost_total
+        name: Bore Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.bore_cost_per_m3') | float(0) *
+              (states('sensor.bore_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: retic_cost_per_m3
+        name: Retic Cost Per M3
+        unit_of_measurement: "$"
+        state: >-
+          {% set litres = states('sensor.retic_monthly') | float(0) %}
+          {% if litres > 0 %}
+            {{ ((states('sensor.retic_pump_monthly_kwh') | float(0) * 0.2493) / (litres / 1000)) | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - unique_id: retic_monthly_cost_total
+        name: Retic Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.retic_cost_per_m3') | float(0) *
+              (states('sensor.retic_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: water_monthly_savings
+        name: Water Monthly Savings
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.bore_cost_per_m3') | float(0) *
+              (states('sensor.tank_monthly') | float(0) / 1000)) | round(2) }}
+
+      - unique_id: water_monthly_cost
+        name: Water Monthly Cost
+        unit_of_measurement: "$"
+        state: >-
+          {{ (states('sensor.retic_monthly_cost_total') | float(0) +
+              states('sensor.bore_monthly_cost_total') | float(0)) | round(2) }}
+
+      - unique_id: retic_check_min
+        name: Retic Hourly 24hr Min
+        unit_of_measurement: Liters
+        state: "{{ state_attr('sensor.water_hourly_stats', 'min_value') | float(0) }}"
+
+      - unique_id: estimated_daily_loss
+        name: Estimated Daily Loss
+        unit_of_measurement: Liters
+        state: "{{ (state_attr('sensor.water_hourly_stats', 'min_value') | float(0) * 24) | round(2) }}"
+
+      - unique_id: water_usage_daily_warning
+        name: Excessive Daily Water Loss
+        state: "{{ states('sensor.water_retic_control_retic_last_5_min') | float(0) >= 83.3 }}"
+        icon: >-
+          {% if is_state('sensor.water_usage_daily_warning', 'true') %}
+            mdi:alarm-light
+          {% else %}
+            mdi:alarm-light-outline
+          {% endif %}
+
+      - unique_id: water_usage_hourly_warning
+        name: Excessive Hourly Water Usage
+        state: "{{ states('sensor.water_retic_control_retic_current_hour_2') | float(0) >= 600 }}"
+        icon: >-
+          {% if is_state('sensor.water_usage_hourly_warning', 'true') %}
+            mdi:alarm-light
+          {% else %}
+            mdi:alarm-light-outline
+          {% endif %}
