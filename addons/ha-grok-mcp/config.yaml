@@ -1,0 +1,26 @@
+name: Home Assistant Grok MCP
+version: "0.2.0"
+slug: ha_grok_mcp
+description: MCP server for exposing selected Home Assistant controls to Grok
+url: https://github.com/local/ha-grok-mcp
+arch:
+  - aarch64
+  - amd64
+startup: services
+boot: auto
+init: false
+ports:
+  3000/tcp: 3000
+options:
+  ha_url: "http://supervisor/core"
+  ha_token: ""
+  mcp_auth_token: "change-this-long-random-token"
+  oauth_client_id: "grok"
+  oauth_client_secret: "change-this-oauth-secret"
+schema:
+  ha_url: str
+  ha_token: password
+  mcp_auth_token: password
+  oauth_client_id: str
+  oauth_client_secret: password
+

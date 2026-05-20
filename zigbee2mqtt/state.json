@@ -3,17 +3,17 @@
         "battery": 100,
         "voltage": 1500,
         "learned_ir_code": "BVYjjxE4AuAXAQGVBuAZA0ABQCdAAeAHB0AB4AcT4AMPD3GcViPACDgC//9WI8AIOAI=",
-        "linkquality": 92
+        "linkquality": 164
     },
     "0xa4c138ce76e8352c": {
         "state": "OFF",
         "countdown": 0,
         "power_on_behavior": "previous",
         "switch_type": "toggle",
-        "linkquality": 152
+        "linkquality": 164
     },
     "0xa4c1380eb553c9f9": {
-        "energy": 126.5,
+        "energy": 127.39,
         "voltage": 238,
         "state": "ON",
         "countdown": 0,
@@ -22,27 +22,14 @@
         "child_lock": "UNLOCK",
         "power": 0,
         "current": 0,
-        "linkquality": 152
-    },
-    "0xa4c1381ead970074": {
-        "state_l1": "ON",
-        "power_on_behavior_l1": "off",
-        "switch_type": "momentary",
-        "state_l2": "ON",
-        "state_l3": "OFF",
-        "state_l4": "OFF",
-        "linkquality": 60,
-        "countdown_l4": 0,
-        "countdown_l1": 0,
-        "countdown_l2": 0,
-        "countdown_l3": 0
+        "linkquality": 160
     },
     "0xa4c138d99d2e150d": {
         "battery": 80,
         "water_leak": false,
         "tamper": false,
         "battery_low": false,
-        "linkquality": 168
+        "linkquality": 160
     },
     "0xa4c138a3b07e3123": {
         "battery": 96,
@@ -56,7 +43,7 @@
         "battery": 100,
         "keep_time": "10",
         "sensitivity": "medium",
-        "linkquality": 156,
+        "linkquality": 92,
         "illuminance_interval": 5
     },
     "0xa4c138dfd0c2f596": {
@@ -97,18 +84,7 @@
         "linkquality": 120
     },
     "0x8cf681fffefb934c": {
-        "linkquality": 92
-    },
-    "0xa4c138dd92759666": {
-        "state_l1": "OFF",
-        "power_on_behavior_l1": "off",
-        "switch_type": "momentary",
-        "state_l2": "OFF",
-        "state_l3": "OFF",
-        "state_l4": "OFF",
-        "linkquality": 60,
-        "countdown_l1": 0,
-        "countdown_l4": 0
+        "linkquality": 116
     },
     "0x94b216fffe8d1aeb": {
         "network_indicator": true,
@@ -124,5 +100,31 @@
     "0x84ba20fffe0122b6": {
         "state": "OFF",
         "linkquality": 36
+    },
+    "0xa4c138dd92759666": {
+        "state_l1": "OFF",
+        "countdown_l1": 0,
+        "power_on_behavior_l1": "off",
+        "switch_type": "momentary",
+        "state_l2": "OFF",
+        "countdown_l2": 0,
+        "state_l3": "OFF",
+        "countdown_l3": 0,
+        "state_l4": "OFF",
+        "countdown_l4": 0,
+        "linkquality": 92
+    },
+    "0xa4c1381ead970074": {
+        "state_l1": "ON",
+        "countdown_l1": 0,
+        "state_l2": "OFF",
+        "countdown_l2": 0,
+        "state_l3": "OFF",
+        "countdown_l3": 0,
+        "linkquality": 88,
+        "power_on_behavior_l1": "off",
+        "switch_type": "momentary",
+        "state_l4": "OFF",
+        "countdown_l4": 0
     }
 }

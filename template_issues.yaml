@@ -1,4 +1,4 @@
-  - binary_sensor:
+    # - binary_sensor:
 
     #################################################
     # Standard Template
@@ -22,569 +22,571 @@
     #################################################
 
     
-    - name: "Issue Water Retic Pump Off"
-      unique_id: issue_water_retic_pump_off
-      state: > 
-        {{ is_state('switch.retic_pump', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Critical"
-        issue: "Retic Pump is off"
-        cause: "Pump relay switch is off"
-        fix: "Turn Pump Power ON"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.retic_pump"
-        # fix_script:
+- name: "Issue Water Retic Pump Off"
+  unique_id: issue_water_retic_pump_off
+  state: > 
+    {{ is_state('switch.retic_pump', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Critical"
+    issue: "Retic Pump is off"
+    cause: "Pump relay switch is off"
+    fix: "Turn Pump Power ON"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.retic_pump"
+    # fix_script:
     
-    - name: "Issue Water Farm Valve Off"
-      unique_id: issue_water_farm_valve_off
-      state: >
-        {{ is_state('valve.water_retic_control_farm_valve', 'closed') }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Farm Valve Off"
-        cause: "Farm Valve was Tuned off"
-        fix: "Turn Farm Valve Back ON"
-        fix_service: "valve.open_valve"
-        fix_entity: "valve.water_retic_control_farm_valve"
-        # fix_script: 
+- name: "Issue Water Farm Valve Off"
+  unique_id: issue_water_farm_valve_off
+  state: >
+    {{ is_state('valve.water_retic_control_farm_valve', 'closed') }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Farm Valve Off"
+    cause: "Farm Valve was Tuned off"
+    fix: "Turn Farm Valve Back ON"
+    fix_service: "valve.open_valve"
+    fix_entity: "valve.water_retic_control_farm_valve"
+    # fix_script: 
 
-    - name: "Issue Water House Valve Off"
-      unique_id: issue_water_house_valve_off
-      state: >
-          {{ is_state('valve.water_retic_control_house_valve', 'closed') }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "House Valve Off"
-        cause: "House Valve was Tuned off"
-        fix: "Turn House Valve Back ON"
-        fix_service: "valve.open_valve"
-        fix_entity: "valve.water_retic_control_house_valve"
-        # fix_script: 
+- name: "Issue Water House Valve Off"
+  unique_id: issue_water_house_valve_off
+  state: >
+      {{ is_state('valve.water_retic_control_house_valve', 'closed') }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "House Valve Off"
+    cause: "House Valve was Tuned off"
+    fix: "Turn House Valve Back ON"
+    fix_service: "valve.open_valve"
+    fix_entity: "valve.water_retic_control_house_valve"
+    # fix_script: 
+
+- name: "Issue Water Retic Valve Off"
+  unique_id: issue_water_retic_valve_off
+  state: >
+      {{ is_state('valve.water_retic_control_retic_valve', 'closed') }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Retic Valve Off"
+    cause: "Retic Valve was Tuned off"
+    fix: "Turn Retic Valve Back ON"
+    fix_service: "valve.open_valve"
+    fix_entity: "valve.water_retic_control_retic_valve"
+    # fix_script: 
+
+#################################################
+# WATER ISOLATION ISSUES
+#################################################
+
+- name: "Issue Water Farm Isolated By Outgoing Amount"
+  unique_id: issue_water_farm_isolated_by_outgoing_amount
+  state: >
+    {{ is_state('valve.water_retic_control_farm_valve', 'closed')
+    and states('sensor.water_retic_control_retic_last_60_farm') | float(0)
+      > states('input_number.farm_hourly_water_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Farm water isolated"
+    cause: >
+      Farm has been isolated because outgoing water reached
+      {{ states('sensor.water_retic_control_retic_last_60_farm') | float(0) | round(0) }} L
+      in the last 60 minutes.
+    fix: "Reset last 60 meter and reopen Farm valve"
+    fix_script: "script.water_fix_volume_farm"
+
+
+- name: "Issue Water House Isolated By Outgoing Amount"
+  unique_id: issue_water_house_isolated_by_outgoing_amount
+  state: >
+    {{ is_state('valve.water_retic_control_house_valve', 'closed')
+    and states('sensor.water_retic_control_retic_last_60_house') | float(0)
+      > states('input_number.house_hourly_water_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "House water isolated"
+    cause: >
+      House has been isolated because outgoing water reached
+      {{ states('sensor.water_retic_control_retic_last_60_house') | float(0) | round(0) }} L
+      in the last 60 minutes.
+    fix: "Reset last 60 meter and reopen House valve"
+    fix_script: "script.water_fix_volume_house"
+
+
+- name: "Issue Water Retic Isolated By Outgoing Amount"
+  unique_id: issue_water_retic_isolated_by_outgoing_amount
+  state: >
+    {{ is_state('valve.water_retic_control_retic_valve', 'closed')
+    and states('sensor.water_retic_control_retic_last_60_retic') | float(0)
+      > states('input_number.pump_hourly_water_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Retic water isolated"
+    cause: >
+      Retic has been isolated because outgoing water reached
+      {{ states('sensor.water_retic_control_retic_last_60_retic') | float(0) | round(0) }} L
+      in the last 60 minutes.
+    fix: "Reset last 60 meter and reopen Retic valve"
+    fix_script: "script.water_fix_volume_retic"
+
+
+- name: "Issue Water Retic Pump Isolated By Flow"
+  unique_id: issue_water_retic_pump_isolated_by_flow
+  state: >
+    {{ is_state('switch.retic_pump', 'off')
+    and states('sensor.water_retic_control_retic_flow_rate_2') | float(0)
+      > states('input_number.retic_pump_flow_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Critical"
+    issue: "Retic pump isolated"
+    cause: >
+      Retic pump has been turned off because flow stayed above
+      {{ states('input_number.retic_pump_flow_cutoff') | float(0) | round(1) }} L/min
+      after the Retic valve was shut.
+    fix: "Reset last 60 meter and restart Retic pump"
+    fix_script: "script.water_fix_volume_stand"
+
+
+#################################################
+# WATER PUMP RUNTIME ISSUES
+#################################################
+
+- name: "Issue Water Farm Isolated By Pump Runtime"
+  unique_id: issue_water_farm_isolated_by_pump_runtime
+  state: >
+    {{ is_state('valve.water_retic_control_farm_valve', 'closed')
+    and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+      >= states('input_number.pump_farm_runtime_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Farm water isolated by pump runtime"
+    cause: >
+      Farm valve has been closed because pump runtime reached
+      {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+    fix: "Reset stage runtime and reopen Farm valve"
+    fix_script: "script.water_fix_runtime_farm"
+
+
+- name: "Issue Water House Isolated By Pump Runtime"
+  unique_id: issue_water_house_isolated_by_pump_runtime
+  state: >
+    {{ is_state('valve.water_retic_control_house_valve', 'closed')
+    and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+      >= states('input_number.pump_house_runtime_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "House water isolated by pump runtime"
+    cause: >
+      House valve has been closed because pump runtime reached
+      {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+    fix: "Reset stage runtime and reopen House valve"
+    fix_script: "script.water_fix_runtime_house"
+
+
+- name: "Issue Water Retic Isolated By Pump Runtime"
+  unique_id: issue_water_retic_isolated_by_pump_runtime
+  state: >
+    {{ is_state('valve.water_retic_control_retic_valve', 'closed')
+    and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+      >= states('input_number.pump_shed_runtime_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Retic water isolated by pump runtime"
+    cause: >
+      Retic valve has been closed because pump runtime reached
+      {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+    fix: "Reset stage runtime and reopen Retic valve"
+    fix_script: "script.water_fix_runtime_retic"
+
+
+- name: "Issue Water Retic Pump Off By Stand Runtime"
+  unique_id: issue_water_retic_pump_off_by_stand_runtime
+  state: >
+    {{ is_state('switch.retic_pump', 'off')
+    and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
+      >= states('input_number.pump_stand_runtime_cutoff') | float(999999) }}
+  attributes:
+    area: "Water"
+    severity: "Critical"
+    issue: "Retic pump stopped by stand runtime"
+    cause: >
+      Retic pump has been turned off because stand runtime reached
+      {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
+    fix: "Reset stage runtime and restart Retic pump"
+    fix_script: "script.water_fix_runtime_stand"
+
+####----- TANK / RESIVOIR -------###
+# Bore Pump Off for two LOng
+- name: "Issue Bore Pump Off Too Long"
+  unique_id: issue_bore_pump_off_too_long
+  state: >
+    {% set max_hours = states('input_number.bore_max_off_hours') | float(0) %}
+    {% set last_changed = states.switch.bore_pump.last_changed %}
+    {% set hours_off = (as_timestamp(now()) - as_timestamp(last_changed)) / 3600 %}
+
+    {{ is_state('switch.bore_pump', 'off') and hours_off > max_hours }}
+  attributes:
+    area: "Water"
+    severity: "Warning"
+    issue: "Bore pump has been off too long"
+    cause: "Bore pump has exceeded the max off time"
+    fix: "Try turn on Bore Pump"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.bore_pump"
+    # fix_script:
+
+
+# Tank Level Low
+- name: "Issue Water Reservoir Low"
+  unique_id: issue_water_reservoir_low
+  state: >
+    {{ states('sensor.water_retic_control_tank_level_percent_2') | float(0) < states('input_number.bore_turn_on_level') | float(0) }}
+  attributes:
+    area: "Water"
+    severity: "Critical"
+    issue: "Reservoir is low"
+    cause: "Reservoir level is below the bore turn-on level"
+    fix: "Check bore pump and incoming water supply"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.bore_pump"
+    # fix_script: 
+
+#################################################
+# WATER AUTOMATION STATUS ISSUES
+#################################################
+
+- name: "Issue Water Automation Reservoir Protection Off"
+  unique_id: issue_water_automation_reservoir_protection_off
+  state: >
+    {{ is_state('automation.farm_water_reservoir_protection_v2026', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Reservoir protection automation is off"
+    cause: "The reservoir protection automation is currently disabled."
+    fix: "Turn reservoir protection automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_reservoir_protection_v2026"
+
+
+- name: "Issue Water Automation Reservoir Monitoring Off"
+  unique_id: issue_water_automation_reservoir_monitoring_off
+  state: >
+    {{ is_state('automation.farm_water_resivoir_monitoring', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Reservoir monitoring automation is off"
+    cause: "The reservoir monitoring automation is currently disabled."
+    fix: "Turn reservoir monitoring automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_resivoir_monitoring"
+
+
+- name: "Issue Water Automation Progressive Isolation Off"
+  unique_id: issue_water_automation_progressive_isolation_off
+  state: >
+    {{ is_state('automation.farm_water_progressive_isolation_v2026', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Progressive isolation automation is off"
+    cause: "The water progressive isolation automation is currently disabled."
+    fix: "Turn progressive isolation automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_progressive_isolation_v2026"
+
+
+- name: "Issue Water Automation Retic Reset Meters Off"
+  unique_id: issue_water_automation_retic_reset_meters_off
+  state: >
+    {{ is_state('automation.retic_reset_meters_v2026', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Retic meter reset automation is off"
+    cause: "The automatic retic meter reset automation is currently disabled."
+    fix: "Turn retic meter reset automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.retic_reset_meters_v2026"
+
+
+- name: "Issue Water Automation Retic Pump Use Off"
+  unique_id: issue_water_automation_retic_pump_use_off
+  state: >
+    {{ is_state('automation.farm_water_retic_pump_use', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Retic pump use automation is off"
+    cause: "The retic pump use automation is currently disabled."
+    fix: "Turn retic pump use automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_retic_pump_use"
+
+
+- name: "Issue Water Automation Output Guard Off"
+  unique_id: issue_water_automation_output_guard_off
+  state: >
+    {{ is_state('automation.farm_water_output_guard', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Water output guard automation is off"
+    cause: "The water output guard automation is currently disabled."
+    fix: "Turn water output guard automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_output_guard"
+
+
+- name: "Issue Water Automation Notification Reset Action Off"
+  unique_id: issue_water_automation_notification_reset_action_off
+  state: >
+    {{ is_state('automation.farm_water_notification_reset_action', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Notification reset action automation is off"
+    cause: "The mobile notification reset action automation is currently disabled."
+    fix: "Turn notification reset action automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_notification_reset_action"
+
+
+- name: "Issue Water Automation Reservoir Leak Control Off"
+  unique_id: issue_water_automation_reservoir_leak_control_off
+  state: >
+    {{ is_state('automation.farm_water_resiviour_control_leak_device_or_run_meter', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Reservoir leak control automation is off"
+    cause: "The reservoir leak device or run meter automation is currently disabled."
+    fix: "Turn reservoir leak control automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_resiviour_control_leak_device_or_run_meter"
+
+
+- name: "Issue Water Automation Bore Max Off Time Off"
+  unique_id: issue_water_automation_bore_max_off_time_off
+  state: >
+    {{ is_state('automation.farm_water_bore_max_off_time_v2026', 'off') }}
+  attributes:
+    area: "Water"
+    severity: "Info"
+    issue: "Bore max off time automation is off"
+    cause: "The bore max off time automation is currently disabled."
+    fix: "Turn bore max off time automation back on"
+    fix_service: "automation.turn_on"
+    fix_entity: "automation.farm_water_bore_max_off_time_v2026"
+
+#################################################
+# FARM ISSUES
+#################################################
+
+- name: "Issue Fence Main Unit Looks Off At Unit"
+  unique_id: issue_fence_main_unit_looks_off_at_unit
+  state: >
+    {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
+  delay_on:
+    seconds: 30
+  attributes:
+    area: "Farm Fence"
+    severity: "Warning"
+    issue: "Fence should be running"
+    cause: "Main Unit is ON but no power draw is detected"
+    fix: "Turn On Main Unit Manually or with Remote"
+    # fix_service: 
+    # fix_entity: 
+    # fix_script:
+  
+- name: "Issue Fence Main Unit NOT connected to Wifi"
+  unique_id: issue_fence_main_unit_not_connected
+  state: >
+    {{ is_state('binary_sensor.fence_unit_status', 'on') }}
+  attributes:
+    area: "Farm Fence"
+    severity: "Warning"
+    issue: "Main Fence Wifi should be Connected"
+    cause: "Main Unit NOT connected to Wifi"
+    fix: "Check Main Unit Power supply or Try Power Cylce unit"
+    # fix_service: 
+    # fix_entity: 
+    # fix_script:
+
+- name: "Issue Fence 257 Unit Looks Off At Unit"
+  unique_id: issue_fence_257_unit_looks_off_at_unit
+  state: >
+    {{ is_state('switch.257_fence_unit_257_fence_unit_relay', 'on') and is_state('binary_sensor.257_fence_unit_257_fence_unit_running', 'off') }}
+  delay_on:
+    seconds: 30
+  attributes:
+    area: "Farm Fence"
+    severity: "Warning"
+    issue: "Fence should be running"
+    cause: "257 Unit is ON but no power draw is detected"
+    fix: "Turn On 257 Unit Manually or with Remote"
+    # fix_service: 
+    # fix_entity: 
+    # fix_script:
+
+- name: "Issue Fence 257 Unit NOT connected to Wifi"
+  unique_id: issue_fence_257_unit_not_connected
+  state: >
+    {{ is_state('binary_sensor.257_fence_unit_mums_fence_unit_status', 'on') }}
+  attributes:
+    area: "Farm Fence"
+    severity: "Warning"
+    issue: "257 Unit Wifi should be Connected"
+    cause: "257 Unit Not connected to Wifi"
+    fix: "Check 257 Unit Power supply or Try Power Cylce unit"
+    # fix_service:
+    # fix_entity:
+    # fix_script:
+
+
+#################################################
+# Light ISSUES
+#################################################
+
+- name: "Issue Dairy Light Left ON"
+  unique_id: issue_dairy_light_left_on
+  state: >
+    {{ is_state('light.mancave_dairy', 'on') }}
+  attributes:
+    area: "Shed"
+    severity: "Info"
+    issue: "Dairy Light Left on"
+    cause: "Some Muppet didnt turn iit"
+    fix: "fire muppet"
+    fix_service: "light.turn_off"
+    fix_entity: "light.mancave_dairy"
+    #fix_script:
+  
+- name: "Issue Mancave Yard Light Left ON"
+  unique_id: issue_mancave_yard_light_left_on
+  state: >
+    {{ is_state('light.mancave_yard', 'on') }}
+  attributes:
+    area: "Shed"
+    severity: "Info"
+    issue: "Mancave Yard Light Left on"
+    cause: "Its not Dark Please Turn Off"
+    fix: "Turn Off Light"
+    fix_service: "light.turn_off"
+    fix_entity: "light.mancave_yard"
+    #fix_script:
+  
+- name: "Issue Storage Kitchen Light Left ON"
+  unique_id: issue_storage_kitchen_light_left_on
+  state: >
+    {{ is_state('light.storage_multi_switch_storage_kitchen', 'on') }}
+  attributes:
+    area: "Storage"
+    severity: "Info"
+    issue: "Kitchen Light in Storage Light Left on"
+    cause: "Some Retard didnt turn it off"
+    fix: "Lets Help this Retard"
+    fix_service: "light.turn_off"
+    fix_entity: "light.storage_multi_switch_storage_kitchen"
+    #fix_script:
+  
+- name: "Issue Outside Storage Light Left ON"
+  unique_id: issue_outside_storage_light_left_on
+  state: >
+    {{ is_state('light.storage_multi_switch_storage_outside', 'on') }}
+  attributes:
+    area: "Shed"
+    severity: "Info"
+    issue: "The Outside Light was Not turned off"
+    cause: "Lasyness"
+    fix: "Either Send them back of give them a chance"
+    fix_service: "light.turn_off"
+    fix_entity: "light.storage_multi_switch_storage_outside"
+    #fix_script:
+
+#################################################
+# POWER ISSUES
+#################################################
+
+- name: "Issue Power Mancave Mains Grid Off"
+  unique_id: issue_power_mancave_mains_grid_off
+  state: >
+    {{ is_state('switch.mancave_mains_grid_mancave_mains_grid', 'off') }}
+  attributes:
+    area: "Cave"
+    severity: "Critical"
+    issue: "Mains in Mancave is Off"
+    cause: "Possible Power Cut"
+    fix: "Turn On Mancave Grid"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.mancave_mains_grid_mancave_mains_grid"
+    #fix_script:
+  
+- name: "Issue Power Mancave Bar Grid Off"
+  unique_id: issue_power_mancave_bar_grid_off
+  state: >
+    {{ is_state('switch.switch.mancave_mains_ha', 'off') }}
+  attributes:
+    area: "Cave"
+    severity: "Critical"
+    issue: "Mains in Mancave Bar Area is Off"
+    cause: "Possible Power Cut"
+    fix: "Turn On Mancave Bar Area"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.switch.mancave_mains_ha"
+    #fix_script:
+  
+- name: "Issue Power Barn Lean-to Off"
+  unique_id: issue_power_barn_lean_to_grid_off
+  state: >
+    {{ is_state('switch.barn_lean_to', 'off') }}
+  attributes:
+    area: "Barn"
+    severity: "Critical"
+    issue: "Mains in Barn Area is Off"
+    cause: "Possible Power Cut"
+    fix: "Turn On Mancave Grid or Check Fuse Box"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.barn_lean_to"
+    #fix_script:
+  
+- name: "Issue Power Bar Heater Off"
+  unique_id: issue_power_bar_heater_off
+  state: >
+    {{ is_state('switch.heater_bar', 'off') }}
+  attributes:
+    area: "Cave"
+    severity: "Warning"
+    issue: "Mains for Heater in Bar is Off"
+    cause: "Possible Power Cut"
+    fix: "Turn On Mancave Bar Heater"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.heater_bar"
+    #fix_script:
+  
+- name: "Issue Power Fixed Heater Off"
+  unique_id: issue_power_fixed_heater_off
+  state: >
+    {{ is_state('switch.heater_fixed', 'off') }}
+  attributes:
+    area: "Cave"
+    severity: "Warning"
+    issue: "Mains for Fixed Heater is Off"
+    cause: "Possible Power Cut" 
+    fix: "Turn On Mancave Fixed Heater"
+    fix_service: "switch.turn_on"
+    fix_entity: "switch.heater_fixed"
+    #fix_script:
     
-    - name: "Issue Water Retic Valve Off"
-      unique_id: issue_water_retic_valve_off
-      state: >
-          {{ is_state('valve.water_retic_control_retic_valve', 'closed') }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Retic Valve Off"
-        cause: "Retic Valve was Tuned off"
-        fix: "Turn Retic Valve Back ON"
-        fix_service: "valve.open_valve"
-        fix_entity: "valve.water_retic_control_retic_valve"
-        # fix_script: 
-    
-    #################################################
-    # WATER ISOLATION ISSUES
-    #################################################
 
-    - name: "Issue Water Farm Isolated By Outgoing Amount"
-      unique_id: issue_water_farm_isolated_by_outgoing_amount
-      state: >
-        {{ is_state('valve.water_retic_control_farm_valve', 'closed')
-        and states('sensor.water_retic_control_retic_last_60_farm') | float(0)
-          > states('input_number.farm_hourly_water_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Farm water isolated"
-        cause: >
-          Farm has been isolated because outgoing water reached
-          {{ states('sensor.water_retic_control_retic_last_60_farm') | float(0) | round(0) }} L
-          in the last 60 minutes.
-        fix: "Reset last 60 meter and reopen Farm valve"
-        fix_script: "script.water_fix_volume_farm"
-
-
-    - name: "Issue Water House Isolated By Outgoing Amount"
-      unique_id: issue_water_house_isolated_by_outgoing_amount
-      state: >
-        {{ is_state('valve.water_retic_control_house_valve', 'closed')
-        and states('sensor.water_retic_control_retic_last_60_house') | float(0)
-          > states('input_number.house_hourly_water_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "House water isolated"
-        cause: >
-          House has been isolated because outgoing water reached
-          {{ states('sensor.water_retic_control_retic_last_60_house') | float(0) | round(0) }} L
-          in the last 60 minutes.
-        fix: "Reset last 60 meter and reopen House valve"
-        fix_script: "script.water_fix_volume_house"
-
-
-    - name: "Issue Water Retic Isolated By Outgoing Amount"
-      unique_id: issue_water_retic_isolated_by_outgoing_amount
-      state: >
-        {{ is_state('valve.water_retic_control_retic_valve', 'closed')
-        and states('sensor.water_retic_control_retic_last_60_retic') | float(0)
-          > states('input_number.pump_hourly_water_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Retic water isolated"
-        cause: >
-          Retic has been isolated because outgoing water reached
-          {{ states('sensor.water_retic_control_retic_last_60_retic') | float(0) | round(0) }} L
-          in the last 60 minutes.
-        fix: "Reset last 60 meter and reopen Retic valve"
-        fix_script: "script.water_fix_volume_retic"
-
-
-    - name: "Issue Water Retic Pump Isolated By Flow"
-      unique_id: issue_water_retic_pump_isolated_by_flow
-      state: >
-        {{ is_state('switch.retic_pump', 'off')
-        and states('sensor.water_retic_control_retic_flow_rate_2') | float(0)
-          > states('input_number.retic_pump_flow_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Critical"
-        issue: "Retic pump isolated"
-        cause: >
-          Retic pump has been turned off because flow stayed above
-          {{ states('input_number.retic_pump_flow_cutoff') | float(0) | round(1) }} L/min
-          after the Retic valve was shut.
-        fix: "Reset last 60 meter and restart Retic pump"
-        fix_script: "script.water_fix_volume_stand"
-
-
-    #################################################
-    # WATER PUMP RUNTIME ISSUES
-    #################################################
-
-    - name: "Issue Water Farm Isolated By Pump Runtime"
-      unique_id: issue_water_farm_isolated_by_pump_runtime
-      state: >
-        {{ is_state('valve.water_retic_control_farm_valve', 'closed')
-        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
-          >= states('input_number.pump_farm_runtime_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Farm water isolated by pump runtime"
-        cause: >
-          Farm valve has been closed because pump runtime reached
-          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
-        fix: "Reset stage runtime and reopen Farm valve"
-        fix_script: "script.water_fix_runtime_farm"
-
-
-    - name: "Issue Water House Isolated By Pump Runtime"
-      unique_id: issue_water_house_isolated_by_pump_runtime
-      state: >
-        {{ is_state('valve.water_retic_control_house_valve', 'closed')
-        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
-          >= states('input_number.pump_house_runtime_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "House water isolated by pump runtime"
-        cause: >
-          House valve has been closed because pump runtime reached
-          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
-        fix: "Reset stage runtime and reopen House valve"
-        fix_script: "script.water_fix_runtime_house"
-
-
-    - name: "Issue Water Retic Isolated By Pump Runtime"
-      unique_id: issue_water_retic_isolated_by_pump_runtime
-      state: >
-        {{ is_state('valve.water_retic_control_retic_valve', 'closed')
-        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
-          >= states('input_number.pump_shed_runtime_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Retic water isolated by pump runtime"
-        cause: >
-          Retic valve has been closed because pump runtime reached
-          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
-        fix: "Reset stage runtime and reopen Retic valve"
-        fix_script: "script.water_fix_runtime_retic"
-
-
-    - name: "Issue Water Retic Pump Off By Stand Runtime"
-      unique_id: issue_water_retic_pump_off_by_stand_runtime
-      state: >
-        {{ is_state('switch.retic_pump', 'off')
-        and states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0)
-          >= states('input_number.pump_stand_runtime_cutoff') | float(999999) }}
-      attributes:
-        area: "Water"
-        severity: "Critical"
-        issue: "Retic pump stopped by stand runtime"
-        cause: >
-          Retic pump has been turned off because stand runtime reached
-          {{ states('sensor.retic_pump_2_retic_pump_stage_runtime') | float(0) | round(0) }} minutes.
-        fix: "Reset stage runtime and restart Retic pump"
-        fix_script: "script.water_fix_runtime_stand"
-    
-    ####----- TANK / RESIVOIR -------###
-    # Bore Pump Off for two LOng
-    - name: "Issue Bore Pump Off Too Long"
-      unique_id: issue_bore_pump_off_too_long
-      state: >
-        {% set max_hours = states('input_number.bore_max_off_hours') | float(0) %}
-        {% set last_changed = states.switch.bore_pump.last_changed %}
-        {% set hours_off = (as_timestamp(now()) - as_timestamp(last_changed)) / 3600 %}
-
-        {{ is_state('switch.bore_pump', 'off') and hours_off > max_hours }}
-      attributes:
-        area: "Water"
-        severity: "Warning"
-        issue: "Bore pump has been off too long"
-        cause: "Bore pump has exceeded the max off time"
-        fix: "Try turn on Bore Pump"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.bore_pump"
-        # fix_script:
-
-
-    # Tank Level Low
-    - name: "Issue Water Reservoir Low"
-      unique_id: issue_water_reservoir_low
-      state: >
-        {{ states('sensor.water_retic_control_tank_level_percent_2') | float(0) < states('input_number.bore_turn_on_level') | float(0) }}
-      attributes:
-        area: "Water"
-        severity: "Critical"
-        issue: "Reservoir is low"
-        cause: "Reservoir level is below the bore turn-on level"
-        fix: "Check bore pump and incoming water supply"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.bore_pump"
-        # fix_script: 
-
-    #################################################
-    # WATER AUTOMATION STATUS ISSUES
-    #################################################
-
-    - name: "Issue Water Automation Reservoir Protection Off"
-      unique_id: issue_water_automation_reservoir_protection_off
-      state: >
-        {{ is_state('automation.farm_water_reservoir_protection_v2026', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Reservoir protection automation is off"
-        cause: "The reservoir protection automation is currently disabled."
-        fix: "Turn reservoir protection automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_reservoir_protection_v2026"
-
-
-    - name: "Issue Water Automation Reservoir Monitoring Off"
-      unique_id: issue_water_automation_reservoir_monitoring_off
-      state: >
-        {{ is_state('automation.farm_water_resivoir_monitoring', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Reservoir monitoring automation is off"
-        cause: "The reservoir monitoring automation is currently disabled."
-        fix: "Turn reservoir monitoring automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_resivoir_monitoring"
-
-
-    - name: "Issue Water Automation Progressive Isolation Off"
-      unique_id: issue_water_automation_progressive_isolation_off
-      state: >
-        {{ is_state('automation.farm_water_progressive_isolation_v2026', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Progressive isolation automation is off"
-        cause: "The water progressive isolation automation is currently disabled."
-        fix: "Turn progressive isolation automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_progressive_isolation_v2026"
-
-
-    - name: "Issue Water Automation Retic Reset Meters Off"
-      unique_id: issue_water_automation_retic_reset_meters_off
-      state: >
-        {{ is_state('automation.retic_reset_meters_v2026', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Retic meter reset automation is off"
-        cause: "The automatic retic meter reset automation is currently disabled."
-        fix: "Turn retic meter reset automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.retic_reset_meters_v2026"
-
-
-    - name: "Issue Water Automation Retic Pump Use Off"
-      unique_id: issue_water_automation_retic_pump_use_off
-      state: >
-        {{ is_state('automation.farm_water_retic_pump_use', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Retic pump use automation is off"
-        cause: "The retic pump use automation is currently disabled."
-        fix: "Turn retic pump use automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_retic_pump_use"
-
-
-    - name: "Issue Water Automation Output Guard Off"
-      unique_id: issue_water_automation_output_guard_off
-      state: >
-        {{ is_state('automation.farm_water_output_guard', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Water output guard automation is off"
-        cause: "The water output guard automation is currently disabled."
-        fix: "Turn water output guard automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_output_guard"
-
-
-    - name: "Issue Water Automation Notification Reset Action Off"
-      unique_id: issue_water_automation_notification_reset_action_off
-      state: >
-        {{ is_state('automation.farm_water_notification_reset_action', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Notification reset action automation is off"
-        cause: "The mobile notification reset action automation is currently disabled."
-        fix: "Turn notification reset action automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_notification_reset_action"
-
-
-    - name: "Issue Water Automation Reservoir Leak Control Off"
-      unique_id: issue_water_automation_reservoir_leak_control_off
-      state: >
-        {{ is_state('automation.farm_water_resiviour_control_leak_device_or_run_meter', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Reservoir leak control automation is off"
-        cause: "The reservoir leak device or run meter automation is currently disabled."
-        fix: "Turn reservoir leak control automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_resiviour_control_leak_device_or_run_meter"
-
-
-    - name: "Issue Water Automation Bore Max Off Time Off"
-      unique_id: issue_water_automation_bore_max_off_time_off
-      state: >
-        {{ is_state('automation.farm_water_bore_max_off_time_v2026', 'off') }}
-      attributes:
-        area: "Water"
-        severity: "Info"
-        issue: "Bore max off time automation is off"
-        cause: "The bore max off time automation is currently disabled."
-        fix: "Turn bore max off time automation back on"
-        fix_service: "automation.turn_on"
-        fix_entity: "automation.farm_water_bore_max_off_time_v2026"
-
-    #################################################
-    # FARM ISSUES
-    #################################################
-
-    - name: "Issue Fence Main Unit Looks Off At Unit"
-      unique_id: issue_fence_main_unit_looks_off_at_unit
-      state: >
-        {{ is_state('switch.fence_unit_relay', 'on') and is_state('binary_sensor.fence_unit_running', 'off') }}
-      delay_on:
-        seconds: 30
-      attributes:
-        area: "Farm Fence"
-        severity: "Warning"
-        issue: "Fence should be running"
-        cause: "Main Unit is ON but no power draw is detected"
-        fix: "Turn On Main Unit Manually or with Remote"
-        # fix_service: 
-        # fix_entity: 
-        # fix_script:
-      
-    - name: "Issue Fence Main Unit NOT connected to Wifi"
-      unique_id: issue_fence_main_unit_not_connected
-      state: >
-        {{ is_state('binary_sensor.fence_unit_status', 'on') }}
-      attributes:
-        area: "Farm Fence"
-        severity: "Warning"
-        issue: "Main Fence Wifi should be Connected"
-        cause: "Main Unit NOT connected to Wifi"
-        fix: "Check Main Unit Power supply or Try Power Cylce unit"
-        # fix_service: 
-        # fix_entity: 
-        # fix_script:
-
-    - name: "Issue Fence 257 Unit Looks Off At Unit"
-      unique_id: issue_fence_257_unit_looks_off_at_unit
-      state: >
-        {{ is_state('switch.257_fence_unit_257_fence_unit_relay', 'on') and is_state('binary_sensor.257_fence_unit_257_fence_unit_running', 'off') }}
-      delay_on:
-        seconds: 30
-      attributes:
-        area: "Farm Fence"
-        severity: "Warning"
-        issue: "Fence should be running"
-        cause: "257 Unit is ON but no power draw is detected"
-        fix: "Turn On 257 Unit Manually or with Remote"
-        # fix_service: 
-        # fix_entity: 
-        # fix_script:
-    
-    - name: "Issue Fence 257 Unit NOT connected to Wifi"
-      unique_id: issue_fence_257_unit_not_connected
-      state: >
-        {{ is_state('binary_sensor.257_fence_unit_mums_fence_unit_status', 'on') }}
-      attributes:
-        area: "Farm Fence"
-        severity: "Warning"
-        issue: "257 Unit Wifi should be Connected"
-        cause: "257 Unit Not connected to Wifi"
-        fix: "Check 257 Unit Power supply or Try Power Cylce unit"
-        # fix_service:
-        # fix_entity:
-        # fix_script:
-    
-
-    #################################################
-    # Light ISSUES
-    #################################################
-
-    - name: "Issue Dairy Light Left ON"
-      unique_id: issue_dairy_light_left_on
-      state: >
-        {{ is_state('light.mancave_dairy', 'on') }}
-      attributes:
-        area: "Shed"
-        severity: "Info"
-        issue: "Dairy Light Left on"
-        cause: "Some Muppet didnt turn iit"
-        fix: "fire muppet"
-        fix_service: "light.turn_off"
-        fix_entity: "light.mancave_dairy"
-        #fix_script:
-      
-    - name: "Issue Mancave Yard Light Left ON"
-      unique_id: issue_mancave_yard_light_left_on
-      state: >
-        {{ is_state('light.mancave_yard', 'on') }}
-      attributes:
-        area: "Shed"
-        severity: "Info"
-        issue: "Mancave Yard Light Left on"
-        cause: "Its not Dark Please Turn Off"
-        fix: "Turn Off Light"
-        fix_service: "light.turn_off"
-        fix_entity: "light.mancave_yard"
-        #fix_script:
-      
-    - name: "Issue Storage Kitchen Light Left ON"
-      unique_id: issue_storage_kitchen_light_left_on
-      state: >
-        {{ is_state('light.storage_multi_switch_storage_kitchen', 'on') }}
-      attributes:
-        area: "Storage"
-        severity: "Info"
-        issue: "Kitchen Light in Storage Light Left on"
-        cause: "Some Retard didnt turn it off"
-        fix: "Lets Help this Retard"
-        fix_service: "light.turn_off"
-        fix_entity: "light.storage_multi_switch_storage_kitchen"
-        #fix_script:
-      
-    - name: "Issue Outside Storage Light Left ON"
-      unique_id: issue_outside_storage_light_left_on
-      state: >
-        {{ is_state('light.storage_multi_switch_storage_outside', 'on') }}
-      attributes:
-        area: "Shed"
-        severity: "Info"
-        issue: "The Outside Light was Not turned off"
-        cause: "Lasyness"
-        fix: "Either Send them back of give them a chance"
-        fix_service: "light.turn_off"
-        fix_entity: "light.storage_multi_switch_storage_outside"
-        #fix_script:
-    
-    #################################################
-    # POWER ISSUES
-    #################################################
-
-    - name: "Issue Power Mancave Mains Grid Off"
-      unique_id: issue_power_mancave_mains_grid_off
-      state: >
-        {{ is_state('switch.mancave_mains_grid_mancave_mains_grid', 'off') }}
-      attributes:
-        area: "Cave"
-        severity: "Critical"
-        issue: "Mains in Mancave is Off"
-        cause: "Possible Power Cut"
-        fix: "Turn On Mancave Grid"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.mancave_mains_grid_mancave_mains_grid"
-        #fix_script:
-      
-    - name: "Issue Power Mancave Bar Grid Off"
-      unique_id: issue_power_mancave_bar_grid_off
-      state: >
-        {{ is_state('switch.switch.mancave_mains_ha', 'off') }}
-      attributes:
-        area: "Cave"
-        severity: "Critical"
-        issue: "Mains in Mancave Bar Area is Off"
-        cause: "Possible Power Cut"
-        fix: "Turn On Mancave Bar Area"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.switch.mancave_mains_ha"
-        #fix_script:
-      
-    - name: "Issue Power Barn Lean-to Off"
-      unique_id: issue_power_barn_lean_to_grid_off
-      state: >
-        {{ is_state('switch.barn_lean_to', 'off') }}
-      attributes:
-        area: "Barn"
-        severity: "Critical"
-        issue: "Mains in Barn Area is Off"
-        cause: "Possible Power Cut"
-        fix: "Turn On Mancave Grid or Check Fuse Box"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.barn_lean_to"
-        #fix_script:
-      
-    - name: "Issue Power Bar Heater Off"
-      unique_id: issue_power_bar_heater_off
-      state: >
-        {{ is_state('switch.heater_bar', 'off') }}
-      attributes:
-        area: "Cave"
-        severity: "Warning"
-        issue: "Mains for Heater in Bar is Off"
-        cause: "Possible Power Cut"
-        fix: "Turn On Mancave Bar Heater"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.heater_bar"
-        #fix_script:
-      
-    - name: "Issue Power Fixed Heater Off"
-      unique_id: issue_power_fixed_heater_off
-      state: >
-        {{ is_state('switch.heater_fixed', 'off') }}
-      attributes:
-        area: "Cave"
-        severity: "Warning"
-        issue: "Mains for Fixed Heater is Off"
-        cause: "Possible Power Cut" 
-        fix: "Turn On Mancave Fixed Heater"
-        fix_service: "switch.turn_on"
-        fix_entity: "switch.heater_fixed"
-        #fix_script:

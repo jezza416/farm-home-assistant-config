@@ -11,7 +11,9 @@ group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-
+template: !include template.yaml
+#  - !include template.yaml
+#  - !include template_issues.yaml
 
 frontend:
   themes: !include_dir_merge_named themes
@@ -30,6 +32,8 @@ logger:
     rflink: debug
 
 browser:
+
+
 
 alarm_control_panel:
   - platform: manual
@@ -144,11 +148,6 @@ notify:
     services:
       - action: mobile_app_jezza_iphone_13
       - action: mobile_app_sm_g780g
-
-  
-template:
-  - !include template.yaml
-  - !include template_issues.yaml
 
 sensor:
   - platform: files

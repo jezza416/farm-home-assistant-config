@@ -1,0 +1,11 @@
+{
+  "name": "ha-grok-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "express": "latest",
+    "zod": "latest"
+  }
+}
